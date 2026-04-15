@@ -1,0 +1,158 @@
+{
+  "version": "1.0",
+  "meta": {
+    "title": "SlideForge Complete Demo",
+    "subtitle": "All 10 Slide Types",
+    "author": "SlideForge Team"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "type": "hero",
+      "content": {
+        "kicker": "SlideForge Demo",
+        "title": "Design-Intelligent Presentations",
+        "subtitle": "10 professional slide types with adaptive layouts"
+      }
+    },
+    {
+      "id": "slide-2",
+      "type": "section-header",
+      "content": {
+        "section": "Core Features",
+        "subtitle": "What makes SlideForge different"
+      }
+    },
+    {
+      "id": "slide-3",
+      "type": "bullet-list",
+      "content": {
+        "title": "Key Capabilities",
+        "bullets": ["Type-safe schema validation with Zod", "Adaptive layout engine with design intelligence", "Automatic font scaling based on content", "Controlled overflow handling", "Professional spacing and positioning"]
+      }
+    },
+    {
+      "id": "slide-4",
+      "type": "stat-trio",
+      "content": {
+        "title": "Performance Metrics",
+        "stats": [
+          {
+            "label": "Build Time",
+            "value": "<1s",
+            "delta": "Fast"
+          },
+          {
+            "label": "Type Safety",
+            "value": "100%",
+            "delta": "✓"
+          },
+          {
+            "label": "Slide Types",
+            "value": "10",
+            "delta": "Core"
+          }
+        ]
+      }
+    },
+    {
+      "id": "slide-5",
+      "type": "two-column",
+      "content": {
+        "title": "Before vs After",
+        "left": [
+          {
+            "type": "text",
+            "text": "Traditional Approach"
+          },
+          {
+            "type": "list",
+            "items": ["Manual slide creation", "Inconsistent layouts", "No validation", "Time-consuming"]
+          }
+        ],
+        "right": [
+          {
+            "type": "text",
+            "text": "SlideForge Approach"
+          },
+          {
+            "type": "list",
+            "items": ["Schema-driven generation", "Professional layouts", "Type-safe validation", "Instant output"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "slide-6",
+      "type": "comparison",
+      "content": {
+        "title": "Template vs Intelligence",
+        "left": {
+          "label": "Template Generator",
+          "items": ["Fixed layouts", "No adaptation", "Manual adjustments", "Breaks with real data"]
+        },
+        "right": {
+          "label": "SlideForge",
+          "items": ["Adaptive layouts", "Content-aware", "Auto-adjusts", "Handles edge cases"]
+        }
+      }
+    },
+    {
+      "id": "slide-7",
+      "type": "quote",
+      "content": {
+        "quote": "This is what separates template generators from design-intelligent systems",
+        "author": "Architecture Guide",
+        "role": "SlideForge Documentation"
+      }
+    },
+    {
+      "id": "slide-8",
+      "type": "timeline",
+      "content": {
+        "title": "Development Roadmap",
+        "events": [
+          {
+            "date": "Phase 1",
+            "title": "Schema & Validation",
+            "description": "Type-safe foundation"
+          },
+          {
+            "date": "Phase 2",
+            "title": "Layout Engine",
+            "description": "Adaptive positioning"
+          },
+          {
+            "date": "Phase 3",
+            "title": "PPTX Renderer",
+            "description": "Real output"
+          },
+          {
+            "date": "Phase 4",
+            "title": "Advanced Features",
+            "description": "Themes, images, charts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "slide-9",
+      "type": "image-full",
+      "content": {
+        "src": "architecture-diagram.png",
+        "caption": "SlideForge Architecture: Schema → Layout → Render",
+        "overlay": true
+      }
+    },
+    {
+      "id": "slide-10",
+      "type": "cta",
+      "content": {
+        "title": "Ready to Build?",
+        "subtitle": "Start creating professional presentations with code",
+        "action": "Get Started",
+        "url": "https://github.com/slideforge"
+      }
+    }
+  ]
+}

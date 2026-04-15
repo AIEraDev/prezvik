@@ -1,0 +1,78 @@
+{
+  "version": "1.0",
+  "meta": {
+    "title": "Product Launch Q1 2026",
+    "subtitle": "Strategic Overview",
+    "author": "SlideForge Team"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "type": "hero",
+      "content": {
+        "kicker": "Q1 2026 Launch",
+        "title": "Revolutionary Product",
+        "subtitle": "Changing the game"
+      }
+    },
+    {
+      "id": "slide-2",
+      "type": "stat-trio",
+      "content": {
+        "title": "Key Metrics",
+        "stats": [
+          {
+            "label": "Users",
+            "value": "10K",
+            "delta": "+12%"
+          },
+          {
+            "label": "Revenue",
+            "value": "$50K",
+            "delta": "+8%"
+          },
+          {
+            "label": "Growth",
+            "value": "25%",
+            "delta": "+5pts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "slide-3",
+      "type": "bullet-list",
+      "content": {
+        "title": "Key Features",
+        "bullets": ["Lightning-fast performance", "Intuitive user interface", "Enterprise-grade security", "Seamless integrations"]
+      }
+    },
+    {
+      "id": "slide-4",
+      "type": "two-column",
+      "content": {
+        "title": "Product Comparison",
+        "left": [
+          {
+            "type": "text",
+            "text": "Before"
+          },
+          {
+            "type": "list",
+            "items": ["Manual processes", "Slow workflows", "Limited scalability"]
+          }
+        ],
+        "right": [
+          {
+            "type": "text",
+            "text": "After"
+          },
+          {
+            "type": "list",
+            "items": ["Automated workflows", "10x faster", "Infinite scale"]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "kyro",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "kyro": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@kyro/core": "workspace:*",
+    "@kyro/schema": "workspace:*",
+    "@kyro/prompt": "workspace:*",
+    "@kyro/ai": "workspace:*",
+    "commander": "^12.0.0",
+    "chokidar": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
