@@ -9,6 +9,9 @@ import PptxGenJS from "pptxgenjs";
 import type { LayoutTree, LayoutNode, TextNode, ImageNode, ShapeNode } from "../types.js";
 import { pctXtoIn, pctYtoIn } from "../utils/units.js";
 
+// Minimum dimension to prevent invalid EMU values (Google Slides compatibility)
+const MIN_DIMENSION_PCT = 1.0; // 1% minimum
+
 /**
  * Entry point: render layout trees to PPTX
  *
@@ -73,11 +76,15 @@ function renderNode(slide: any, node: LayoutNode): void {
 function renderText(slide: any, node: TextNode): void {
   const r = assertRect(node);
 
+  // Enforce minimum dimensions to prevent invalid EMU values
+  const width = Math.max(r.width, MIN_DIMENSION_PCT);
+  const height = Math.max(r.height, MIN_DIMENSION_PCT);
+
   slide.addText(node.content, {
     x: pctXtoIn(r.x),
     y: pctYtoIn(r.y),
-    w: pctXtoIn(r.width),
-    h: pctYtoIn(r.height),
+    w: pctXtoIn(width),
+    h: pctYtoIn(height),
 
     fontSize: node.text.fontSize,
     fontFace: node.text.fontFamily ?? "Calibri",
@@ -108,15 +115,19 @@ function renderText(slide: any, node: TextNode): void {
 function renderImage(slide: any, node: ImageNode): void {
   const r = assertRect(node);
 
-  const sizing = node.objectFit === "contain" ? { type: "contain" as const, w: pctXtoIn(r.width), h: pctYtoIn(r.height) } : node.objectFit === "cover" ? { type: "cover" as const, w: pctXtoIn(r.width), h: pctYtoIn(r.height) } : undefined;
+  // Enforce minimum dimensions to prevent invalid EMU values
+  const width = Math.max(r.width, MIN_DIMENSION_PCT);
+  const height = Math.max(r.height, MIN_DIMENSION_PCT);
+
+  const sizing = node.objectFit === "contain" ? { type: "contain" as const, w: pctXtoIn(width), h: pctYtoIn(height) } : node.objectFit === "cover" ? { type: "cover" as const, w: pctXtoIn(width), h: pctYtoIn(height) } : undefined;
 
   slide.addImage({
     path: node.src.startsWith("data:") ? undefined : node.src,
     data: node.src.startsWith("data:") ? node.src : undefined,
     x: pctXtoIn(r.x),
     y: pctYtoIn(r.y),
-    w: pctXtoIn(r.width),
-    h: pctYtoIn(r.height),
+    w: pctXtoIn(width),
+    h: pctYtoIn(height),
     sizing,
   });
 }
@@ -126,13 +137,18 @@ function renderImage(slide: any, node: ImageNode): void {
  */
 function renderShape(slide: any, node: ShapeNode): void {
   const r = assertRect(node);
+
+  // Enforce minimum dimensions to prevent invalid EMU values
+  const width = Math.max(r.width, MIN_DIMENSION_PCT);
+  const height = Math.max(r.height, MIN_DIMENSION_PCT);
+
   const shapeType = mapShape(node.shape);
 
   slide.addShape(shapeType, {
     x: pctXtoIn(r.x),
     y: pctYtoIn(r.y),
-    w: pctXtoIn(r.width),
-    h: pctYtoIn(r.height),
+    w: pctXtoIn(width),
+    h: pctYtoIn(height),
     fill: node.fill ? { color: node.fill } : { type: "none" },
     line: node.stroke ? { color: node.stroke, width: node.strokeWidth ?? 0.5 } : undefined,
   });

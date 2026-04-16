@@ -1,30 +1,19 @@
 /**
- * Kyro Schema v1
+ * Kyro Schema
  *
- * Core type definitions and validation schemas for deck generation
+ * Core type definitions and validation schemas for presentation generation
  *
  * Architecture:
- * - Base schemas (deck, slide) provide structural validation
- * - Type-specific schemas (hero, bullet-list, etc.) provide semantic validation
- * - Validators orchestrate the validation pipeline
+ * - Blueprint: The primary IR format for presentations
+ * - Validator: Zod-based validation for Blueprint structures
+ * - Layout Rules: Layout configuration for different slide types
  */
 
-// Slide type system (UX LAYER) - PRIMARY EXPORTS
-export * from "./slide-types";
+// Blueprint schema (PRIMARY EXPORTS)
+export * from "./blueprint.js";
 
-// Type-specific validators (CRITICAL LAYER)
-export * from "./types";
+// Layout rules
+export * from "./layout-rules.js";
 
-// Slide schemas
-export * from "./slide";
-
-// Deck schemas
-export * from "./deck";
-
-// Validators (orchestration layer)
-export * from "./validators";
-
-// Legacy exports (deprecated - kept for backwards compatibility)
-// Note: enums and content are deprecated in favor of slide-types
-export { NarrativeTypes, type NarrativeType } from "./enums";
-export * from "./content";
+// Validator
+export * from "./validator.js";

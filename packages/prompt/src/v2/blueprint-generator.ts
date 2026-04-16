@@ -1,11 +1,11 @@
 /**
- * Blueprint Generator v2
+ * Blueprint Generator
  *
  * Converts user intent → Kyro Blueprint IR
- * Template-driven (v1) - deterministic, fast
+ * Template-driven - deterministic, fast
  */
 
-import type { KyroBlueprint } from "@kyro/schema/v2";
+import type { KyroBlueprint } from "@kyro/schema";
 import { detectIntent } from "./intent-detector.js";
 import { pitchTemplate } from "./templates/pitch.js";
 import { reportTemplate } from "./templates/report.js";

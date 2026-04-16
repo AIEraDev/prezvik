@@ -4,7 +4,7 @@
  * Generates Blueprint IR for reports
  */
 
-import type { KyroBlueprint } from "@kyro/schema/v2";
+import type { KyroBlueprint } from "@kyro/schema";
 import type { Intent } from "../intent-detector.js";
 
 export function reportTemplate(intent: Intent): KyroBlueprint {
@@ -13,6 +13,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
 
     meta: {
       title: intent.topic,
+      language: "en",
       goal: "report",
       tone: intent.tone,
       audience: "stakeholders",
@@ -34,6 +35,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: intent.topic,
             level: "h1",
+            emphasis: "high",
           },
         ],
       },
@@ -49,6 +51,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Executive Summary",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -104,6 +107,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Key Highlights",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -127,6 +131,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Looking Ahead",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",

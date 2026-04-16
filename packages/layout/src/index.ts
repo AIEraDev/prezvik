@@ -9,6 +9,9 @@
 export * from "./engine/layout-engine.js";
 export * from "./engine/registry.js";
 
+// V2 Engine (Blueprint v2 support)
+export * from "./v2/index.js";
+
 // Types
 export * from "./types.js";
 

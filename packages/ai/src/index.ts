@@ -29,3 +29,7 @@ export * from "./content/scorer.js";
 
 // Content intelligence (v2 - model-agnostic, RECOMMENDED)
 export { rewriteText, rewriteTexts } from "./content/rewrite-v2.js";
+
+// Blueprint generation
+export { BlueprintGenerator, BlueprintGenerationError } from "./blueprint/generator.js";
+export type { BlueprintGeneratorOptions } from "./blueprint/generator.js";

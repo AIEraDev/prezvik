@@ -8,18 +8,21 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/core": "workspace:*",
-    "@kyro/schema": "workspace:*",
-    "@kyro/prompt": "workspace:*",
     "@kyro/ai": "workspace:*",
+    "@kyro/core": "workspace:*",
+    "@kyro/prompt": "workspace:*",
+    "@kyro/schema": "workspace:*",
+    "chokidar": "^3.6.0",
     "commander": "^12.0.0",
-    "chokidar": "^3.6.0"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
   }
 }

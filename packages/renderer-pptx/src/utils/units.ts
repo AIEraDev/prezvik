@@ -11,16 +11,18 @@ const SLIDE_HEIGHT_IN = 5.625;
 
 /**
  * Convert percentage to inches for X axis (horizontal)
+ * Rounds to 4 decimal places to prevent floating point precision issues
  */
 export function pctXtoIn(percent: number): number {
-  return (percent / 100) * SLIDE_WIDTH_IN;
+  return Math.round((percent / 100) * SLIDE_WIDTH_IN * 10000) / 10000;
 }
 
 /**
  * Convert percentage to inches for Y axis (vertical)
+ * Rounds to 4 decimal places to prevent floating point precision issues
  */
 export function pctYtoIn(percent: number): number {
-  return (percent / 100) * SLIDE_HEIGHT_IN;
+  return Math.round((percent / 100) * SLIDE_HEIGHT_IN * 10000) / 10000;
 }
 
 /**

@@ -13,3 +13,6 @@ export * from "./themes/index.js";
 
 // Resolver (applies theme to layout)
 export * from "./resolver.js";
+
+// Theme Resolver (new pipeline component)
+export * from "./theme-resolver.js";

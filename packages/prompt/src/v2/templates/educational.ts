@@ -4,7 +4,7 @@
  * Generates Blueprint IR for educational content
  */
 
-import type { KyroBlueprint } from "@kyro/schema/v2";
+import type { KyroBlueprint } from "@kyro/schema";
 import type { Intent } from "../intent-detector.js";
 
 export function educationalTemplate(intent: Intent): KyroBlueprint {
@@ -13,6 +13,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
 
     meta: {
       title: intent.topic,
+      language: "en",
       goal: "educate",
       tone: intent.tone,
       audience: "learners",
@@ -34,6 +35,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: intent.topic,
             level: "h1",
+            emphasis: "high",
           },
           {
             type: "text",
@@ -53,6 +55,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "What You'll Learn",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -76,6 +79,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Key Concepts",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -95,6 +99,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Practical Examples",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -118,6 +123,7 @@ export function educationalTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Keep Learning",
             level: "h1",
+            emphasis: "high",
           },
           {
             type: "bullets",

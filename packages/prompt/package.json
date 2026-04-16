@@ -15,7 +15,9 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@kyro/schema": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.4.0"
   }

@@ -8,9 +8,9 @@
  * Layout is always explicit (no guessing in renderer)
  */
 
-import type { KyroBlueprint, Slide, ContentBlock } from "@kyro/schema/v2";
-import { getLayoutRule, type LayoutType } from "@kyro/schema/v2";
-import type { LayoutTree, LayoutNode } from "../types.js";
+import type { KyroBlueprint, Slide, ContentBlock } from "@kyro/schema";
+import { getLayoutRule } from "@kyro/schema";
+import type { LayoutTree, LayoutNode, ContainerNode } from "../types.js";
 
 /**
  * Layout Engine
@@ -32,15 +32,13 @@ export class LayoutEngineV2 {
     const rule = getLayoutRule(slide.layout);
 
     // Create root container
-    const root: LayoutNode = {
+    const root: ContainerNode = {
       type: "container",
       id: slide.id,
       layout: {
-        mode: "flow",
+        type: "flow",
         direction: "vertical",
         gap: rule.gap * 8, // Convert to pixels
-        padding: rule.padding * 8,
-        alignment: rule.alignment,
       },
       children: [],
     };
@@ -66,13 +64,7 @@ export class LayoutEngineV2 {
     }
 
     return {
-      id: slide.id,
       root,
-      metadata: {
-        slideType: slide.type,
-        layout: slide.layout,
-        intent: slide.intent,
-      },
     };
   }
 
@@ -97,29 +89,27 @@ export class LayoutEngineV2 {
    * Compose split layout (two columns)
    */
   private composeSplitLayout(slide: Slide, rule: any): LayoutNode[] {
-    const leftColumn: LayoutNode = {
+    const leftColumn: ContainerNode = {
       type: "container",
       id: `${slide.id}-left`,
       layout: {
-        mode: "flow",
+        type: "flow",
         direction: "vertical",
         gap: rule.gap * 8,
-        alignment: "left",
+        align: "left",
       },
-      width: "50%",
       children: [],
     };
 
-    const rightColumn: LayoutNode = {
+    const rightColumn: ContainerNode = {
       type: "container",
       id: `${slide.id}-right`,
       layout: {
-        mode: "flow",
+        type: "flow",
         direction: "vertical",
         gap: rule.gap * 8,
-        alignment: "left",
+        align: "left",
       },
-      width: "50%",
       children: [],
     };
 
@@ -147,10 +137,10 @@ export class LayoutEngineV2 {
       type: "container",
       id: `${slide.id}-columns`,
       layout: {
-        mode: "flow",
+        type: "flow",
         direction: "horizontal",
         gap: rule.gap * 8,
-        alignment: "top",
+        verticalAlign: "top",
       },
       children: [leftColumn, rightColumn],
     };
@@ -162,15 +152,12 @@ export class LayoutEngineV2 {
    * Compose grid layout
    */
   private composeGridLayout(slide: Slide, rule: any): LayoutNode[] {
-    const grid: LayoutNode = {
+    const grid: ContainerNode = {
       type: "container",
       id: `${slide.id}-grid`,
       layout: {
-        mode: "grid",
+        type: "grid",
         columns: rule.columns || 2,
-        rows: rule.rows,
-        gap: rule.gap * 8,
-        alignment: "center",
       },
       children: [],
     };
@@ -179,7 +166,7 @@ export class LayoutEngineV2 {
     for (const block of slide.content) {
       const node = this.createContentNode(block, rule);
       if (node) {
-        grid.children!.push(node);
+        grid.children.push(node);
       }
     }
 
@@ -212,10 +199,12 @@ export class LayoutEngineV2 {
           type: "text",
           id: `heading-${Math.random().toString(36).substr(2, 9)}`,
           content: block.value,
-          fontRole: "title",
-          fontSize: this.parseFontSize(rule.titleSize),
-          fontWeight: 700,
-          alignment: rule.alignment,
+          text: {
+            fontRole: "title",
+            fontSize: this.parseFontSize(rule.titleSize),
+            fontWeight: "bold",
+            align: rule.alignment,
+          },
         };
 
       case "text":
@@ -223,10 +212,12 @@ export class LayoutEngineV2 {
           type: "text",
           id: `text-${Math.random().toString(36).substr(2, 9)}`,
           content: block.value,
-          fontRole: "body",
-          fontSize: this.parseFontSize(rule.bodySize),
-          fontWeight: 400,
-          alignment: rule.alignment,
+          text: {
+            fontRole: "body",
+            fontSize: this.parseFontSize(rule.bodySize),
+            fontWeight: "normal",
+            align: rule.alignment,
+          },
         };
 
       case "bullets":
@@ -234,19 +225,21 @@ export class LayoutEngineV2 {
           type: "container",
           id: `bullets-${Math.random().toString(36).substr(2, 9)}`,
           layout: {
-            mode: "flow",
+            type: "flow",
             direction: "vertical",
             gap: 12,
-            alignment: "left",
+            align: "left",
           },
           children: block.items.map((item, i) => ({
             type: "text",
             id: `bullet-${i}`,
             content: item.icon ? `${item.icon} ${item.text}` : `• ${item.text}`,
-            fontRole: "body",
-            fontSize: this.parseFontSize(rule.bodySize),
-            fontWeight: item.highlight ? 600 : 400,
-            alignment: "left",
+            text: {
+              fontRole: "body",
+              fontSize: this.parseFontSize(rule.bodySize),
+              fontWeight: item.highlight ? "bold" : "normal",
+              align: "left",
+            },
           })),
         };
 
@@ -255,30 +248,34 @@ export class LayoutEngineV2 {
           type: "container",
           id: `quote-${Math.random().toString(36).substr(2, 9)}`,
           layout: {
-            mode: "flow",
+            type: "flow",
             direction: "vertical",
             gap: 16,
-            alignment: "center",
+            align: "center",
           },
           children: [
             {
               type: "text",
               id: "quote-text",
               content: `"${block.text}"`,
-              fontRole: "title",
-              fontSize: this.parseFontSize(rule.titleSize),
-              fontWeight: 400,
-              alignment: "center",
+              text: {
+                fontRole: "title",
+                fontSize: this.parseFontSize(rule.titleSize),
+                fontWeight: "normal",
+                align: "center",
+              },
             },
             block.author
               ? {
                   type: "text",
                   id: "quote-author",
                   content: block.role ? `${block.author}, ${block.role}` : block.author,
-                  fontRole: "body",
-                  fontSize: this.parseFontSize(rule.bodySize),
-                  fontWeight: 400,
-                  alignment: "center",
+                  text: {
+                    fontRole: "body",
+                    fontSize: this.parseFontSize(rule.bodySize),
+                    fontWeight: "normal",
+                    align: "center",
+                  },
                 }
               : null,
           ].filter(Boolean) as LayoutNode[],
@@ -289,29 +286,33 @@ export class LayoutEngineV2 {
           type: "container",
           id: `stat-${Math.random().toString(36).substr(2, 9)}`,
           layout: {
-            mode: "flow",
+            type: "flow",
             direction: "vertical",
             gap: 8,
-            alignment: "center",
+            align: "center",
           },
           children: [
             {
               type: "text",
               id: "stat-value",
               content: `${block.prefix || ""}${block.value}${block.suffix || ""}`,
-              fontRole: "display",
-              fontSize: block.visualWeight === "hero" ? 96 : block.visualWeight === "emphasis" ? 72 : 56,
-              fontWeight: 700,
-              alignment: "center",
+              text: {
+                fontRole: "display",
+                fontSize: block.visualWeight === "hero" ? 96 : block.visualWeight === "emphasis" ? 72 : 56,
+                fontWeight: "bold",
+                align: "center",
+              },
             },
             {
               type: "text",
               id: "stat-label",
               content: block.label,
-              fontRole: "body",
-              fontSize: this.parseFontSize(rule.bodySize),
-              fontWeight: 400,
-              alignment: "center",
+              text: {
+                fontRole: "body",
+                fontSize: this.parseFontSize(rule.bodySize),
+                fontWeight: "normal",
+                align: "center",
+              },
             },
           ],
         };
@@ -321,10 +322,12 @@ export class LayoutEngineV2 {
           type: "text",
           id: `code-${Math.random().toString(36).substr(2, 9)}`,
           content: block.code,
-          fontRole: "code",
-          fontSize: 14,
-          fontWeight: 400,
-          alignment: "left",
+          text: {
+            fontRole: "code",
+            fontSize: 14,
+            fontWeight: "normal",
+            align: "left",
+          },
         };
 
       default:

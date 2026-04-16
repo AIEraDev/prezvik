@@ -4,7 +4,7 @@
  * Generates Blueprint IR for pitch decks
  */
 
-import type { KyroBlueprint } from "@kyro/schema/v2";
+import type { KyroBlueprint } from "@kyro/schema";
 import type { Intent } from "../intent-detector.js";
 
 export function pitchTemplate(intent: Intent): KyroBlueprint {
@@ -13,6 +13,7 @@ export function pitchTemplate(intent: Intent): KyroBlueprint {
 
     meta: {
       title: intent.topic,
+      language: "en",
       goal: "pitch",
       tone: intent.tone,
       audience: "investors",
@@ -67,6 +68,7 @@ export function pitchTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "The Problem",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -90,6 +92,7 @@ export function pitchTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Our Solution",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "bullets",
@@ -113,6 +116,7 @@ export function pitchTemplate(intent: Intent): KyroBlueprint {
             type: "heading",
             value: "Market Opportunity",
             level: "h2",
+            emphasis: "high",
           },
           {
             type: "stat",

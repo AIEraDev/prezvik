@@ -7,9 +7,11 @@
 export * from "./types.js";
 export * from "./executive.js";
 export * from "./minimal.js";
+export * from "./modern.js";
 
 import { executiveTheme } from "./executive.js";
 import { minimalTheme } from "./minimal.js";
+import { modernTheme } from "./modern.js";
 import type { Theme } from "./types.js";
 
 /**
@@ -18,6 +20,7 @@ import type { Theme } from "./types.js";
 export const themes: Record<string, Theme> = {
   executive: executiveTheme,
   minimal: minimalTheme,
+  modern: modernTheme,
 };
 
 /**

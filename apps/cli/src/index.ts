@@ -7,6 +7,7 @@
  * Dead simple, fast, opinionated, immediately useful
  */
 
+import "dotenv/config";
 import { program } from "commander";
 import { generateCommand } from "./commands/generate.js";
 import { initCommand } from "./commands/init.js";
