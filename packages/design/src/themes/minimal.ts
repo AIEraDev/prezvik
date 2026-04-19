@@ -32,11 +32,11 @@ export const minimalTheme: Theme = {
 
   colors: {
     ...colors,
-    background: "#FAFAFA",
-    text: "#171717",
-    textMuted: "#737373",
-    primary: "#0EA5E9",
-    accent: "#F97316",
+    background: "FAFAFA",
+    text: "171717",
+    textMuted: "737373",
+    primary: "0EA5E9",
+    accent: "F97316",
   },
 
   layout: {

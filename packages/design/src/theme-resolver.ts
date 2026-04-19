@@ -15,6 +15,69 @@ import type { LayoutTree, LayoutNode, TextNode, ContainerNode } from "@kyro/layo
 import type { Theme, FontRole, ColorRole, WeightRole } from "./themes/types.js";
 import { getTheme } from "./themes/index.js";
 
+/** pptxgenjs requires hex colors WITHOUT the # prefix */
+function stripHash(color: string): string {
+  return color.startsWith("#") ? color.slice(1) : color;
+}
+
+/**
+ * WCAG contrast ratio calculation
+ * Calculates the contrast ratio between two colors
+ * Minimum for AA compliance: 4.5:1 for normal text, 3:1 for large text
+ */
+function calculateContrastRatio(color1: string, color2: string): number {
+  // Parse hex colors to RGB
+  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+    const normalized = hex.replace("#", "");
+    if (normalized.length === 3) {
+      const r = parseInt(normalized[0] + normalized[0], 16);
+      const g = parseInt(normalized[1] + normalized[1], 16);
+      const b = parseInt(normalized[2] + normalized[2], 16);
+      return { r, g, b };
+    }
+    if (normalized.length === 6) {
+      const r = parseInt(normalized.substring(0, 2), 16);
+      const g = parseInt(normalized.substring(2, 4), 16);
+      const b = parseInt(normalized.substring(4, 6), 16);
+      return { r, g, b };
+    }
+    return null;
+  };
+
+  // Calculate relative luminance
+  const getLuminance = (r: number, g: number, b: number): number => {
+    const [rs, gs, bs] = [r, g, b].map((c) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+  };
+
+  const rgb1 = hexToRgb(color1);
+  const rgb2 = hexToRgb(color2);
+
+  if (!rgb1 || !rgb2) {
+    return 21; // Assume good contrast if colors can't be parsed
+  }
+
+  const l1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+  const l2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Check if contrast ratio meets WCAG AA standards
+ */
+function isContrastValid(contrast: number, isLargeText = false): boolean {
+  // WCAG AA: 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt+ bold)
+  const minContrast = isLargeText ? 3 : 4.5;
+  return contrast >= minContrast;
+}
+
 /**
  * Theme Resolver configuration options
  *
@@ -65,6 +128,7 @@ export interface ThemeResolverOptions {
  */
 export class ThemeResolver {
   private options: Required<ThemeResolverOptions>;
+  private themeCache = new Map<string, Theme>();
 
   constructor(options: ThemeResolverOptions = {}) {
     this.options = {
@@ -107,7 +171,7 @@ export class ThemeResolver {
 
     // Apply background color to slide root container
     if (theme.colors.background) {
-      themed.background = theme.colors.background;
+      themed.background = stripHash(theme.colors.background);
     }
 
     // Apply theme to all nodes
@@ -148,10 +212,18 @@ export class ThemeResolver {
     // Resolve font role to font size
     // Only apply if not explicitly set in Blueprint
     const fontRole = (node.text as any).fontRole as FontRole | undefined;
-    if (fontRole && theme.typography.scale[fontRole]) {
-      // Preserve explicit fontSize override
-      if (!node.text.fontSize) {
-        themed.text.fontSize = theme.typography.scale[fontRole];
+    if (fontRole) {
+      if (theme.typography.scale[fontRole]) {
+        // Preserve explicit fontSize override
+        if (!node.text.fontSize) {
+          themed.text.fontSize = theme.typography.scale[fontRole];
+        }
+      } else {
+        // Font role not found in theme - warn and fallback to body size
+        console.warn(`[theme-resolver] Font role "${fontRole}" not found in theme "${theme.name}". ` + `Falling back to "body" (${theme.typography.scale.body || 16}px). ` + `Available roles: ${Object.keys(theme.typography.scale).join(", ")}`);
+        if (!node.text.fontSize) {
+          themed.text.fontSize = theme.typography.scale.body || 16;
+        }
       }
     }
 
@@ -176,11 +248,30 @@ export class ThemeResolver {
     if (colorRole && theme.colors[colorRole]) {
       // Preserve explicit color override
       if (!node.text.color) {
-        themed.text.color = theme.colors[colorRole];
+        themed.text.color = stripHash(theme.colors[colorRole]);
       }
     } else if (!node.text.color) {
       // Apply default text color when not specified
-      themed.text.color = theme.colors.text;
+      themed.text.color = stripHash(theme.colors.text);
+    }
+
+    // Validate contrast ratio for accessibility
+    const bgColor = theme.colors.background || "#FFFFFF";
+    let textColor = themed.text.color || theme.colors.text;
+    const contrast = calculateContrastRatio(textColor, bgColor);
+    const isLargeText = (themed.text.fontSize || 16) >= 18 || ((themed.text.fontSize || 16) >= 14 && themed.text.fontWeight === "bold");
+
+    if (!isContrastValid(contrast, isLargeText)) {
+      const minRequired = isLargeText ? 3 : 4.5;
+      console.warn(`[theme-resolver] Contrast ratio ${contrast.toFixed(2)}:1 for text "${node.content.substring(0, 30)}..." ` + `does not meet WCAG AA standard (${minRequired}:1). Auto-correcting...`);
+
+      // Auto-correct: adjust text color to meet contrast requirements
+      const correctedColor = this.calculateAccessibleColor(textColor, bgColor, isLargeText);
+      themed.text.color = stripHash(correctedColor);
+
+      // Verify the correction worked
+      const newContrast = calculateContrastRatio(correctedColor, bgColor);
+      console.log(`[theme-resolver] Corrected contrast to ${newContrast.toFixed(2)}:1 using ${correctedColor}`);
     }
 
     return themed;
@@ -201,12 +292,99 @@ export class ThemeResolver {
   }
 
   /**
-   * Load theme by name
+   * Calculate an accessible color that meets WCAG contrast requirements
+   * Adjusts the text color brightness to ensure minimum contrast ratio
+   */
+  private calculateAccessibleColor(textColor: string, bgColor: string, isLargeText: boolean): string {
+    const minContrast = isLargeText ? 3 : 4.5;
+    const targetContrast = minContrast + 0.5; // Add small buffer
+
+    // Parse colors to RGB
+    const parseColor = (hex: string): { r: number; g: number; b: number } | null => {
+      const normalized = hex.replace("#", "");
+      if (normalized.length === 3) {
+        return {
+          r: parseInt(normalized[0] + normalized[0], 16),
+          g: parseInt(normalized[1] + normalized[1], 16),
+          b: parseInt(normalized[2] + normalized[2], 16),
+        };
+      }
+      if (normalized.length === 6) {
+        return {
+          r: parseInt(normalized.substring(0, 2), 16),
+          g: parseInt(normalized.substring(2, 4), 16),
+          b: parseInt(normalized.substring(4, 6), 16),
+        };
+      }
+      return null;
+    };
+
+    const rgb = parseColor(textColor);
+    const bgRgb = parseColor(bgColor);
+
+    if (!rgb || !bgRgb) {
+      // Fallback to theme default if parsing fails
+      return "#111827"; // Dark gray for light backgrounds
+    }
+
+    // Calculate background luminance to determine if we need darker or lighter text
+    const getLuminance = (r: number, g: number, b: number): number => {
+      const [rs, gs, bs] = [r, g, b].map((c) => {
+        const s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    };
+
+    const bgLuminance = getLuminance(bgRgb.r, bgRgb.g, bgRgb.b);
+    const needsDarkText = bgLuminance > 0.5; // Light background needs dark text
+
+    // Adjust color brightness iteratively
+    let adjustedRgb = { ...rgb };
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    while (attempts < maxAttempts) {
+      const currentLuminance = getLuminance(adjustedRgb.r, adjustedRgb.g, adjustedRgb.b);
+      const lighter = Math.max(currentLuminance, bgLuminance);
+      const darker = Math.min(currentLuminance, bgLuminance);
+      const currentContrast = (lighter + 0.05) / (darker + 0.05);
+
+      if (currentContrast >= targetContrast) {
+        break;
+      }
+
+      // Adjust brightness
+      if (needsDarkText) {
+        // Make darker
+        adjustedRgb.r = Math.max(0, adjustedRgb.r - 15);
+        adjustedRgb.g = Math.max(0, adjustedRgb.g - 15);
+        adjustedRgb.b = Math.max(0, adjustedRgb.b - 15);
+      } else {
+        // Make lighter
+        adjustedRgb.r = Math.min(255, adjustedRgb.r + 15);
+        adjustedRgb.g = Math.min(255, adjustedRgb.g + 15);
+        adjustedRgb.b = Math.min(255, adjustedRgb.b + 15);
+      }
+
+      attempts++;
+    }
+
+    // Convert back to hex
+    const toHex = (n: number): string => n.toString(16).padStart(2, "0");
+    return stripHash(`#${toHex(adjustedRgb.r)}${toHex(adjustedRgb.g)}${toHex(adjustedRgb.b)}`);
+  }
+
+  /**
+   * Load theme by name with caching
    *
    * Falls back to default theme if theme not found
    */
   private loadTheme(name: string): Theme {
-    return getTheme(name);
+    if (!this.themeCache.has(name)) {
+      this.themeCache.set(name, getTheme(name));
+    }
+    return this.themeCache.get(name)!;
   }
 }
 

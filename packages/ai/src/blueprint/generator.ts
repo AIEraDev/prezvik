@@ -47,6 +47,13 @@ export interface BlueprintGeneratorOptions {
    * @default "balanced"
    */
   strategy?: RoutingStrategy;
+
+  /**
+   * Mock mode for testing - uses template generation instead of AI
+   * Set to true for CI/CD environments or when API keys are not available
+   * @default false
+   */
+  mockMode?: boolean;
 }
 
 interface Keywords {
@@ -150,6 +157,12 @@ export class BlueprintGenerator {
    */
   async generate(prompt: string, options: BlueprintGeneratorOptions = {}): Promise<KyroBlueprint> {
     try {
+      // Use mock mode for testing/CI when AI providers are not available
+      if (options.mockMode || process.env.KYRO_MOCK_MODE === "true") {
+        console.log("[BlueprintGenerator] Using mock mode (template-based generation)");
+        return this.generateFromTemplate(prompt);
+      }
+
       // Infer meta information from prompt
       const meta = this.inferMeta(prompt);
 
@@ -173,6 +186,12 @@ export class BlueprintGenerator {
 
       return blueprint;
     } catch (error) {
+      // If AI generation fails due to missing providers, fall back to mock mode
+      if (error instanceof Error && error.message.includes("No LLM providers available")) {
+        console.warn("[BlueprintGenerator] AI providers unavailable, falling back to mock mode");
+        return this.generateFromTemplate(prompt);
+      }
+
       if (error instanceof BlueprintGenerationError) {
         throw error;
       }
@@ -394,37 +413,118 @@ EXAMPLE OUTPUT:
 
   /**
    * Parse AI response and extract Blueprint JSON
+   * Handles markdown code blocks, truncated JSON, and embedded JSON in text
    */
   parseResponse(text: string): KyroBlueprint {
-    try {
-      // Remove markdown code blocks if present
-      let jsonText = text.trim();
+    let jsonText: string | null = null;
 
-      // Remove ```json and ``` markers
-      if (jsonText.startsWith("```")) {
-        jsonText = jsonText.replace(/^```(?:json)?\s*\n/, "").replace(/\n```\s*$/, "");
+    try {
+      // Strategy 1: Extract JSON from markdown code blocks
+      const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      if (codeBlockMatch) {
+        jsonText = codeBlockMatch[1].trim();
       }
+
+      // Strategy 2: Look for JSON object boundaries in text
+      if (!jsonText) {
+        const jsonStart = text.indexOf("{");
+        const jsonEnd = text.lastIndexOf("}");
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+          jsonText = text.substring(jsonStart, jsonEnd + 1);
+        }
+      }
+
+      // Strategy 3: Use entire text if it starts with {
+      if (!jsonText && text.trim().startsWith("{")) {
+        jsonText = text.trim();
+      }
+
+      if (!jsonText) {
+        throw new Error("Could not extract JSON from AI response");
+      }
+
+      // Try to repair common JSON issues
+      jsonText = this.repairJSON(jsonText);
 
       // Parse JSON
       const parsed = JSON.parse(jsonText);
 
-      // Basic validation
-      if (!parsed.version || parsed.version !== "2.0") {
-        throw new Error('Invalid Blueprint: missing or incorrect "version" field (must be "2.0")');
+      // Validate required fields
+      const validationErrors: string[] = [];
+
+      if (!parsed.version) {
+        validationErrors.push('Missing "version" field');
+      } else if (parsed.version !== "2.0") {
+        validationErrors.push(`Invalid version "${parsed.version}", expected "2.0"`);
       }
 
       if (!parsed.meta || typeof parsed.meta !== "object") {
-        throw new Error('Invalid Blueprint: missing or invalid "meta" field');
+        validationErrors.push('Missing or invalid "meta" field');
       }
 
       if (!Array.isArray(parsed.slides)) {
-        throw new Error('Invalid Blueprint: missing or invalid "slides" field (must be array)');
+        validationErrors.push('Missing or invalid "slides" field (must be array)');
+      } else if (parsed.slides.length === 0) {
+        validationErrors.push("Slides array is empty");
+      }
+
+      // Check for slide ID uniqueness
+      if (Array.isArray(parsed.slides)) {
+        const ids = new Set<string>();
+        for (const slide of parsed.slides) {
+          if (!slide.id) {
+            validationErrors.push(`Slide missing "id" field`);
+            break;
+          }
+          if (ids.has(slide.id)) {
+            validationErrors.push(`Duplicate slide id: "${slide.id}"`);
+          }
+          ids.add(slide.id);
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        throw new Error(`Blueprint validation failed: ${validationErrors.join("; ")}`);
       }
 
       return parsed as KyroBlueprint;
     } catch (error) {
-      throw new BlueprintGenerationError(`Failed to parse Blueprint JSON: ${error instanceof Error ? error.message : String(error)}`, text, error instanceof Error ? error : undefined);
+      // Include partial response in error for debugging
+      const preview = text.length > 200 ? text.substring(0, 200) + "..." : text;
+      throw new BlueprintGenerationError(`Failed to parse Blueprint JSON: ${error instanceof Error ? error.message : String(error)}\nResponse preview: ${preview}`, text, error instanceof Error ? error : undefined);
     }
+  }
+
+  /**
+   * Repair common JSON formatting issues from LLM output
+   */
+  private repairJSON(jsonText: string): string {
+    let repaired = jsonText;
+
+    // Fix trailing commas in objects/arrays
+    repaired = repaired.replace(/,(\s*[}\]])/g, "$1");
+
+    // Fix unclosed strings (basic attempt)
+    const openQuotes = (repaired.match(/"/g) || []).length;
+    if (openQuotes % 2 !== 0) {
+      repaired = repaired + '"';
+    }
+
+    // Fix unclosed objects/arrays (basic attempt)
+    const openBraces = (repaired.match(/{/g) || []).length;
+    const closeBraces = (repaired.match(/}/g) || []).length;
+    const openBrackets = (repaired.match(/\[/g) || []).length;
+    const closeBrackets = (repaired.match(/\]/g) || []).length;
+
+    // Add missing closing brackets/braces
+    for (let i = 0; i < openBraces - closeBraces; i++) {
+      repaired = repaired + "}";
+    }
+    for (let i = 0; i < openBrackets - closeBrackets; i++) {
+      repaired = repaired + "]";
+    }
+
+    return repaired;
   }
 
   /**

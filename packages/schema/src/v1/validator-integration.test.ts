@@ -284,9 +284,19 @@ describe("Validation Layer Integration", () => {
   });
 
   it("should validate all layout types", () => {
-    const allLayoutTypes = ["center_focus", "two_column", "three_column", "split_screen", "grid_2x2", "hero_overlay", "timeline", "stat_highlight", "image_dominant"];
+    const layoutConfig: Record<string, number> = {
+      center_focus: 1,
+      two_column: 2,
+      three_column: 3,
+      split_screen: 2,
+      grid_2x2: 4,
+      hero_overlay: 1,
+      timeline: 3,
+      stat_highlight: 2,
+      image_dominant: 1,
+    };
 
-    allLayoutTypes.forEach((layoutType) => {
+    Object.entries(layoutConfig).forEach(([layoutType, contentCount]) => {
       const blueprint = {
         version: "2.0",
         meta: {
@@ -300,12 +310,10 @@ describe("Validation Layer Integration", () => {
             type: "content",
             intent: `Test ${layoutType} layout`,
             layout: layoutType,
-            content: [
-              {
-                type: "heading",
-                value: "Test",
-              },
-            ],
+            content: Array.from({ length: contentCount }, (_, i) => ({
+              type: "heading" as const,
+              value: `Test ${i + 1}`,
+            })),
           },
         ],
       };

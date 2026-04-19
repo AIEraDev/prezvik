@@ -25,7 +25,7 @@ import type { KyroBlueprint } from "@kyro/schema";
 import type { LayoutTree } from "@kyro/layout";
 import { BlueprintGenerator, type BlueprintGeneratorOptions, KyroAI } from "@kyro/ai";
 import { validateBlueprint, type ValidationResult } from "@kyro/schema";
-import { LayoutEngineV2, PositioningEngine } from "@kyro/layout";
+import { LayoutEngineV2, PositioningEngine, polishLayout } from "@kyro/layout";
 import { ThemeResolver } from "@kyro/design";
 import { renderPPTXToFile } from "@kyro/renderer-pptx";
 import * as fs from "node:fs";
@@ -103,11 +103,14 @@ export interface PipelineContext {
     /** Unpositioned layout trees (Stage 3) */
     layoutTrees?: LayoutTree[];
 
-    /** Positioned layout trees with _rect coordinates (Stage 4) */
-    positionedTrees?: LayoutTree[];
-
-    /** Themed layout trees with colors and fonts (Stage 5) */
+    /** Themed layout trees with colors and fonts (Stage 4) */
     themedTrees?: LayoutTree[];
+
+    /** Polished layout trees with visual refinements (Stage 4.5) */
+    polishedTrees?: LayoutTree[];
+
+    /** Positioned layout trees with _rect coordinates (Stage 5) */
+    positionedTrees?: LayoutTree[];
   };
 
   /** Errors encountered during pipeline execution */
@@ -163,9 +166,33 @@ export class PipelineExecutionError extends Error {
     public context?: any,
     /** Original error that caused the failure */
     public originalError?: Error,
+    /** Timestamp of error occurrence */
+    public timestamp: Date = new Date(),
   ) {
-    super(message);
+    super(`[${stage}] ${message}`);
     this.name = "PipelineExecutionError";
+  }
+
+  /**
+   * Format error for detailed logging
+   */
+  toDetailedString(): string {
+    let details = `Pipeline Error at Stage: ${this.stage}\n`;
+    details += `Message: ${this.message}\n`;
+    details += `Timestamp: ${this.timestamp.toISOString()}\n`;
+
+    if (this.context) {
+      details += `Context: ${JSON.stringify(this.context, null, 2)}\n`;
+    }
+
+    if (this.originalError) {
+      details += `Original Error: ${this.originalError.message}\n`;
+      if (this.originalError.stack) {
+        details += `Stack Trace:\n${this.originalError.stack}\n`;
+      }
+    }
+
+    return details;
   }
 }
 
@@ -178,8 +205,8 @@ export class PipelineExecutionError extends Error {
  * 1. Blueprint Generation - Transform prompt into Blueprint v2 JSON
  * 2. Blueprint Validation - Validate against Zod schema
  * 3. Layout Generation - Create layout node trees
- * 4. Coordinate Positioning - Compute absolute x/y coordinates
- * 5. Theme Application - Apply colors and fonts
+ * 4. Theme Application - Apply colors and fonts (MUST be before positioning)
+ * 5. Coordinate Positioning - Compute absolute x/y coordinates
  * 6. PPTX Rendering - Render to PowerPoint file
  *
  * @example
@@ -204,7 +231,7 @@ export class Pipeline {
     const kyroAI = new KyroAI();
     this.blueprintGenerator = new BlueprintGenerator(kyroAI);
     this.layoutEngine = new LayoutEngineV2();
-    this.positioningEngine = new PositioningEngine();
+    this.positioningEngine = new PositioningEngine({ overflowStrategy: "truncate" });
     this.themeResolver = new ThemeResolver();
   }
 
@@ -215,8 +242,8 @@ export class Pipeline {
    * 1. Blueprint Generation
    * 2. Blueprint Validation
    * 3. Layout Generation
-   * 4. Coordinate Positioning
-   * 5. Theme Application
+   * 4. Theme Application
+   * 5. Coordinate Positioning
    * 6. PPTX Rendering
    *
    * The pipeline fails fast - if any stage fails, execution stops immediately
@@ -264,10 +291,13 @@ export class Pipeline {
       // Stage 3: Layout generation
       await this.executeStage3(context);
 
-      // Stage 4: Coordinate positioning
+      // Stage 4: Theme application (before positioning so font sizes are known)
       await this.executeStage4(context);
 
-      // Stage 5: Theme application
+      // Stage 4.5: Polish layout (visual refinements after theme, before positioning)
+      await this.executeStage4_5(context);
+
+      // Stage 5: Coordinate positioning (after theme so heights are accurate)
       await this.executeStage5(context);
 
       // Stage 6: PPTX rendering
@@ -277,17 +307,21 @@ export class Pipeline {
       const duration = Date.now() - context.startTime;
       console.log(`✓ Pipeline completed in ${(duration / 1000).toFixed(2)}s`);
       console.log(`✓ Output: ${options.outputPath}`);
+      const slideCount = context.stages.blueprint?.slides?.length ?? 0;
+      console.log(`✓ Generated ${slideCount} slides`);
     } catch (error) {
-      // Log error with context
+      // Log error with comprehensive context
       if (error instanceof PipelineExecutionError) {
         console.error(`✗ Pipeline failed at stage: ${error.stage}`);
         console.error(`✗ Error: ${error.message}`);
         if (error.context) {
-          console.error(`✗ Context:`, error.context);
+          console.error(`✗ Context:`, JSON.stringify(error.context, null, 2));
         }
         if (error.originalError?.stack) {
           console.error(`✗ Stack trace:\n${error.originalError.stack}`);
         }
+        // Log detailed error report for debugging
+        console.error(`\n=== Detailed Error Report ===\n${error.toDetailedString()}`);
       } else {
         console.error(`✗ Pipeline failed with unexpected error:`, error);
       }
@@ -357,7 +391,7 @@ export class Pipeline {
         throw new Error("Validated blueprint not found in context");
       }
 
-      const layoutTrees = this.layoutEngine.generateLayout(context.stages.blueprint);
+      const layoutTrees = await this.layoutEngine.generateLayout(context.stages.blueprint);
 
       context.stages.layoutTrees = layoutTrees;
       console.log(`✓ ${stage} completed (${layoutTrees.length} slides)`);
@@ -367,10 +401,10 @@ export class Pipeline {
   }
 
   /**
-   * Stage 4: Coordinate positioning
+   * Stage 4: Theme application
    */
   private async executeStage4(context: PipelineContext): Promise<void> {
-    const stage = "Coordinate Positioning";
+    const stage = "Theme Application";
     console.log(`→ ${stage}...`);
 
     try {
@@ -378,34 +412,56 @@ export class Pipeline {
         throw new Error("Layout trees not found in context");
       }
 
-      const positionedTrees = this.positioningEngine.position(context.stages.layoutTrees);
-
-      context.stages.positionedTrees = positionedTrees;
-      console.log(`✓ ${stage} completed`);
-    } catch (error) {
-      throw new PipelineExecutionError(`Coordinate positioning failed: ${error instanceof Error ? error.message : String(error)}`, stage, { treeCount: context.stages.layoutTrees?.length }, error instanceof Error ? error : undefined);
-    }
-  }
-
-  /**
-   * Stage 5: Theme application
-   */
-  private async executeStage5(context: PipelineContext): Promise<void> {
-    const stage = "Theme Application";
-    console.log(`→ ${stage}...`);
-
-    try {
-      if (!context.stages.positionedTrees) {
-        throw new Error("Positioned trees not found in context");
-      }
-
       const themeName = context.options.themeName || "executive";
-      const themedTrees = this.themeResolver.apply(context.stages.positionedTrees, themeName);
+      const themedTrees = this.themeResolver.apply(context.stages.layoutTrees, themeName);
 
       context.stages.themedTrees = themedTrees;
       console.log(`✓ ${stage} completed (theme: ${themeName})`);
     } catch (error) {
       throw new PipelineExecutionError(`Theme application failed: ${error instanceof Error ? error.message : String(error)}`, stage, { themeName: context.options.themeName }, error instanceof Error ? error : undefined);
+    }
+  }
+
+  /**
+   * Stage 4.5: Polish layout
+   */
+  private async executeStage4_5(context: PipelineContext): Promise<void> {
+    const stage = "Layout Polish";
+    console.log(`→ ${stage}...`);
+
+    try {
+      if (!context.stages.themedTrees) {
+        throw new Error("Themed trees not found in context");
+      }
+
+      // Apply polish to each themed tree for visual refinements
+      const polishedTrees = context.stages.themedTrees.map((tree) => polishLayout(tree));
+
+      context.stages.polishedTrees = polishedTrees;
+      console.log(`✓ ${stage} completed (${polishedTrees.length} slides polished)`);
+    } catch (error) {
+      throw new PipelineExecutionError(`Layout polish failed: ${error instanceof Error ? error.message : String(error)}`, stage, { treeCount: context.stages.themedTrees?.length }, error instanceof Error ? error : undefined);
+    }
+  }
+
+  /**
+   * Stage 5: Coordinate positioning
+   */
+  private async executeStage5(context: PipelineContext): Promise<void> {
+    const stage = "Coordinate Positioning";
+    console.log(`→ ${stage}...`);
+
+    try {
+      if (!context.stages.polishedTrees) {
+        throw new Error("Polished trees not found in context");
+      }
+
+      const positionedTrees = this.positioningEngine.position(context.stages.polishedTrees);
+
+      context.stages.positionedTrees = positionedTrees;
+      console.log(`✓ ${stage} completed`);
+    } catch (error) {
+      throw new PipelineExecutionError(`Coordinate positioning failed: ${error instanceof Error ? error.message : String(error)}`, stage, { treeCount: context.stages.polishedTrees?.length }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -417,11 +473,11 @@ export class Pipeline {
     console.log(`→ ${stage}...`);
 
     try {
-      if (!context.stages.themedTrees) {
-        throw new Error("Themed trees not found in context");
+      if (!context.stages.positionedTrees) {
+        throw new Error("Positioned trees not found in context");
       }
 
-      await renderPPTXToFile(context.stages.themedTrees, context.options.outputPath);
+      await renderPPTXToFile(context.stages.positionedTrees, context.options.outputPath);
 
       // Verify output file exists
       if (!fs.existsSync(context.options.outputPath)) {

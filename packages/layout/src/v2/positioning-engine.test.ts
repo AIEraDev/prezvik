@@ -11,7 +11,7 @@ import type { LayoutTree, ContainerNode, Spacing } from "../types.js";
 describe("PositioningEngine", () => {
   describe("Flow Layout - Vertical", () => {
     it("should position children vertically with gap spacing", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -77,7 +77,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should handle empty containers", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -105,7 +105,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should handle single child", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -139,7 +139,7 @@ describe("PositioningEngine", () => {
 
   describe("Flow Layout - Horizontal", () => {
     it("should position children horizontally", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -186,7 +186,7 @@ describe("PositioningEngine", () => {
 
   describe("Grid Layout", () => {
     it("should position children in 2-column grid", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -248,7 +248,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should position children in 3-column grid", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -287,7 +287,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should position children in 4-column grid", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -326,7 +326,7 @@ describe("PositioningEngine", () => {
 
   describe("Absolute Layout", () => {
     it("should use explicit coordinates when provided", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -360,7 +360,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should fall back to parent bounds if coordinates missing", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -396,7 +396,7 @@ describe("PositioningEngine", () => {
 
   describe("Padding Support", () => {
     it("should apply padding to container bounds", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const padding: Spacing = {
         top: 10,
@@ -439,7 +439,7 @@ describe("PositioningEngine", () => {
 
   describe("Margin Support", () => {
     it("should respect margin values in node boundaries", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const margin: Spacing = {
         top: 5,
@@ -484,7 +484,7 @@ describe("PositioningEngine", () => {
 
   describe("Height Estimation", () => {
     it("should estimate height for text nodes based on content length", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const shortText = "Short";
       const longText = "This is a much longer text that should result in a taller estimated height because it will wrap to multiple lines";
@@ -526,7 +526,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should estimate height for different font sizes", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -565,7 +565,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should handle container height as sum of children", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -615,7 +615,7 @@ describe("PositioningEngine", () => {
 
   describe("Percentage Coordinate Calculations", () => {
     it("should use 0-100 range for coordinates", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -657,7 +657,7 @@ describe("PositioningEngine", () => {
 
   describe("Edge Cases", () => {
     it("should handle many children", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const tree: LayoutTree = {
         root: {
@@ -696,7 +696,7 @@ describe("PositioningEngine", () => {
     });
 
     it("should handle multiple trees", () => {
-      const engine = new PositioningEngine();
+      const engine = new PositioningEngine({ overflowStrategy: "overflow" });
 
       const trees: LayoutTree[] = [
         {

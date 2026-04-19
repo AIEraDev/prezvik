@@ -8,6 +8,9 @@
 export type LayoutType = "center_focus" | "two_column" | "three_column" | "split_screen" | "grid_2x2" | "hero_overlay" | "timeline" | "stat_highlight" | "image_dominant";
 
 export type LayoutRule = {
+  // Unique identifier for the layout
+  layoutId: string;
+
   // Composition
   composition: "center" | "left" | "right" | "split" | "grid";
   alignment: "left" | "center" | "right";
@@ -25,6 +28,10 @@ export type LayoutRule = {
   columns?: number;
   rows?: number;
 
+  // Split layouts: ratio of left column (0.0-1.0), defaults to 0.5 for 50/50
+  // Example: 0.3 = 30/70 split, 0.4 = 40/60 split
+  splitRatio?: number;
+
   // Focal point
   focal: "title" | "content" | "media" | "balanced";
 };
@@ -36,6 +43,7 @@ export type LayoutRule = {
  */
 export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   center_focus: {
+    layoutId: "center_focus",
     composition: "center",
     alignment: "center",
     titleSize: "56-72px",
@@ -47,6 +55,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   two_column: {
+    layoutId: "two_column",
     composition: "split",
     alignment: "left",
     titleSize: "40-48px",
@@ -55,10 +64,12 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
     padding: 6, // 48px
     gap: 4, // 32px
     columns: 2,
+    splitRatio: 0.5, // 50/50 split
     focal: "balanced",
   },
 
   three_column: {
+    layoutId: "three_column",
     composition: "grid",
     alignment: "left",
     titleSize: "36-44px",
@@ -71,6 +82,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   split_screen: {
+    layoutId: "split_screen",
     composition: "split",
     alignment: "center",
     titleSize: "40-48px",
@@ -78,11 +90,13 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
     whitespace: "balanced",
     padding: 0, // Full bleed
     gap: 0,
+    splitRatio: 0.5, // 50/50 split - can be overridden (e.g., 0.4 for 40/60)
     columns: 2,
     focal: "balanced",
   },
 
   grid_2x2: {
+    layoutId: "grid_2x2",
     composition: "grid",
     alignment: "center",
     titleSize: "36-44px",
@@ -96,6 +110,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   hero_overlay: {
+    layoutId: "hero_overlay",
     composition: "center",
     alignment: "center",
     titleSize: "64-80px",
@@ -107,6 +122,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   timeline: {
+    layoutId: "timeline",
     composition: "left",
     alignment: "left",
     titleSize: "40-48px",
@@ -118,6 +134,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   stat_highlight: {
+    layoutId: "stat_highlight",
     composition: "center",
     alignment: "center",
     titleSize: "80-120px", // Large stat
@@ -129,6 +146,7 @@ export const LAYOUT_RULES: Record<LayoutType, LayoutRule> = {
   },
 
   image_dominant: {
+    layoutId: "image_dominant",
     composition: "center",
     alignment: "center",
     titleSize: "40-48px",
@@ -169,4 +187,40 @@ export const SLIDE_TYPE_LAYOUTS: Record<string, LayoutType> = {
  */
 export function getDefaultLayout(slideType: string): LayoutType {
   return SLIDE_TYPE_LAYOUTS[slideType] || "two_column";
+}
+
+/**
+ * Register a custom layout rule
+ * Allows extending Kyro with custom layouts at runtime
+ *
+ * @param layoutId - Unique identifier for the layout
+ * @param rule - Layout rule configuration
+ *
+ * @example
+ * ```typescript
+ * registerLayout("custom_hero", {
+ *   layoutId: "custom_hero",
+ *   composition: "center",
+ *   alignment: "center",
+ *   titleSize: "72-96px",
+ *   bodySize: "24-32px",
+ *   whitespace: "maximum",
+ *   padding: 10,
+ *   gap: 5,
+ *   focal: "title",
+ * });
+ * ```
+ */
+export function registerLayout(layoutId: string, rule: LayoutRule): void {
+  if (LAYOUT_RULES[layoutId as LayoutType]) {
+    console.warn(`[layout-rules] Overriding existing layout: ${layoutId}`);
+  }
+  (LAYOUT_RULES as Record<string, LayoutRule>)[layoutId] = rule;
+}
+
+/**
+ * Check if a layout is registered
+ */
+export function isLayoutRegistered(layoutId: string): boolean {
+  return !!LAYOUT_RULES[layoutId as LayoutType];
 }

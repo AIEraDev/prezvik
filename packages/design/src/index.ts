@@ -1,8 +1,10 @@
 /**
  * Kyro Design System
  *
- * Design tokens, themes, and resolver
- * This is what makes slides look professional
+ * Token-based theme architecture
+ * - Tokens: Design primitives (colors, typography, spacing)
+ * - Themes: Token compositions (executive, minimal, modern)
+ * - Resolver: Applies themes to layout trees
  */
 
 // Tokens (foundation)
@@ -11,8 +13,5 @@ export * from "./tokens/index.js";
 // Themes (product layer)
 export * from "./themes/index.js";
 
-// Resolver (applies theme to layout)
-export * from "./resolver.js";
-
-// Theme Resolver (new pipeline component)
+// Theme Resolver (applies tokens to layouts)
 export * from "./theme-resolver.js";

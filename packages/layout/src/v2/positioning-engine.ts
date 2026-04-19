@@ -12,6 +12,21 @@
 import type { LayoutTree, LayoutNode, ContainerNode, TextNode, Rectangle, Spacing, FlowLayout, GridLayout } from "../types.js";
 
 /**
+ * Layout overflow error - thrown when content exceeds available bounds
+ */
+export class LayoutOverflowError extends Error {
+  constructor(
+    message: string,
+    public nodeId: string,
+    public bounds: Rectangle,
+    public overflowedBy: number,
+  ) {
+    super(message);
+    this.name = "LayoutOverflowError";
+  }
+}
+
+/**
  * Positioning Engine configuration options
  *
  * @example
@@ -41,6 +56,28 @@ export interface PositioningOptions {
    * @default "percentage"
    */
   unit?: "percentage" | "pixels";
+
+  /**
+   * Overflow handling strategy
+   * - "error": Throw LayoutOverflowError (default, strict mode)
+   * - "truncate": Truncate overflowing content with ellipsis
+   * - "scale": Scale down font sizes to fit
+   * - "overflow": Allow overflow (clip in renderer)
+   * @default "error"
+   */
+  overflowStrategy?: "error" | "truncate" | "scale" | "overflow";
+
+  /**
+   * Minimum font size when using "scale" overflow strategy
+   * @default 8
+   */
+  minFontSize?: number;
+
+  /**
+   * Whether to log overflow warnings instead of throwing
+   * @default false
+   */
+  warnOnOverflow?: boolean;
 }
 
 /**
@@ -84,6 +121,9 @@ export class PositioningEngine {
       slideWidth: options.slideWidth ?? 100,
       slideHeight: options.slideHeight ?? 100,
       unit: options.unit ?? "percentage",
+      overflowStrategy: options.overflowStrategy ?? "error",
+      minFontSize: options.minFontSize ?? 8,
+      warnOnOverflow: options.warnOnOverflow ?? false,
     };
   }
 
@@ -114,10 +154,17 @@ export class PositioningEngine {
   }
 
   /**
+   * Track visited nodes during positioning to detect cycles
+   */
+  private positioningStack = new Set<string>();
+
+  /**
    * Position a single layout tree
    */
   private positionTree(tree: LayoutTree): LayoutTree {
     const positioned = { ...tree };
+    // Reset cycle detection stack for each tree
+    this.positioningStack.clear();
     this.positionNode(positioned.root, {
       x: 0,
       y: 0,
@@ -131,29 +178,42 @@ export class PositioningEngine {
    * Position a node and its children
    */
   private positionNode(node: LayoutNode, bounds: Rectangle): void {
-    // Apply padding to bounds
-    const contentBounds = this.applyPadding(bounds, node.padding);
-
-    // Position children based on layout mode
-    if (node.type === "container") {
-      const container = node as ContainerNode;
-      if (container.layout) {
-        switch (container.layout.type) {
-          case "flow":
-            this.positionFlowChildren(container, contentBounds);
-            break;
-          case "grid":
-            this.positionGridChildren(container, contentBounds);
-            break;
-          case "absolute":
-            this.positionAbsoluteChildren(container, contentBounds);
-            break;
-        }
-      }
+    // Cycle detection - check if node is already being positioned
+    if (this.positioningStack.has(node.id)) {
+      throw new LayoutOverflowError(`Circular reference detected: node "${node.id}" references itself as an ancestor`, node.id, bounds, 0);
     }
 
-    // Set node rectangle
-    node._rect = bounds;
+    // Mark node as being positioned
+    this.positioningStack.add(node.id);
+
+    try {
+      // Apply padding to bounds
+      const contentBounds = this.applyPadding(bounds, node.padding);
+
+      // Position children based on layout mode
+      if (node.type === "container") {
+        const container = node as ContainerNode;
+        if (container.layout) {
+          switch (container.layout.type) {
+            case "flow":
+              this.positionFlowChildren(container, contentBounds);
+              break;
+            case "grid":
+              this.positionGridChildren(container, contentBounds);
+              break;
+            case "absolute":
+              this.positionAbsoluteChildren(container, contentBounds);
+              break;
+          }
+        }
+      }
+
+      // Set node rectangle
+      node._rect = bounds;
+    } finally {
+      // Remove from stack when done (even if error occurred)
+      this.positioningStack.delete(node.id);
+    }
   }
 
   /**
@@ -185,36 +245,130 @@ export class PositioningEngine {
     if (layout.direction === "vertical") {
       let currentY = bounds.y;
       const childWidth = bounds.width;
+      const maxY = bounds.y + bounds.height;
+      let hasOverflowed = false;
 
-      for (const child of node.children) {
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i];
         const childHeight = this.estimateHeight(child, childWidth);
 
-        this.positionNode(child, {
-          x: bounds.x,
-          y: currentY,
-          width: childWidth,
-          height: childHeight,
-        });
+        // Check for overflow before positioning
+        if (currentY + childHeight > maxY + 0.01 && !hasOverflowed) {
+          const overflowedBy = currentY + childHeight - maxY;
+          const handled = this.handleOverflow(node, child, bounds, overflowedBy, currentY, maxY, i);
+          if (!handled) {
+            hasOverflowed = true;
+            // Continue positioning remaining children but clamp to bounds
+          }
+        }
 
-        currentY += childHeight + gap;
+        const availableHeight = Math.max(0, maxY - currentY);
+        const actualHeight = hasOverflowed ? 0 : Math.min(childHeight, availableHeight);
+
+        if (actualHeight > 0 || !hasOverflowed) {
+          this.positionNode(child, {
+            x: bounds.x,
+            y: currentY,
+            width: childWidth,
+            height: actualHeight,
+          });
+        }
+
+        currentY += actualHeight + gap;
       }
     } else {
       // Horizontal flow
       let currentX = bounds.x;
       const childHeight = bounds.height;
       const childWidth = bounds.width / node.children.length;
+      const maxX = bounds.x + bounds.width;
 
       for (const child of node.children) {
+        // Check for overflow
+        if (currentX + childWidth > maxX + 0.01) {
+          const overflowedBy = currentX + childWidth - maxX;
+          if (this.options.overflowStrategy === "error") {
+            throw new LayoutOverflowError(`Horizontal content overflow in node "${node.id}": child "${child.id}" extends beyond bounds by ${overflowedBy.toFixed(2)}%`, node.id, bounds, overflowedBy);
+          } else if (this.options.warnOnOverflow) {
+            console.warn(`[positioning-engine] Horizontal overflow in "${node.id}" by ${overflowedBy.toFixed(2)}%`);
+          }
+        }
+
         this.positionNode(child, {
           x: currentX,
           y: bounds.y,
-          width: childWidth - gap,
+          width: Math.min(childWidth - gap, maxX - currentX),
           height: childHeight,
         });
 
         currentX += childWidth;
       }
     }
+  }
+
+  /**
+   * Handle overflow based on configured strategy
+   * Returns true if overflow was handled gracefully, false if content should be skipped
+   */
+  private handleOverflow(node: ContainerNode, child: LayoutNode, bounds: Rectangle, overflowedBy: number, currentY: number, maxY: number, _childIndex: number): boolean {
+    const strategy = this.options.overflowStrategy;
+
+    switch (strategy) {
+      case "error":
+        if (this.options.warnOnOverflow) {
+          console.warn(`[positioning-engine] Content overflow in node "${node.id}": child "${child.id}" extends beyond bounds by ${overflowedBy.toFixed(2)}%`);
+          return false;
+        }
+        throw new LayoutOverflowError(`Content overflow in node "${node.id}": child "${child.id}" extends beyond bounds by ${overflowedBy.toFixed(2)}%`, node.id, bounds, overflowedBy);
+
+      case "truncate":
+        if (child.type === "text") {
+          const textNode = child as TextNode;
+          const availableHeight = maxY - currentY;
+          const lineHeight = (textNode.text.fontSize || 16) * 1.5;
+          const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
+          const maxChars = maxLines * Math.floor(bounds.width / ((textNode.text.fontSize || 16) * 0.5));
+          textNode.content = this.truncateText(textNode.content, maxChars);
+        }
+        if (this.options.warnOnOverflow) {
+          console.warn(`[positioning-engine] Truncated overflowing content in "${child.id}"`);
+        }
+        return true;
+
+      case "scale":
+        if (child.type === "text") {
+          const textNode = child as TextNode;
+          const availableHeight = maxY - currentY;
+          const requiredHeight = this.estimateHeight(child, bounds.width);
+          const scaleFactor = availableHeight / requiredHeight;
+          const newFontSize = Math.max(this.options.minFontSize, Math.floor(textNode.text.fontSize * scaleFactor));
+          textNode.text.fontSize = newFontSize;
+        }
+        if (this.options.warnOnOverflow) {
+          console.warn(`[positioning-engine] Scaled down font for "${child.id}" to fit`);
+        }
+        return true;
+
+      case "overflow":
+      default:
+        if (this.options.warnOnOverflow) {
+          console.warn(`[positioning-engine] Allowing overflow for "${child.id}"`);
+        }
+        return true;
+    }
+  }
+
+  /**
+   * Truncate text to fit within character limit
+   */
+  private truncateText(text: string, maxChars: number): string {
+    if (text.length <= maxChars) return text;
+    const truncated = text.slice(0, maxChars - 3);
+    const lastSpace = truncated.lastIndexOf(" ");
+    if (lastSpace > maxChars * 0.8) {
+      return truncated.slice(0, lastSpace) + "...";
+    }
+    return truncated + "...";
   }
 
   /**
@@ -241,7 +395,6 @@ export class PositioningEngine {
     const columnGap = layout.columnGap || 0;
     const rowGap = layout.rowGap || 0;
 
-    const cellWidth = (bounds.width - (columns - 1) * columnGap) / columns;
     const rows = Math.ceil(node.children.length / columns);
     const cellHeight = (bounds.height - (rows - 1) * rowGap) / rows;
 
@@ -249,8 +402,28 @@ export class PositioningEngine {
       const col = index % columns;
       const row = Math.floor(index / columns);
 
+      // Check if this is the last row with fewer items
+      const isLastRow = row === rows - 1;
+      const itemsInLastRow = node.children.length % columns || columns;
+      const isInLastRowWithFewerItems = isLastRow && itemsInLastRow < columns;
+
+      // Calculate cell width: expand cells in last row if it has fewer items
+      let cellWidth: number;
+      let x: number;
+
+      if (isInLastRowWithFewerItems) {
+        // Expand cells to fill available width in incomplete last row
+        const availableWidth = bounds.width - (itemsInLastRow - 1) * columnGap;
+        cellWidth = availableWidth / itemsInLastRow;
+        x = bounds.x + col * (cellWidth + columnGap);
+      } else {
+        // Standard cell width for complete rows
+        cellWidth = (bounds.width - (columns - 1) * columnGap) / columns;
+        x = bounds.x + col * (cellWidth + columnGap);
+      }
+
       this.positionNode(child, {
-        x: bounds.x + col * (cellWidth + columnGap),
+        x,
         y: bounds.y + row * (cellHeight + rowGap),
         width: cellWidth,
         height: cellHeight,
@@ -279,48 +452,132 @@ export class PositioningEngine {
    * Estimate height for a node
    *
    * Estimates the height required for a node based on its content:
-   * - **Text nodes**: Calculates height based on font size, content length, and width
-   * - **Container nodes**: Sums children heights plus gaps
+   * - **Text nodes**: Calculates height using word-based line breaking and improved metrics
+   * - **Container nodes**: Sums children heights plus gaps and padding
    * - **Other nodes**: Returns default height (10% of slide)
    *
-   * This is a heuristic estimation - actual rendered height may vary slightly.
+   * This estimation uses improved heuristics for more accurate results.
    *
    * @param node - Node to estimate height for
    * @param width - Available width for the node
    * @returns Estimated height in percentage units
-   *
-   * @example
-   * ```typescript
-   * // Text node with 100 characters, fontSize=3, width=80
-   * // charsPerLine = 80 / (3 * 0.6) = 44
-   * // lines = 100 / 44 = 3
-   * // height = 3 * (3 * 1.5) = 13.5
-   * ```
    */
   private estimateHeight(node: LayoutNode, width: number): number {
+    // Enforce minimum width to prevent division issues
+    const effectiveWidth = Math.max(width, 5); // Minimum 5% width
+
     if (node.type === "text") {
-      // Estimate based on font size and content length
       const textNode = node as TextNode;
-      const fontSize = textNode.text.fontSize;
-      const lineHeight = fontSize * 1.5;
-      const charsPerLine = Math.floor(width / (fontSize * 0.6));
-      const lines = Math.ceil(textNode.content.length / charsPerLine);
-      return lines * lineHeight;
+      const content = textNode.content;
+      const fontSize = textNode.text.fontSize || 16;
+      // Use more conservative line height (1.6 for better readability, matches CSS defaults)
+      const lineHeight = fontSize * 1.6;
+      const minHeight = lineHeight; // At least one line
+
+      if (!content || content.length === 0) {
+        return minHeight;
+      }
+
+      // More conservative character width estimation for variable-width fonts
+      // 0.55 accounts for wider characters and spacing better than 0.5
+      const avgCharWidth = fontSize * 0.55;
+      const charsPerLine = Math.max(1, Math.floor(effectiveWidth / avgCharWidth));
+
+      // Word-based line estimation with conservative word length
+      // Average word length in English is ~5 chars, but include punctuation and spacing = 6.5
+      const avgWordLength = 6.5;
+      const wordsPerLine = Math.max(1, Math.floor(charsPerLine / avgWordLength));
+      const words = content.split(/\s+/).filter((w) => w.length > 0);
+      const totalWords = words.length;
+      const estimatedLines = Math.max(1, Math.ceil(totalWords / wordsPerLine));
+
+      // Add extra lines for long words and line breaks in content
+      const longWords = words.filter((w) => w.length > charsPerLine).length;
+      const explicitLineBreaks = (content.match(/\n/g) || []).length;
+      const totalLines = estimatedLines + longWords + explicitLineBreaks;
+
+      // Add 10% safety margin to prevent underestimation
+      const estimatedHeight = totalLines * lineHeight;
+      const safetyMargin = estimatedHeight * 0.1;
+
+      return Math.max(minHeight, estimatedHeight + safetyMargin);
+    }
+
+    if (node.type === "image") {
+      // Images typically maintain aspect ratio or fill space
+      // Use 16:9 aspect ratio as more common for presentation images
+      return effectiveWidth * 0.5625; // 16:9 aspect ratio (9/16 = 0.5625)
+    }
+
+    if (node.type === "shape") {
+      // Shapes have explicit dimensions or default
+      return Math.min(50, effectiveWidth * 0.5); // Default to 50% or half width
     }
 
     if (node.type === "container") {
-      // Sum of children heights + gaps
       const container = node as ContainerNode;
-      if (container.layout?.type === "flow") {
-        const gap = (container.layout as FlowLayout).gap || 0;
-        return container.children.reduce((sum, child) => {
-          return sum + this.estimateHeight(child, width) + gap;
-        }, 0);
+      const padding = node.padding;
+      const paddingHeight = padding ? padding.top + padding.bottom : 0;
+
+      if (!container.layout) {
+        return 10 + paddingHeight; // Default container height with padding
+      }
+
+      switch (container.layout.type) {
+        case "flow": {
+          const gap = (container.layout as FlowLayout).gap || 0;
+          const direction = (container.layout as FlowLayout).direction;
+
+          if (direction === "vertical") {
+            // Sum all children heights + gaps
+            const contentHeight = container.children.reduce((sum, child) => {
+              return sum + this.estimateHeight(child, effectiveWidth) + gap;
+            }, 0);
+            // Remove trailing gap
+            const totalHeight = contentHeight > 0 ? contentHeight - gap : 0;
+            return totalHeight + paddingHeight;
+          } else {
+            // Horizontal: max height of any child
+            const maxChildHeight = container.children.reduce((max, child) => {
+              return Math.max(max, this.estimateHeight(child, effectiveWidth));
+            }, 0);
+            return maxChildHeight + paddingHeight;
+          }
+        }
+
+        case "grid": {
+          const layout = container.layout as GridLayout;
+          const columns = layout.columns || 1;
+          const rowGap = layout.rowGap || 0;
+          const columnGap = layout.columnGap || 0;
+          const rows = Math.ceil(container.children.length / columns);
+
+          // Estimate cell dimensions
+          const cellWidth = (effectiveWidth - (columns - 1) * columnGap) / columns;
+          const maxCellHeight = container.children.reduce((max, child) => {
+            return Math.max(max, this.estimateHeight(child, cellWidth));
+          }, 0);
+
+          return rows * maxCellHeight + (rows - 1) * rowGap + paddingHeight;
+        }
+
+        case "absolute": {
+          // For absolute layout, estimate based on children's explicit positions
+          // or default to a reasonable height
+          const maxChildHeight = container.children.reduce((max, child) => {
+            const childHeight = child._rect?.height || this.estimateHeight(child, effectiveWidth);
+            return Math.max(max, childHeight);
+          }, 10);
+          return maxChildHeight + paddingHeight;
+        }
+
+        default:
+          return 10 + paddingHeight;
       }
     }
 
-    // Default height
-    return 10; // 10% of slide height
+    // Default height for unknown types
+    return 10;
   }
 
   /**

@@ -7,7 +7,7 @@
 
 import { resolveLayout, layoutRegistry, polishLayout } from "@kyro/layout";
 import { renderPPTXToFile } from "@kyro/renderer-pptx";
-import { getTheme, applyThemeToTree } from "@kyro/design";
+import { getThemeResolver } from "@kyro/design";
 
 /**
  * Generate a PowerPoint deck from schema
@@ -22,9 +22,6 @@ import { getTheme, applyThemeToTree } from "@kyro/design";
  * 7. Save to file
  */
 export async function generateDeck(schema: any, outputPath: string = "output.pptx", themeName: string = "executive"): Promise<void> {
-  // Get theme
-  const theme = getTheme(themeName);
-
   // Generate layout trees for all slides
   const layouts = schema.slides.map((slide: any) => {
     const strategy = layoutRegistry.get(slide.type);
@@ -36,7 +33,8 @@ export async function generateDeck(schema: any, outputPath: string = "output.ppt
     const tree = strategy(slide.content);
 
     // Apply theme (design tokens)
-    const themed = applyThemeToTree(tree, theme);
+    const resolver = getThemeResolver();
+    const themed = resolver.apply([tree], themeName)[0];
 
     // Polish layout (visual quality)
     const polished = polishLayout(themed);
@@ -53,8 +51,6 @@ export async function generateDeck(schema: any, outputPath: string = "output.ppt
  * Generate layouts only (for testing/preview)
  */
 export function generateLayouts(schema: any, themeName: string = "executive"): any[] {
-  const theme = getTheme(themeName);
-
   return schema.slides.map((slide: any) => {
     const strategy = layoutRegistry.get(slide.type);
     if (!strategy) {
@@ -62,7 +58,8 @@ export function generateLayouts(schema: any, themeName: string = "executive"): a
     }
 
     const tree = strategy(slide.content);
-    const themed = applyThemeToTree(tree, theme);
+    const resolver = getThemeResolver();
+    const themed = resolver.apply([tree], themeName)[0];
     const polished = polishLayout(themed);
     return resolveLayout(polished);
   });

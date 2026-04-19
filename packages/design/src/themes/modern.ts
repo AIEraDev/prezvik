@@ -34,12 +34,12 @@ export const modernTheme: Theme = {
 
   colors: {
     ...colors,
-    background: "#FFFFFF",
-    text: "#0F172A",
-    textMuted: "#475569",
-    primary: "#8B5CF6",
-    accent: "#EC4899",
-    success: "#22C55E",
+    background: "FFFFFF",
+    text: "0F172A",
+    textMuted: "475569",
+    primary: "8B5CF6",
+    accent: "EC4899",
+    success: "22C55E",
   },
 
   layout: {

@@ -9,6 +9,7 @@ export interface TypographyTokens {
   fontFamily: string;
   scale: {
     hero: number;
+    display: number;
     title: number;
     subtitle: number;
     h1: number;
@@ -37,6 +38,7 @@ export const typography: TypographyTokens = {
 
   scale: {
     hero: 72,
+    display: 60,
     title: 48,
     subtitle: 32,
     h1: 36,

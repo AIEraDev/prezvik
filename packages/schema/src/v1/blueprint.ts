@@ -38,7 +38,7 @@ export const KyroBlueprintSchema = z.object({
     })
     .optional(),
 
-  slides: z.array(z.lazy(() => SlideSchema)),
+  slides: z.array(z.lazy(() => SlideSchema)).max(50, "Maximum 50 slides allowed per presentation"),
 });
 
 export type KyroBlueprint = z.infer<typeof KyroBlueprintSchema>;
@@ -54,30 +54,103 @@ export type KyroBlueprint = z.infer<typeof KyroBlueprintSchema>;
  * - Styling (design tokens)
  * - Animation (hints, not execution)
  */
-export const SlideSchema = z.object({
-  id: z.string(),
+export const SlideSchema = z
+  .object({
+    id: z
+      .string()
+      .min(1, "Slide ID cannot be empty")
+      .regex(/^[a-zA-Z0-9_-]+$/, "Slide ID must be alphanumeric with hyphens/underscores only"),
 
-  // Slide type (semantic category)
-  type: z.enum(["hero", "section", "content", "comparison", "grid", "quote", "data", "callout", "closing"]),
+    // Slide type (semantic category)
+    type: z.enum(["hero", "section", "content", "comparison", "grid", "quote", "data", "callout", "closing"]),
 
-  // Intent: WHY this slide exists (critical for AI reasoning)
-  intent: z.string(),
+    // Intent: WHY this slide exists (critical for AI reasoning)
+    intent: z.string(),
 
-  // Layout: HOW content is arranged (explicit, never guessed)
-  layout: z.enum(["center_focus", "two_column", "three_column", "split_screen", "grid_2x2", "hero_overlay", "timeline", "stat_highlight", "image_dominant"]),
+    // Layout: HOW content is arranged (explicit, never guessed)
+    layout: z.enum(["center_focus", "two_column", "three_column", "split_screen", "grid_2x2", "hero_overlay", "timeline", "stat_highlight", "image_dominant"]),
 
-  // Content: Structured blocks (not raw text)
-  content: z.array(z.lazy(() => ContentBlockSchema)),
+    // Content: Structured blocks (not raw text)
+    content: z.array(z.lazy(() => ContentBlockSchema)).min(1, "Slide must have at least one content block"),
 
-  // Media: Semantic placement (not decorative noise)
-  media: z.array(z.lazy(() => MediaBlockSchema)).optional(),
+    // Media: Semantic placement (not decorative noise)
+    media: z.array(z.lazy(() => MediaBlockSchema)).optional(),
 
-  // Styling: Design tokens (not inline styles)
-  styling: z.lazy(() => SlideStyleSchema).optional(),
+    // Styling: Design tokens (not inline styles)
+    styling: z.lazy(() => SlideStyleSchema).optional(),
+  })
+  .refine(
+    (slide) => {
+      // Layout-content contract validation
+      const layoutLimits: Record<string, { min: number; max: number }> = {
+        center_focus: { min: 1, max: 3 },
+        two_column: { min: 1, max: 6 },
+        three_column: { min: 2, max: 9 },
+        split_screen: { min: 2, max: 4 },
+        grid_2x2: { min: 2, max: 5 },
+        hero_overlay: { min: 1, max: 2 },
+        timeline: { min: 2, max: 6 },
+        stat_highlight: { min: 1, max: 4 },
+        image_dominant: { min: 1, max: 3 },
+      };
 
-  // Animation: Hints (not execution)
-  animation: z.lazy(() => AnimationHintSchema).optional(),
-});
+      const limits = layoutLimits[slide.layout];
+      if (!limits) return true; // Unknown layout, skip validation
+
+      return slide.content.length >= limits.min && slide.content.length <= limits.max;
+    },
+    {
+      message: "Content count does not match layout constraints",
+      path: ["content"],
+    },
+  )
+  .refine(
+    (slide) => {
+      // Layout type vs slide type mismatch validation (soft warning)
+      const layoutTypeMap: Record<string, string[]> = {
+        hero: ["center_focus", "hero_overlay", "image_dominant"],
+        section: ["center_focus", "two_column"],
+        content: ["two_column", "three_column", "split_screen"],
+        comparison: ["two_column", "three_column", "split_screen"],
+        grid: ["grid_2x2"],
+        quote: ["center_focus"],
+        data: ["stat_highlight", "timeline"],
+        callout: ["center_focus", "hero_overlay"],
+        closing: ["center_focus"],
+      };
+
+      const allowedLayouts = layoutTypeMap[slide.type];
+      if (allowedLayouts && !allowedLayouts.includes(slide.layout)) {
+        console.warn(`[schema] Slide type "${slide.type}" may not work well with layout "${slide.layout}". ` + `Recommended layouts: ${allowedLayouts.join(", ")}`);
+      }
+      return true; // Always pass, just warn
+    },
+    { message: "Layout type may not be optimal for slide type" },
+  )
+  .refine(
+    (slide) => {
+      // Heading level/emphasis validation
+      const recommendedEmphasis: Record<string, string> = {
+        h1: "high",
+        h2: "medium",
+        h3: "low",
+      };
+
+      for (const block of slide.content) {
+        if (block.type === "heading") {
+          const heading = block as { level?: string; emphasis?: string; value: string };
+          if (heading.emphasis && heading.level) {
+            const expected = recommendedEmphasis[heading.level];
+            if (heading.emphasis !== expected) {
+              console.warn(`[schema] Heading level "${heading.level}" typically uses "${expected}" emphasis, but got "${heading.emphasis}". ` + `Value: "${heading.value.substring(0, 30)}..."`);
+            }
+          }
+        }
+      }
+      return true; // Always pass, just warn
+    },
+    { message: "Heading level/emphasis mismatch detected" },
+  );
 
 export type Slide = z.infer<typeof SlideSchema>;
 
@@ -88,14 +161,14 @@ export const ContentBlockSchema = z.discriminatedUnion("type", [
   // Text Block
   z.object({
     type: z.literal("text"),
-    value: z.string(),
+    value: z.string().min(1, "Text block value cannot be empty"),
     emphasis: z.enum(["low", "medium", "high"]).optional(),
   }),
 
   // Heading Block
   z.object({
     type: z.literal("heading"),
-    value: z.string(),
+    value: z.string().min(1, "Heading value cannot be empty"),
     level: z.enum(["h1", "h2", "h3"]).optional().default("h1"),
     emphasis: z.enum(["low", "medium", "high"]).optional().default("high"),
   }),
@@ -151,7 +224,10 @@ export const MediaBlockSchema = z.object({
   source: z
     .object({
       query: z.string().optional(), // AI image search query
-      url: z.string().optional(), // Direct URL
+      url: z
+        .string()
+        .regex(/^https?:\/\/.+|^data:image\/[a-zA-Z]+;base64,.+/, "URL must be a valid http://, https://, or data:image URL")
+        .optional(), // Direct URL with validation
       aiGenerated: z.boolean().optional(), // AI-generated image
     })
     .optional(),
@@ -187,20 +263,6 @@ export const SlideStyleSchema = z.object({
 });
 
 export type SlideStyle = z.infer<typeof SlideStyleSchema>;
-
-/**
- * Animation Hint - Intent, not execution
- *
- * This is NOT animation execution - just hints for renderers
- * Renderers decide how to implement (or ignore)
- */
-export const AnimationHintSchema = z.object({
-  entrance: z.enum(["fade", "slide", "zoom", "none"]).optional(),
-  sequence: z.enum(["all", "staggered", "step_by_step"]).optional(),
-  emphasis: z.enum(["pulse", "highlight", "scale_focus"]).optional(),
-});
-
-export type AnimationHint = z.infer<typeof AnimationHintSchema>;
 
 /**
  * Type exports (alias for convenience)

@@ -22,10 +22,10 @@ export const executiveTheme: Theme = {
 
   colors: {
     ...colors,
-    background: "#FFFFFF",
-    text: "#1F2937",
-    primary: "#1E40AF",
-    accent: "#DC2626",
+    background: "F8FAFC", // Very light gray, not pure white
+    text: "1F2937",
+    primary: "1E40AF",
+    accent: "DC2626",
   },
 
   layout: {

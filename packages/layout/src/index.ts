@@ -21,6 +21,12 @@ export * from "./positioning/index.js";
 // Polish (visual quality)
 export * from "./polish/index.js";
 
+// Layout Rules (spatial validation)
+export * from "./rules/index.js";
+
+// Templates (infinite template generation)
+export * from "./templates/index.js";
+
 // Primitives
 export * from "./primitives/grid.js";
 export * from "./primitives/spacing.js";

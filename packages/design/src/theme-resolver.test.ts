@@ -322,7 +322,7 @@ describe("ThemeResolver", () => {
       expect(textNode.text.color).toBe("#1F2937"); // executive text color
     });
 
-    it("should preserve explicit color overrides from Blueprint", () => {
+    it("should auto-correct low contrast explicit color overrides", () => {
       const resolver = new ThemeResolver();
       const tree: LayoutTree = {
         root: {
@@ -331,7 +331,7 @@ describe("ThemeResolver", () => {
           content: "Custom",
           text: {
             fontSize: 16,
-            color: "#FF0000", // Explicit override
+            color: "#FF0000", // Explicit override with low contrast on white background
             colorRole: "primary",
           } as any,
         } as TextNode,
@@ -340,8 +340,10 @@ describe("ThemeResolver", () => {
       const themed = resolver.apply([tree], "executive");
       const textNode = themed[0].root as TextNode;
 
-      // Should preserve explicit override
-      expect(textNode.text.color).toBe("#FF0000");
+      // Should auto-correct to meet WCAG AA contrast (4.5:1)
+      // #FF0000 (4.0:1) → darker red that meets 4.5:1
+      expect(textNode.text.color).not.toBe("#FF0000");
+      expect(textNode.text.color).toMatch(/^#[0-9a-fA-F]{6}$/);
     });
   });
 

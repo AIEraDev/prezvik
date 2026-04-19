@@ -120,7 +120,15 @@ describe("BlueprintGenerator", () => {
     "goal": "inform",
     "tone": "modern"
   },
-  "slides": []
+  "slides": [
+    {
+      "id": "slide-1",
+      "type": "hero",
+      "intent": "Test",
+      "layout": "center_focus",
+      "content": [{ "type": "heading", "value": "Test", "level": "h1", "emphasis": "high" }]
+    }
+  ]
 }
 \`\`\``;
 
@@ -224,7 +232,15 @@ describe("BlueprintGenerator", () => {
           goal: "inform",
           tone: "modern",
         },
-        slides: [],
+        slides: [
+          {
+            id: "slide-1",
+            type: "hero",
+            intent: "Test slide",
+            layout: "center_focus",
+            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+          },
+        ],
       });
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
@@ -240,7 +256,15 @@ describe("BlueprintGenerator", () => {
       const mockResponse = JSON.stringify({
         version: "2.0",
         meta: { title: "Test", goal: "inform", tone: "modern" },
-        slides: [],
+        slides: [
+          {
+            id: "slide-1",
+            type: "hero",
+            intent: "Test slide",
+            layout: "center_focus",
+            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+          },
+        ],
       });
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
@@ -254,7 +278,15 @@ describe("BlueprintGenerator", () => {
       const mockResponse = JSON.stringify({
         version: "2.0",
         meta: { title: "Test", goal: "inform", tone: "modern" },
-        slides: [],
+        slides: [
+          {
+            id: "slide-1",
+            type: "hero",
+            intent: "Test slide",
+            layout: "center_focus",
+            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+          },
+        ],
       });
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);

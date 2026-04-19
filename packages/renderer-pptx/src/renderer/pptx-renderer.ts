@@ -27,9 +27,15 @@ export async function renderPPTX(slides: LayoutTree[]): Promise<PptxGenJS> {
   for (const tree of slides) {
     const slide = pptx.addSlide();
 
-    // Background color
+    // Background color - FORCE TEST COLOR
+    console.log(`[pptx-renderer] Slide background: ${tree.background || "undefined"}`);
     if (tree.background) {
       slide.background = { color: tree.background };
+      console.log(`[pptx-renderer] Applied background: ${tree.background}`);
+    } else {
+      // Force test color to verify pptxgenjs works
+      slide.background = { color: "FF0000" }; // RED for testing
+      console.log(`[pptx-renderer] Applied TEST RED background`);
     }
 
     // Render node tree
@@ -110,10 +116,47 @@ function renderText(slide: any, node: TextNode): void {
 }
 
 /**
+ * Validate image URL
+ * Returns true if URL is valid and supported
+ */
+function isValidImageUrl(url: string): boolean {
+  if (!url || url.trim() === "") {
+    return false;
+  }
+  // Support http/https URLs and data URIs
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:image/");
+}
+
+/**
  * Render image node
  */
 function renderImage(slide: any, node: ImageNode): void {
   const r = assertRect(node);
+
+  // Validate image URL
+  if (!isValidImageUrl(node.src)) {
+    console.warn(`[pptx-renderer] Invalid or unsupported image URL: ${node.src?.substring(0, 50)}... Rendering placeholder.`);
+    // Render placeholder shape instead
+    slide.addShape("rect", {
+      x: pctXtoIn(r.x),
+      y: pctYtoIn(r.y),
+      w: pctXtoIn(Math.max(r.width, MIN_DIMENSION_PCT)),
+      h: pctYtoIn(Math.max(r.height, MIN_DIMENSION_PCT)),
+      fill: { color: "E5E7EB" }, // Light gray placeholder
+      line: { color: "9CA3AF", width: 1 },
+    });
+    // Add placeholder text
+    slide.addText("[Image]", {
+      x: pctXtoIn(r.x),
+      y: pctYtoIn(r.y + r.height / 2 - 5),
+      w: pctXtoIn(Math.max(r.width, MIN_DIMENSION_PCT)),
+      h: pctYtoIn(10),
+      fontSize: 10,
+      color: "6B7280",
+      align: "center",
+    });
+    return;
+  }
 
   // Enforce minimum dimensions to prevent invalid EMU values
   const width = Math.max(r.width, MIN_DIMENSION_PCT);
@@ -121,15 +164,28 @@ function renderImage(slide: any, node: ImageNode): void {
 
   const sizing = node.objectFit === "contain" ? { type: "contain" as const, w: pctXtoIn(width), h: pctYtoIn(height) } : node.objectFit === "cover" ? { type: "cover" as const, w: pctXtoIn(width), h: pctYtoIn(height) } : undefined;
 
-  slide.addImage({
-    path: node.src.startsWith("data:") ? undefined : node.src,
-    data: node.src.startsWith("data:") ? node.src : undefined,
-    x: pctXtoIn(r.x),
-    y: pctYtoIn(r.y),
-    w: pctXtoIn(width),
-    h: pctYtoIn(height),
-    sizing,
-  });
+  try {
+    slide.addImage({
+      path: node.src.startsWith("data:") ? undefined : node.src,
+      data: node.src.startsWith("data:") ? node.src : undefined,
+      x: pctXtoIn(r.x),
+      y: pctYtoIn(r.y),
+      w: pctXtoIn(width),
+      h: pctYtoIn(height),
+      sizing,
+    });
+  } catch (error) {
+    console.warn(`[pptx-renderer] Failed to render image: ${node.src?.substring(0, 50)}... Error: ${error}`);
+    // Render fallback placeholder
+    slide.addShape("rect", {
+      x: pctXtoIn(r.x),
+      y: pctYtoIn(r.y),
+      w: pctXtoIn(width),
+      h: pctYtoIn(height),
+      fill: { color: "FEE2E2" }, // Light red error placeholder
+      line: { color: "EF4444", width: 1 },
+    });
+  }
 }
 
 /**

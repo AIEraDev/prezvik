@@ -25,7 +25,13 @@ export const themes: Record<string, Theme> = {
 
 /**
  * Get theme by name
+ * Falls back to executive theme with a warning if theme not found
  */
 export function getTheme(name: string): Theme {
-  return themes[name] ?? executiveTheme;
+  const theme = themes[name];
+  if (!theme) {
+    console.warn(`[design] Theme "${name}" not found. Falling back to "executive". Available themes: ${Object.keys(themes).join(", ")}`);
+    return executiveTheme;
+  }
+  return theme;
 }

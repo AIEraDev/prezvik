@@ -32,8 +32,7 @@ describe("Pipeline Stage Integration Tests", () => {
     it("should transform valid Blueprint into LayoutTree structures", async () => {
       // Generate Blueprint using mock mode
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 3-slide presentation about AI", {
-      });
+      const blueprint = await generator.generate("Create a 3-slide presentation about AI", { mockMode: true });
 
       // Validate Blueprint
       const validationResult = validateBlueprint(blueprint);
@@ -41,7 +40,7 @@ describe("Pipeline Stage Integration Tests", () => {
 
       // Transform to Layout
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       // Verify layout trees were created
       expect(layoutTrees).toBeDefined();
@@ -61,11 +60,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should apply correct layout rules based on slide layout type", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 5-slide pitch deck", {
-      });
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       // Verify layout rules were applied
       layoutTrees.forEach((tree) => {
@@ -82,11 +80,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should convert content blocks into layout nodes", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation with various content types", {
-      });
+      const blueprint = await generator.generate("Create a presentation with various content types", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       // Verify content blocks were converted
       layoutTrees.forEach((tree) => {
@@ -136,7 +133,7 @@ describe("Pipeline Stage Integration Tests", () => {
         };
 
         const layoutEngine = new LayoutEngineV2();
-        const layoutTrees = layoutEngine.generateLayout(blueprint);
+        const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
         expect(layoutTrees).toHaveLength(1);
         expect(layoutTrees[0].root).toBeDefined();
@@ -148,11 +145,10 @@ describe("Pipeline Stage Integration Tests", () => {
     it("should add _rect property to all layout nodes", async () => {
       // Generate Blueprint and Layout
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 3-slide presentation", {
-      });
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       // Apply positioning
       const positioningEngine = new PositioningEngine();
@@ -187,11 +183,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should use percentage-based coordinates (0-100)", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -220,11 +215,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should respect layout modes (flow, grid, absolute)", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 5-slide pitch deck", {
-      });
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -263,11 +257,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should handle padding and margin correctly", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -291,11 +284,10 @@ describe("Pipeline Stage Integration Tests", () => {
     it("should apply theme tokens to positioned layout trees", async () => {
       // Generate and position layout
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 3-slide presentation", {
-      });
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -328,11 +320,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should resolve font roles to actual font families", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -358,11 +349,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should resolve color roles to actual color values", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -389,11 +379,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should preserve _rect coordinates after theming", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -420,11 +409,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should apply different themes correctly", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -453,11 +441,10 @@ describe("Pipeline Stage Integration Tests", () => {
     it("should render themed layout trees to PPTX files", async () => {
       // Generate complete pipeline
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 3-slide presentation", {
-      });
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -487,11 +474,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should create correct number of slides", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 5-slide pitch deck", {
-      });
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -514,11 +500,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should use coordinates from _rect property", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -543,11 +528,10 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should apply fonts and colors from theme", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a presentation", {
-      });
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
 
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
@@ -586,8 +570,7 @@ describe("Pipeline Stage Integration Tests", () => {
     it("should complete all stages without errors", async () => {
       // Stage 1: Blueprint Generation
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 3-slide presentation about AI in education", {
-      });
+      const blueprint = await generator.generate("Create a 3-slide presentation about AI in education", { mockMode: true });
 
       expect(blueprint).toBeDefined();
       expect(blueprint.version).toBe("2.0");
@@ -598,7 +581,7 @@ describe("Pipeline Stage Integration Tests", () => {
 
       // Stage 3: Layout Generation
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
       expect(layoutTrees).toHaveLength(blueprint.slides.length);
 
       // Stage 4: Positioning
@@ -629,14 +612,13 @@ describe("Pipeline Stage Integration Tests", () => {
 
     it("should preserve data integrity through all stages", async () => {
       const generator = new BlueprintGenerator({} as any);
-      const blueprint = await generator.generate("Create a 5-slide pitch deck for our AI startup", {
-      });
+      const blueprint = await generator.generate("Create a 5-slide pitch deck for our AI startup", { mockMode: true });
 
       const originalSlideCount = blueprint.slides.length;
 
       // Run through all stages
       const layoutEngine = new LayoutEngineV2();
-      const layoutTrees = layoutEngine.generateLayout(blueprint);
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
 
       const positioningEngine = new PositioningEngine();
       const positionedTrees = positioningEngine.position(layoutTrees);
