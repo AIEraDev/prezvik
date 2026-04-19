@@ -281,6 +281,15 @@ export class Pipeline {
       startTime: Date.now(),
     };
 
+    // Log pipeline start
+    console.log(`\n${"=".repeat(60)}`);
+    console.log(`Kyro Pipeline v1.0 - Starting Execution`);
+    console.log(`${"=".repeat(60)}`);
+    console.log(`Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}"`);
+    console.log(`Theme: ${options.themeName || "executive"}`);
+    console.log(`Provider: ${options.provider || "auto-detect"}`);
+    console.log(`${"=".repeat(60)}`);
+
     try {
       // Stage 1: Blueprint generation
       await this.executeStage1(context);
@@ -305,10 +314,15 @@ export class Pipeline {
 
       // Log completion
       const duration = Date.now() - context.startTime;
-      console.log(`✓ Pipeline completed in ${(duration / 1000).toFixed(2)}s`);
-      console.log(`✓ Output: ${options.outputPath}`);
+      console.log(`\n${"=".repeat(60)}`);
+      console.log(`✓ Pipeline completed successfully!`);
+      console.log(`${"=".repeat(60)}`);
+      console.log(`  Total time: ${(duration / 1000).toFixed(2)}s`);
+      console.log(`  Output file: ${options.outputPath}`);
       const slideCount = context.stages.blueprint?.slides?.length ?? 0;
-      console.log(`✓ Generated ${slideCount} slides`);
+      console.log(`  Slides generated: ${slideCount}`);
+      console.log(`  Theme: ${options.themeName || "executive"}`);
+      console.log(`${"=".repeat(60)}\n`);
     } catch (error) {
       // Log error with comprehensive context
       if (error instanceof PipelineExecutionError) {
@@ -334,7 +348,8 @@ export class Pipeline {
    */
   private async executeStage1(context: PipelineContext): Promise<void> {
     const stage = "Blueprint Generation";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 1: ${stage}`);
+    console.log(`  Prompt: "${context.prompt.substring(0, 80)}${context.prompt.length > 80 ? "..." : ""}"`);
 
     try {
       const generatorOptions: BlueprintGeneratorOptions = {
@@ -346,7 +361,9 @@ export class Pipeline {
       const blueprint = await this.blueprintGenerator.generate(context.prompt, generatorOptions);
 
       context.stages.blueprint = blueprint;
-      console.log(`✓ ${stage} completed`);
+      console.log(`✓ Stage 1 completed - Generated ${blueprint.slides.length} slides`);
+      console.log(`  Title: "${blueprint.meta.title}"`);
+      console.log(`  Goal: ${blueprint.meta.goal}, Tone: ${blueprint.meta.tone}`);
     } catch (error) {
       throw new PipelineExecutionError(`Blueprint generation failed: ${error instanceof Error ? error.message : String(error)}`, stage, { prompt: context.prompt }, error instanceof Error ? error : undefined);
     }
@@ -357,23 +374,28 @@ export class Pipeline {
    */
   private async executeStage2(context: PipelineContext): Promise<void> {
     const stage = "Blueprint Validation";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 2: ${stage}`);
 
     try {
       if (!context.stages.blueprint) {
         throw new Error("Blueprint not found in context");
       }
 
+      console.log(`  Validating Blueprint structure...`);
       const result: ValidationResult<KyroBlueprint> = validateBlueprint(context.stages.blueprint);
 
       if (!result.success) {
         const errorMessages = result.errors?.map((err) => `  - ${err.path.join(".")}: ${err.message}`).join("\n");
+        console.error(`  Validation errors:\n${errorMessages}`);
         throw new Error(`Blueprint validation failed:\n${errorMessages}`);
       }
 
       // Update context with validated blueprint
       context.stages.blueprint = result.data;
-      console.log(`✓ ${stage} completed`);
+      console.log(`✓ Stage 2 completed - Blueprint is valid`);
+      if (result.data) {
+        console.log(`  Validated ${result.data.slides.length} slides`);
+      }
     } catch (error) {
       throw new PipelineExecutionError(`Blueprint validation failed: ${error instanceof Error ? error.message : String(error)}`, stage, { blueprint: context.stages.blueprint }, error instanceof Error ? error : undefined);
     }
@@ -384,17 +406,22 @@ export class Pipeline {
    */
   private async executeStage3(context: PipelineContext): Promise<void> {
     const stage = "Layout Generation";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 3: ${stage}`);
 
     try {
       if (!context.stages.blueprint) {
         throw new Error("Validated blueprint not found in context");
       }
 
+      console.log(`  Generating layout trees for ${context.stages.blueprint.slides.length} slides...`);
       const layoutTrees = await this.layoutEngine.generateLayout(context.stages.blueprint);
 
       context.stages.layoutTrees = layoutTrees;
-      console.log(`✓ ${stage} completed (${layoutTrees.length} slides)`);
+      console.log(`✓ Stage 3 completed - Generated ${layoutTrees.length} layout trees`);
+
+      // Log slide types
+      const slideTypes = context.stages.blueprint.slides.map((s) => s.type).join(", ");
+      console.log(`  Slide types: ${slideTypes}`);
     } catch (error) {
       throw new PipelineExecutionError(`Layout generation failed: ${error instanceof Error ? error.message : String(error)}`, stage, { slideCount: context.stages.blueprint?.slides.length }, error instanceof Error ? error : undefined);
     }
@@ -405,18 +432,19 @@ export class Pipeline {
    */
   private async executeStage4(context: PipelineContext): Promise<void> {
     const stage = "Theme Application";
-    console.log(`→ ${stage}...`);
+    const themeName = context.options.themeName || "executive";
+    console.log(`\n→ Stage 4: ${stage}`);
+    console.log(`  Applying theme: ${themeName}`);
 
     try {
       if (!context.stages.layoutTrees) {
         throw new Error("Layout trees not found in context");
       }
 
-      const themeName = context.options.themeName || "executive";
       const themedTrees = this.themeResolver.apply(context.stages.layoutTrees, themeName);
 
       context.stages.themedTrees = themedTrees;
-      console.log(`✓ ${stage} completed (theme: ${themeName})`);
+      console.log(`✓ Stage 4 completed - Applied ${themeName} theme to ${themedTrees.length} slides`);
     } catch (error) {
       throw new PipelineExecutionError(`Theme application failed: ${error instanceof Error ? error.message : String(error)}`, stage, { themeName: context.options.themeName }, error instanceof Error ? error : undefined);
     }
@@ -427,7 +455,8 @@ export class Pipeline {
    */
   private async executeStage4_5(context: PipelineContext): Promise<void> {
     const stage = "Layout Polish";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 4.5: ${stage}`);
+    console.log(`  Applying visual refinements...`);
 
     try {
       if (!context.stages.themedTrees) {
@@ -438,7 +467,7 @@ export class Pipeline {
       const polishedTrees = context.stages.themedTrees.map((tree) => polishLayout(tree));
 
       context.stages.polishedTrees = polishedTrees;
-      console.log(`✓ ${stage} completed (${polishedTrees.length} slides polished)`);
+      console.log(`✓ Stage 4.5 completed - Polished ${polishedTrees.length} slides`);
     } catch (error) {
       throw new PipelineExecutionError(`Layout polish failed: ${error instanceof Error ? error.message : String(error)}`, stage, { treeCount: context.stages.themedTrees?.length }, error instanceof Error ? error : undefined);
     }
@@ -449,7 +478,8 @@ export class Pipeline {
    */
   private async executeStage5(context: PipelineContext): Promise<void> {
     const stage = "Coordinate Positioning";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 5: ${stage}`);
+    console.log(`  Computing absolute coordinates (percentage-based)...`);
 
     try {
       if (!context.stages.polishedTrees) {
@@ -459,7 +489,8 @@ export class Pipeline {
       const positionedTrees = this.positioningEngine.position(context.stages.polishedTrees);
 
       context.stages.positionedTrees = positionedTrees;
-      console.log(`✓ ${stage} completed`);
+      console.log(`✓ Stage 5 completed - Positioned ${positionedTrees.length} slides`);
+      console.log(`  Coordinate system: 0-100% (renderer-independent)`);
     } catch (error) {
       throw new PipelineExecutionError(`Coordinate positioning failed: ${error instanceof Error ? error.message : String(error)}`, stage, { treeCount: context.stages.polishedTrees?.length }, error instanceof Error ? error : undefined);
     }
@@ -470,7 +501,9 @@ export class Pipeline {
    */
   private async executeStage6(context: PipelineContext): Promise<void> {
     const stage = "PPTX Rendering";
-    console.log(`→ ${stage}...`);
+    console.log(`\n→ Stage 6: ${stage}`);
+    console.log(`  Converting to PowerPoint format...`);
+    console.log(`  Output: ${context.options.outputPath}`);
 
     try {
       if (!context.stages.positionedTrees) {
@@ -484,7 +517,9 @@ export class Pipeline {
         throw new Error(`Output file not created: ${context.options.outputPath}`);
       }
 
-      console.log(`✓ ${stage} completed`);
+      const stats = fs.statSync(context.options.outputPath);
+      const fileSizeKB = (stats.size / 1024).toFixed(2);
+      console.log(`✓ Stage 6 completed - Generated PPTX file (${fileSizeKB} KB)`);
     } catch (error) {
       throw new PipelineExecutionError(`PPTX rendering failed: ${error instanceof Error ? error.message : String(error)}`, stage, { outputPath: context.options.outputPath }, error instanceof Error ? error : undefined);
     }

@@ -157,26 +157,36 @@ export class BlueprintGenerator {
    */
   async generate(prompt: string, options: BlueprintGeneratorOptions = {}): Promise<KyroBlueprint> {
     try {
-      // Use mock mode for testing/CI when AI providers are not available
-      if (options.mockMode || process.env.KYRO_MOCK_MODE === "true") {
-        console.log("[BlueprintGenerator] Using mock mode (template-based generation)");
+      // Only use mock mode if explicitly requested
+      if (options.mockMode === true) {
+        console.log("  [AI] Using mock mode (template-based generation) - explicitly requested");
         return this.generateFromTemplate(prompt);
       }
 
+      console.log(`  [AI] Provider: ${options.provider || "auto-detect"}`);
+      console.log(`  [AI] Temperature: ${options.temperature || 0.7}`);
+      console.log(`  [AI] Sending prompt to AI provider...`);
+
       // Infer meta information from prompt
       const meta = this.inferMeta(prompt);
+      console.log(`  [AI] Inferred meta - Goal: ${meta.goal}, Tone: ${meta.tone}`);
 
       // Build system prompt with Blueprint schema
       const systemPrompt = this.buildSystemPrompt();
 
       // Generate Blueprint using KyroAI
+      const startTime = Date.now();
       const response = await this.kyroAI.generateSlideDeck(`${systemPrompt}\n\nUser request: ${prompt}`, {
         provider: options.provider,
         strategy: options.strategy || "balanced",
       });
+      const aiDuration = Date.now() - startTime;
+      console.log(`  [AI] Received response from AI provider (${(aiDuration / 1000).toFixed(2)}s)`);
 
       // Parse response and extract JSON
+      console.log(`  [AI] Parsing Blueprint JSON...`);
       const blueprint = this.parseResponse(response);
+      console.log(`  [AI] Successfully parsed Blueprint with ${blueprint.slides.length} slides`);
 
       // Merge inferred meta with generated blueprint
       blueprint.meta = {
@@ -186,10 +196,11 @@ export class BlueprintGenerator {
 
       return blueprint;
     } catch (error) {
-      // If AI generation fails due to missing providers, fall back to mock mode
+      console.error(`  [AI] Generation failed: ${error instanceof Error ? error.message : String(error)}`);
+
+      // Provide helpful error message if no providers are available
       if (error instanceof Error && error.message.includes("No LLM providers available")) {
-        console.warn("[BlueprintGenerator] AI providers unavailable, falling back to mock mode");
-        return this.generateFromTemplate(prompt);
+        throw new BlueprintGenerationError(`No AI providers available. Please set up at least one provider:\n` + `  - OPENAI_API_KEY for OpenAI\n` + `  - ANTHROPIC_API_KEY for Anthropic\n` + `  - GROQ_API_KEY for Groq\n` + `Or use mockMode: true for testing without AI.`, prompt, error);
       }
 
       if (error instanceof BlueprintGenerationError) {
@@ -203,14 +214,20 @@ export class BlueprintGenerator {
    * Generate Blueprint from template (mock mode)
    */
   generateFromTemplate(prompt: string): KyroBlueprint {
+    console.log(`  [Template] Extracting keywords from prompt...`);
     // Extract keywords from prompt
     const keywords = this.extractKeywords(prompt);
+    console.log(`  [Template] Detected type: ${keywords.presentationType}, slides: ${keywords.slideCount}`);
 
     // Select appropriate template
     const template = this.selectTemplate(keywords);
+    console.log(`  [Template] Selected ${keywords.presentationType} template`);
 
     // Fill template with extracted content
-    return this.fillTemplate(template, keywords);
+    const blueprint = this.fillTemplate(template, keywords);
+    console.log(`  [Template] Generated Blueprint with ${blueprint.slides.length} slides`);
+
+    return blueprint;
   }
 
   /**
