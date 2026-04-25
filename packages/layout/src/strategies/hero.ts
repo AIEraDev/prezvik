@@ -14,17 +14,47 @@ export interface HeroContent {
   kicker?: string;
 }
 
-export function layoutHero(content: HeroContent): LayoutTree {
+export function layoutHero(content: HeroContent | any[]): LayoutTree {
+  // Handle Blueprint content blocks format (array of content blocks)
+  let title = "";
+  let subtitle = "";
+  let kicker = "";
+
+  if (Array.isArray(content)) {
+    // Extract from Blueprint content blocks
+    for (const block of content) {
+      if (block.type === "heading" && block.value && !title) {
+        title = block.value;
+      } else if (block.type === "text" && block.value && !subtitle) {
+        subtitle = block.value;
+      } else if (block.type === "kicker" && block.value) {
+        kicker = block.value;
+      }
+    }
+  } else {
+    // Handle direct HeroContent object format
+    title = content.title || "";
+    subtitle = content.subtitle || "";
+    kicker = content.kicker || "";
+  }
+
+  // Fallback if no title found
+  if (!title) {
+    title = "Untitled";
+  }
+
+  console.log(`        [layoutHero] Building hero layout - title: "${title?.substring(0, 30)}...", hasKicker: ${!!kicker}, hasSubtitle: ${!!subtitle}`);
+
   const children: TextNode[] = [];
 
   // Kicker (optional)
-  if (content.kicker) {
+  if (kicker) {
     children.push({
       id: "kicker",
       type: "text",
-      content: content.kicker,
+      content: kicker,
       text: {
-        fontSize: 14, // Will be overridden by theme
+        fontSize: 14,
         fontWeight: "bold",
         align: "center",
         fontRole: "small" as any,
@@ -35,12 +65,12 @@ export function layoutHero(content: HeroContent): LayoutTree {
   }
 
   // Title (adaptive font scaling)
-  const baseFontSize = 72; // Will be overridden by theme
-  const titleFontSize = scaleTitleFont(baseFontSize, content.title.length);
+  const baseFontSize = 72;
+  const titleFontSize = scaleTitleFont(baseFontSize, title.length);
   children.push({
     id: "title",
     type: "text",
-    content: content.title,
+    content: title,
     text: {
       fontSize: titleFontSize,
       fontWeight: "bold",
@@ -52,13 +82,13 @@ export function layoutHero(content: HeroContent): LayoutTree {
   });
 
   // Subtitle (optional)
-  if (content.subtitle) {
+  if (subtitle) {
     children.push({
       id: "subtitle",
       type: "text",
-      content: content.subtitle,
+      content: subtitle,
       text: {
-        fontSize: 28, // Will be overridden by theme
+        fontSize: 28,
         align: "center",
         fontRole: "h2" as any,
         colorRole: "textMuted" as any,
@@ -85,5 +115,6 @@ export function layoutHero(content: HeroContent): LayoutTree {
     },
   };
 
+  console.log(`        [layoutHero] COMPLETED - created ${children.length} text nodes`);
   return { root };
 }

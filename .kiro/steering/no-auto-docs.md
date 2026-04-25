@@ -1,6 +1,4 @@
----
-inclusion: auto
----
+## inclusion: auto
 
 # No Automatic Documentation Files
 

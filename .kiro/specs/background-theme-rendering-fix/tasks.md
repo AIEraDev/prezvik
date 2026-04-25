@@ -1,0 +1,83 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - Background Colors Not Applied
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: For deterministic bugs, scope the property to the concrete failing case(s) to ensure reproducibility
+  - Test that generateDeck produces PPTX files with NO background colors applied (Bug Condition from design)
+  - Generate test PPTX files with various blueprints (single hero slide, multi-slide executive, mixed slide types)
+  - Assert that slides have blank/white backgrounds (no darkBg or lightBg applied)
+  - The test assertions should match the Expected Behavior Properties from design (backgrounds SHOULD be applied based on ThemeSpec)
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found to understand root cause (e.g., "Hero slide has no background color, expected navy darkBg")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Background Rendering Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (non-background rendering operations)
+  - Observe: Header bands render correctly with headerStyle: "band"
+  - Observe: Decorations (left-bar, oval, bottom-bar) render correctly
+  - Observe: Text colors (textOnDark/textOnLight) are selected correctly based on backgroundMode
+  - Observe: Font selection (displayFont for titles, bodyFont for body) works correctly
+  - Observe: Layout generation, polishing, and resolution work correctly
+  - Observe: Images and shapes render correctly
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Property-based testing generates many test cases for stronger guarantees
+  - Test that text rendering (content, font, color, sizing, positioning) is identical between unfixed and fixed versions
+  - Test that image rendering (position, sizing, object-fit) is identical
+  - Test that decoration rendering (left-bars, ovals, bottom-bars) is identical
+  - Test that header bands render identically (position, size, color)
+  - Test that slide numbers render identically
+  - Test that layout computation (\_rect values) is identical
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 3. Fix for background theme rendering
+  - [x] 3.1 Implement the fix in packages/core/src/deck.ts
+    - Import ThemeAgent from @kyro/design at the top of the file
+    - Instantiate ThemeAgent after logging starts: `const themeAgent = new ThemeAgent();`
+    - Generate ThemeSpec before layout generation: `const themeSpec = await themeAgent.generateTheme(schema, { fallbackTheme: "executive" });`
+    - Add console.log to confirm theme generation: `console.log(\` [generateDeck] Theme generated: \${themeSpec.palette.primary}\`);`
+    - Pass themeSpec as third parameter to renderPPTXToFile: `await renderPPTXToFile(layouts, outputPath, themeSpec);`
+    - _Bug_Condition: isBugCondition(input) where input.blueprint is valid AND generateDeck is called AND NO ThemeSpec is generated AND renderPPTXToFile is called WITHOUT themeSpec parameter_
+    - _Expected_Behavior: For any valid blueprint, generateDeck SHALL generate a ThemeSpec using ThemeAgent, pass it to renderPPTXToFile, and produce a PPTX where each slide has a background color applied according to its SlideTheme backgroundMode (darkBg for dark mode, lightBg for light mode)_
+    - _Preservation: All rendering logic that does NOT involve background color application (text, images, shapes, decorations, header bands, slide numbers, layout computation) SHALL remain unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Background Colors Applied
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify that generated PPTX files now have background colors applied
+    - Verify that hero/closing/data slides have dark backgrounds (darkBg color)
+    - Verify that content slides have light backgrounds (lightBg color)
+    - Verify that background colors match the ThemeSpec palette
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Background Rendering Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm that text rendering is identical (excluding background color changes)
+    - Confirm that image rendering is identical
+    - Confirm that decoration rendering is identical
+    - Confirm that header bands render identically
+    - Confirm that slide numbers render identically
+    - Confirm that layout computation is identical
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

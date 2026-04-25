@@ -37,6 +37,70 @@ cd apps/cli
 node dist/index.js magic "your idea here"
 ```
 
+## Docker
+
+### Using Docker Compose
+
+```bash
+# Build and start all services (web + api)
+docker-compose up --build
+
+# View logs for all services
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f web
+docker-compose logs -f api
+
+# Stop all services
+docker-compose down
+
+# Start CLI tool (profile service)
+docker-compose --profile cli run cli magic "your prompt"
+
+# Start MCP server (profile service)
+docker-compose --profile mcp up mcp-server
+```
+
+### Services
+
+- **web** (port 3000) - Next.js web application
+- **api** (port 3001) - Express REST API server
+- **cli** - Command-line interface (profile service)
+- **mcp-server** - Model Context Protocol server (profile service)
+
+### Environment Variables
+
+Create a `.env` file in the project root with your API keys:
+
+```bash
+GROQ_API_KEY=gsk_...
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Manual Docker Build
+
+Build individual services:
+
+```bash
+# Web app
+docker build -f apps/web/Dockerfile -t kyro-web .
+docker run -p 3000:3000 -e GROQ_API_KEY=gsk_... kyro-web
+
+# API server
+docker build -f apps/api/Dockerfile -t kyro-api .
+docker run -p 3001:3001 -e GROQ_API_KEY=gsk_... kyro-api
+
+# CLI tool
+docker build -f apps/cli/Dockerfile -t kyro-cli .
+docker run -e GROQ_API_KEY=gsk_... kyro-cli magic "your prompt"
+
+# MCP server
+docker build -f apps/mcp-server/Dockerfile -t kyro-mcp .
+docker run -e GROQ_API_KEY=gsk_... kyro-mcp
+```
+
 ## What You Get
 
 ### Three Interfaces
@@ -288,7 +352,25 @@ pnpm --filter @kyro/layout build
 - ✅ Magic command with auto-theme detection
 - ✅ Comprehensive error handling and diagnostics
 - ✅ Full test coverage (unit + integration)
-- ✅ Unified schema architecture (no v1/v2 split)
+- ✅ Unified schema architecture
+- ✅ **Layered Architecture** - Three-layer rendering system (Theme → Visual → Export)
+
+**🎉 NEW: Layered Mode is Now Default**
+
+Kyro now uses a modern three-layer architecture by default:
+
+- **Theme Layer**: Advanced color management with procedural palette generation
+- **Visual Layer**: Procedural background and shape generation
+- **Export Layer**: Multi-format rendering (PPTX, HTML)
+
+**Benefits:**
+
+- Faster performance with intelligent caching
+- Unique procedural backgrounds for each presentation
+- Better error handling and debugging
+- Multiple output formats
+
+**Migration:** Legacy mode is deprecated and will be removed in v2.0. See [Migration Guide](./docs/migration-guide.md) for details.
 
 **v1.1** - Enhanced features (coming soon)
 
@@ -300,6 +382,8 @@ pnpm --filter @kyro/layout build
 ## Documentation
 
 - [Implementation Spec](./.kiro/specs/kyro-pipeline-integration/) - Complete pipeline implementation spec
+- [Layered Architecture Spec](./.kiro/specs/layered-presentation-architecture/) - Three-layer architecture design
+- [Migration Guide](./docs/migration-guide.md) - Migrating from legacy to layered mode
 - [CLI README](./apps/cli/README.md) - Full CLI documentation
 - [MCP Server](./apps/mcp-server/README.md) - AI agent integration
 

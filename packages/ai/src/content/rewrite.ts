@@ -1,22 +1,17 @@
 /**
  * Content Rewriter
  *
- * Turn weak content into impactful presentation text
+ * Vercel AI SDK implementation
  */
 
-import OpenAI from "openai";
+import { generateText } from "ai";
+import { openai, anthropic, groq } from "../providers/index.js";
 
 /**
  * Rewrite text for clarity and impact
  */
-export async function rewriteText(text: string): Promise<string> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY environment variable not set");
-  }
-
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+export async function rewriteText(text: string, options: { provider?: string } = {}): Promise<string> {
+  const provider = options.provider === "anthropic" ? anthropic : options.provider === "groq" ? groq : openai;
 
   const prompt = `Rewrite this text for a professional presentation slide.
 Make it clear, concise, and impactful. Keep it under 100 characters if possible.
@@ -25,19 +20,24 @@ Original: "${text}"
 
 Return ONLY the rewritten text, no explanation.`;
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.7,
-    max_tokens: 100,
-  });
+  try {
+    const result = await generateText({
+      model: provider(options.provider === "anthropic" ? "claude-3-5-sonnet-20241022" : options.provider === "groq" ? "llama-3.3-70b-versatile" : "gpt-4o"),
+      prompt,
+      temperature: 0.7,
+      maxTokens: 100,
+    });
 
-  return response.choices[0].message.content?.trim() || text;
+    return result.text || text;
+  } catch (error) {
+    console.error("Failed to rewrite text:", error);
+    return text;
+  }
 }
 
 /**
  * Rewrite multiple texts in parallel
  */
-export async function rewriteTexts(texts: string[]): Promise<string[]> {
-  return Promise.all(texts.map((text) => rewriteText(text)));
+export async function rewriteTexts(texts: string[], options: { provider?: string } = {}): Promise<string[]> {
+  return Promise.all(texts.map((text) => rewriteText(text, options)));
 }

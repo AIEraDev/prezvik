@@ -10,6 +10,11 @@ import type { Frame } from "./frame.js";
 import { applyPadding } from "./frame.js";
 import { applyAlignment } from "./align.js";
 
+// Slide dimensions for unit conversion (LAYOUT_WIDE: 10" × 5.625")
+const SLIDE_WIDTH_IN = 10;
+const SLIDE_HEIGHT_IN = 5.625;
+const PT_PER_INCH = 72;
+
 /**
  * Layout a node tree using flow-based positioning
  *
@@ -83,10 +88,18 @@ function layoutFlowChildren(children: LayoutNode[], frame: Frame, layout: any): 
   // Calculate starting offset based on alignment
   const containerSize = isVertical ? frame.height : frame.width;
   const contentSize = totalSize + totalGap;
-  const alignOffset = applyAlignment(contentSize, containerSize, align as any);
+
+  // Vertical centering for vertical flow with align === "center"
+  let startOffset: number;
+  if (isVertical && align === "center") {
+    const slack = containerSize - contentSize;
+    startOffset = slack > 0 ? slack / 2 : 0;
+  } else {
+    startOffset = applyAlignment(contentSize, containerSize, align as any);
+  }
 
   // Position each child
-  let offset = alignOffset;
+  let offset = startOffset;
   return children.map((child, i) => {
     const size = sizes[i];
 
@@ -198,21 +211,38 @@ function estimateSize(node: LayoutNode, frame: Frame, isHeight: boolean): number
 
 /**
  * Estimate text size based on content and font
+ *
+ * Converts fontSize (points) to percentage units to match frame dimensions
  */
 function estimateTextSize(node: TextNode, frame: Frame, isHeight: boolean): number {
   const fontSize = node.text.fontSize;
-  const lineHeight = fontSize * (node.text.lineSpacingMultiple ?? 1.15);
+  const content = node.content;
 
   if (isHeight) {
-    // Estimate height based on text wrapping
-    const avgCharWidth = fontSize * 0.6;
-    const charsPerLine = Math.floor(frame.width / avgCharWidth);
-    const lineCount = Math.max(1, Math.ceil(node.content.length / charsPerLine));
-    return lineCount * lineHeight;
+    // Convert fontSize (points) → percentage units so units match frame.width (percent)
+    // lineHeightPct: one line of text as % of slide HEIGHT
+    const lineHeightPct = ((fontSize * 1.4) / PT_PER_INCH / SLIDE_HEIGHT_IN) * 100;
+
+    const minHeight = lineHeightPct;
+
+    if (!content || content.length === 0) return minHeight;
+
+    // avgCharWidthPct: average character width as % of slide WIDTH
+    const avgCharWidthPct = ((fontSize * 0.5) / PT_PER_INCH / SLIDE_WIDTH_IN) * 100;
+
+    const charsPerLine = Math.max(1, Math.floor(frame.width / avgCharWidthPct));
+    const wordsPerLine = Math.max(1, Math.floor(charsPerLine / 6));
+    const words = content.split(/\s+/).filter((w) => w.length > 0);
+    const estimatedLines = Math.max(1, Math.ceil(words.length / wordsPerLine));
+    const explicitBreaks = (content.match(/\n/g) || []).length;
+    const totalLines = estimatedLines + explicitBreaks;
+
+    return Math.max(minHeight, totalLines * lineHeightPct * 1.15); // 15% safety margin
   } else {
     // Estimate width (for horizontal flow)
-    const avgCharWidth = fontSize * 0.6;
-    return Math.min(node.content.length * avgCharWidth, frame.width);
+    const avgCharWidthPct = ((fontSize * 0.5) / PT_PER_INCH / SLIDE_WIDTH_IN) * 100;
+    const contentWidth = content.length * avgCharWidthPct;
+    return Math.min(contentWidth, frame.width);
   }
 }
 

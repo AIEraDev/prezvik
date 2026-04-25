@@ -17,15 +17,21 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/schema": "workspace:*",
-    "@kyro/layout": "workspace:*",
+    "@kyro/ai": "workspace:*",
     "@kyro/design": "workspace:*",
+    "@kyro/export-layer": "workspace:*",
+    "@kyro/layout": "workspace:*",
+    "@kyro/logger": "workspace:*",
+    "@kyro/pipeline": "workspace:*",
     "@kyro/renderer-pptx": "workspace:*",
-    "@kyro/ai": "workspace:*"
+    "@kyro/schema": "workspace:*",
+    "@kyro/theme-layer": "workspace:*",
+    "@kyro/visual-layer": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
     "@types/node": "^20.0.0",
+    "fast-check": "^4.7.0",
+    "typescript": "^5.4.0",
     "vitest": "^1.0.0"
   }
 }

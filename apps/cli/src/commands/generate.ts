@@ -42,7 +42,7 @@ export const generateCommand = new Command("generate")
       log.info(`Generating ${deck.slides.length} slides...`);
 
       // Generate PPTX
-      await generateDeck(deck, options.output, options.theme);
+      await generateDeck(deck, options.output);
 
       log.success(`Generated ${options.output}`);
     } catch (error: any) {

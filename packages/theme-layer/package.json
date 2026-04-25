@@ -1,0 +1,28 @@
+{
+  "name": "@kyro/theme-layer",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "culori": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  }
+}

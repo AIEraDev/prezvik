@@ -14,3 +14,4 @@ export * from "./renderer/pptx-renderer.js";
 export * from "./renderer/slide.js";
 export * from "./renderer/node.js";
 export * from "./types.js";
+export * from "./decoration-engine.js";

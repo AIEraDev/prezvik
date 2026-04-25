@@ -4,7 +4,7 @@
  * Coordinates all 6 stages of the Kyro v1 pipeline:
  * 1. Blueprint generation (using BlueprintGenerator)
  * 2. Blueprint validation (using validateBlueprint)
- * 3. Layout generation (using LayoutEngineV2)
+ * 3. Layout generation (using LayoutEngine)
  * 4. Coordinate positioning (using PositioningEngine)
  * 5. Theme application (using ThemeResolver)
  * 6. PPTX rendering (using PPTXRenderer)
@@ -19,14 +19,14 @@
 declare const console: {
   log(...args: any[]): void;
   error(...args: any[]): void;
+  warn(...args: any[]): void;
 };
 
 import type { KyroBlueprint } from "@kyro/schema";
 import type { LayoutTree } from "@kyro/layout";
 import { BlueprintGenerator, type BlueprintGeneratorOptions, KyroAI } from "@kyro/ai";
 import { validateBlueprint, type ValidationResult } from "@kyro/schema";
-import { LayoutEngineV2, PositioningEngine, polishLayout } from "@kyro/layout";
-import { ThemeResolver } from "@kyro/design";
+import { LayoutEngine, PositioningEngine, polishLayout } from "@kyro/layout";
 import { renderPPTXToFile } from "@kyro/renderer-pptx";
 import * as fs from "node:fs";
 
@@ -78,6 +78,13 @@ export interface PipelineOptions {
    * @example 1500
    */
   maxTokens?: number;
+
+  /**
+   * Mock mode for testing - uses template generation instead of AI
+   * Set to true for CI/CD environments or when API keys are not available
+   * @default false
+   */
+  mockMode?: boolean;
 }
 
 /**
@@ -222,17 +229,15 @@ export class PipelineExecutionError extends Error {
  */
 export class Pipeline {
   private blueprintGenerator: BlueprintGenerator;
-  private layoutEngine: LayoutEngineV2;
+  private layoutEngine: LayoutEngine;
   private positioningEngine: PositioningEngine;
-  private themeResolver: ThemeResolver;
 
   constructor() {
     // Initialize components
     const kyroAI = new KyroAI();
     this.blueprintGenerator = new BlueprintGenerator(kyroAI);
-    this.layoutEngine = new LayoutEngineV2();
+    this.layoutEngine = new LayoutEngine();
     this.positioningEngine = new PositioningEngine({ overflowStrategy: "truncate" });
-    this.themeResolver = new ThemeResolver();
   }
 
   /**
@@ -356,6 +361,7 @@ export class Pipeline {
         provider: context.options.provider,
         temperature: context.options.temperature,
         maxTokens: context.options.maxTokens,
+        mockMode: context.options.mockMode,
       };
 
       const blueprint = await this.blueprintGenerator.generate(context.prompt, generatorOptions);
@@ -402,7 +408,7 @@ export class Pipeline {
   }
 
   /**
-   * Stage 3: Layout generation
+   * Stage 3: Layout generation (with non-fatal fallback)
    */
   private async executeStage3(context: PipelineContext): Promise<void> {
     const stage = "Layout Generation";
@@ -423,28 +429,65 @@ export class Pipeline {
       const slideTypes = context.stages.blueprint.slides.map((s) => s.type).join(", ");
       console.log(`  Slide types: ${slideTypes}`);
     } catch (error) {
-      throw new PipelineExecutionError(`Layout generation failed: ${error instanceof Error ? error.message : String(error)}`, stage, { slideCount: context.stages.blueprint?.slides.length }, error instanceof Error ? error : undefined);
+      // Non-fatal fallback: generate simple layouts if main engine fails
+      console.warn(`⚠ Layout generation failed, attempting fallback: ${error instanceof Error ? error.message : String(error)}`);
+      try {
+        const fallbackTrees = this.generateFallbackLayouts(context.stages.blueprint);
+        context.stages.layoutTrees = fallbackTrees;
+        console.log(`✓ Stage 3 completed with fallback - Generated ${fallbackTrees.length} simple layout trees`);
+        context.errors.push({ stage, message: `Used fallback layouts: ${error instanceof Error ? error.message : String(error)}` });
+      } catch (fallbackError) {
+        // If fallback also fails, record error but don't stop pipeline
+        console.error(`✗ Stage 3 failed completely: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+        context.errors.push({ stage, message: `Layout generation failed: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}` });
+        context.stages.layoutTrees = [];
+      }
     }
   }
 
   /**
-   * Stage 4: Theme application
+   * Generate simple fallback layouts
+   */
+  private generateFallbackLayouts(blueprint: any): any[] {
+    // Generate minimal layout trees for each slide
+    return blueprint.slides.map((slide: any) => ({
+      id: slide.id,
+      root: {
+        id: `${slide.id}-root`,
+        type: "container",
+        children:
+          slide.content.blocks?.map((block: any, index: number) => ({
+            id: `${slide.id}-block-${index}`,
+            type: "text",
+            content: block.content || "",
+            text: {
+              fontSize: 24,
+              fontFamily: "Calibri",
+              color: "000000",
+            },
+          })) || [],
+      },
+    }));
+  }
+
+  /**
+   * Stage 4: Theme application (ThemeSpec applied at rendering time)
    */
   private async executeStage4(context: PipelineContext): Promise<void> {
     const stage = "Theme Application";
     const themeName = context.options.themeName || "executive";
     console.log(`\n→ Stage 4: ${stage}`);
-    console.log(`  Applying theme: ${themeName}`);
+    console.log(`  Using ThemeSpec: ${themeName}`);
 
     try {
       if (!context.stages.layoutTrees) {
         throw new Error("Layout trees not found in context");
       }
 
-      const themedTrees = this.themeResolver.apply(context.stages.layoutTrees, themeName);
-
-      context.stages.themedTrees = themedTrees;
-      console.log(`✓ Stage 4 completed - Applied ${themeName} theme to ${themedTrees.length} slides`);
+      // Pass layoutTrees through as themedTrees
+      // ThemeSpec will be applied at rendering time (Stage 6)
+      context.stages.themedTrees = context.stages.layoutTrees;
+      console.log(`✓ Stage 4 completed - ${context.stages.layoutTrees.length} slides ready for rendering`);
     } catch (error) {
       throw new PipelineExecutionError(`Theme application failed: ${error instanceof Error ? error.message : String(error)}`, stage, { themeName: context.options.themeName }, error instanceof Error ? error : undefined);
     }

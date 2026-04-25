@@ -1,0 +1,555 @@
+# Implementation Plan: Comprehensive System Testing
+
+## Overview
+
+This implementation plan establishes a comprehensive testing infrastructure for the Kyro presentation generation system. The system is a TypeScript monorepo with 4 applications and 14 packages. Currently, only 2 test files exist (~50 test cases, <5% coverage). This plan will achieve 80%+ coverage across all packages through unit tests, integration tests, E2E tests, and performance tests.
+
+## Tasks
+
+- [ ] 1. Set up test infrastructure foundation
+  - Create workspace-level Vitest configuration with all projects
+  - Create shared Vitest configuration with coverage settings and reporters
+  - Set up global test setup file with mock initialization
+  - Configure path aliases for test utilities (@test, @fixtures, @mocks)
+  - _Requirements: 25.1, 25.2, 25.3_
+
+- [ ] 2. Create mock infrastructure
+  - [ ] 2.1 Implement AI provider mocks
+    - Create mock implementations for OpenAI, Anthropic, Groq, and Google providers
+    - Implement mock response helpers with deterministic outputs
+    - Add error simulation capabilities for testing error handling
+    - _Requirements: 23.1, 23.2, 14.3_
+  - [ ] 2.2 Implement file system mocks
+    - Set up memfs for in-memory file system operations
+    - Create helper methods for file/directory creation and verification
+    - Implement cleanup and reset functionality
+    - _Requirements: 23.1, 23.3_
+  - [ ] 2.3 Implement external API mocks
+    - Create mock implementations for external service calls
+    - Implement response configuration helpers
+    - Add network error simulation
+    - _Requirements: 23.1_
+
+- [ ] 3. Create test data factories
+  - [ ] 3.1 Implement blueprint factory
+    - Create factory methods for valid blueprints with customizable properties
+    - Implement slide type factories (title, content, bullets)
+    - Add methods for creating blueprints with specific slide counts
+    - Create invalid blueprint factory for error testing
+    - _Requirements: 6.1, 6.2, 6.3_
+  - [ ] 3.2 Implement layout factory
+    - Create factory methods for text nodes and containers
+    - Implement layout tree factory with nested structures
+    - Add complex layout factory for integration testing
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [ ] 3.3 Implement slide factory
+    - Create factory methods for all slide types
+    - Add customization options for slide content
+    - Implement edge case slide factories
+    - _Requirements: 6.5_
+
+- [ ] 4. Create test helpers and utilities
+  - [ ] 4.1 Implement custom assertions
+    - Create assertValidBlueprint for blueprint validation
+    - Create assertValidPPTX for PPTX file structure validation
+    - Create assertLayoutResolved for layout tree validation
+    - Create assertErrorWithContext for error validation
+    - _Requirements: 6.1, 8.8, 7.1_
+  - [ ] 4.2 Implement custom Vitest matchers
+    - Create toBeValidBlueprint matcher
+    - Create toHaveValidPPTXStructure matcher
+    - Extend expect with custom matchers in setup file
+    - _Requirements: 6.1, 8.8_
+  - [ ] 4.3 Implement test utilities
+    - Create setupTestEnvironment and cleanupTestEnvironment functions
+    - Implement createTempFile and waitForFile helpers
+    - Create createMockLogger utility
+    - Implement measureExecutionTime for performance testing
+    - _Requirements: 21.1, 21.2, 21.3_
+
+- [ ] 5. Checkpoint - Verify test infrastructure
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 6. Implement core package tests
+  - [ ] 6.1 Create unit tests for deck.ts
+    - Test generateDeck with valid blueprints
+    - Test generateDeck with invalid blueprints
+    - Test error handling and validation
+    - _Requirements: 5.1, 5.2_
+  - [ ] 6.2 Create unit tests for config.ts
+    - Test configuration loading with valid config
+    - Test default value application
+    - Test configuration validation errors
+    - _Requirements: 5.6, 5.7_
+  - [ ] 6.3 Create unit tests for pipeline/orchestrator.ts
+    - Test pipeline stage execution order
+    - Test error handling in pipeline stages
+    - Test performance metrics collection
+    - _Requirements: 5.3, 5.4_
+  - [ ] 6.4 Create integration tests for pipeline execution
+    - Test full pipeline execution with all stages
+    - Test data flow between pipeline stages
+    - Test stage failure handling
+    - Test performance metrics reporting
+    - _Requirements: 5.3, 5.4, 20.1_
+  - [ ] 6.5 Create integration tests for layered mode
+    - Test layered mode execution
+    - Test layer application order
+    - Test layer data passing
+    - _Requirements: 5.5_
+
+- [ ] 7. Implement schema package tests
+  - [ ] 7.1 Create unit tests for blueprint schema
+    - Test valid blueprint validation
+    - Test blueprint with missing version
+    - Test blueprint with empty slides
+    - Test blueprint with invalid slide types
+    - Test blueprint with all slide types
+    - _Requirements: 6.1, 6.2, 6.3, 6.4_
+  - [ ] 7.2 Create unit tests for slide schemas
+    - Test validation for each slide type (title, content, bullets)
+    - Test slide with missing required fields
+    - Test slide with invalid field types
+    - _Requirements: 6.5_
+  - [ ] 7.3 Create unit tests for theme schemas
+    - Test theme structure validation
+    - Test theme with gradients
+    - Test theme with custom fonts
+    - _Requirements: 6.6_
+  - [ ] 7.4 Create unit tests for validators
+    - Test validateBlueprint function
+    - Test validateSlide function
+    - Test error message generation
+    - _Requirements: 6.1, 6.2, 6.3, 6.4_
+
+- [ ] 8. Implement layout engine tests
+  - [ ] 8.1 Create unit tests for layout resolver
+    - Test layout tree resolution with \_rect properties
+    - Test nested container positioning
+    - Test percentage to absolute coordinate conversion
+    - _Requirements: 7.1, 7.6_
+  - [ ] 8.2 Create unit tests for layout calculator
+    - Test text wrapping and sizing calculations
+    - Test alignment positioning
+    - Test spacing and gap calculations
+    - _Requirements: 7.3, 7.4, 7.5_
+  - [ ] 8.3 Create integration tests for layout engine
+    - Test complete layout resolution pipeline
+    - Test complex nested layouts
+    - Test layout constraint resolution
+    - _Requirements: 7.1, 7.2, 7.7_
+
+- [ ] 9. Checkpoint - Verify core functionality tests
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 10. Implement PPTX renderer tests
+  - [ ] 10.1 Expand existing PPTX renderer tests
+    - Add tests for missing \_rect properties error
+    - Add tests for coordinate conversion (percentage to inches)
+    - Add comprehensive text rendering tests
+    - Add container background rendering tests
+    - _Requirements: 8.1, 8.2, 8.3, 8.4_
+  - [ ] 10.2 Create unit tests for PPTX utilities
+    - Test unit conversion functions (units.ts)
+    - Test color parsing and conversion (colors.ts)
+    - Test coordinate calculations
+    - _Requirements: 8.2, 8.3_
+  - [ ] 10.3 Create integration tests for PPTX rendering
+    - Test multi-slide rendering
+    - Test complex layouts with nested containers
+    - Test empty container handling
+    - Test PPTX file structure validation
+    - _Requirements: 8.5, 8.6, 8.7, 8.8_
+
+- [ ] 11. Implement Google Slides renderer tests
+  - [ ] 11.1 Create unit tests for Google Slides renderer
+    - Test layout tree to Google Slides format conversion
+    - Test text element rendering
+    - Test shape rendering
+    - Test slide ordering
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+  - [ ] 11.2 Create unit tests for Google auth
+    - Test authentication error handling
+    - Test credential validation
+    - _Requirements: 9.5_
+  - [ ] 11.3 Create integration tests for Google Slides rendering
+    - Test complete rendering pipeline
+    - Test API format conversion
+    - _Requirements: 9.1, 9.2, 9.3_
+
+- [ ] 12. Implement pipeline package tests
+  - [ ] 12.1 Create unit tests for pipeline controller
+    - Test phase execution order (theme, visual, export)
+    - Test phase failure handling
+    - Test option passing to layers
+    - _Requirements: 10.1, 10.6_
+  - [ ] 12.2 Create unit tests for error handler
+    - Test error capture with context
+    - Test error reporting
+    - _Requirements: 10.2_
+  - [ ] 12.3 Create unit tests for performance monitor
+    - Test timing metrics recording
+    - Test phase duration tracking
+    - _Requirements: 10.3_
+  - [ ] 12.4 Create unit tests for cache manager
+    - Test cache retrieval
+    - Test cache invalidation
+    - _Requirements: 10.4, 10.5_
+  - [ ] 12.5 Create integration tests for pipeline
+    - Test complete pipeline execution
+    - Test layer coordination
+    - Test output format selection
+    - _Requirements: 10.1, 10.7_
+
+- [ ] 13. Implement layer package tests
+  - [ ] 13.1 Create unit tests for theme layer
+    - Test theme application to layout trees
+    - Test color application to elements
+    - Test gradient generation
+    - Test font family application
+    - Test theme validation
+    - _Requirements: 11.1, 11.2, 11.3, 11.5_
+  - [ ] 13.2 Create unit tests for visual layer
+    - Test visual polish application (shadows, borders, effects)
+    - Test shape geometry calculations
+    - Test color parsing (hex, RGB, named)
+    - Test color transformations
+    - _Requirements: 12.1, 12.2, 12.3, 12.4_
+  - [ ] 13.3 Create unit tests for export layer
+    - Test export facade for PPTX
+    - Test export facade for Google Slides
+    - Test option passing to renderers
+    - Test error handling
+    - _Requirements: 13.1, 13.2, 13.3, 13.4_
+  - [ ] 13.4 Create integration tests for theme layer
+    - Test theme inheritance
+    - Test variable resolution
+    - _Requirements: 11.4, 11.6_
+  - [ ] 13.5 Create integration tests for visual layer
+    - Test complete visual processing pipeline
+    - Test error handling with invalid input
+    - _Requirements: 12.5_
+  - [ ] 13.6 Create integration tests for export layer
+    - Test multiple format exports
+    - _Requirements: 13.5_
+
+- [ ] 14. Checkpoint - Verify rendering and layer tests
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 15. Implement AI package tests
+  - [ ] 15.1 Create unit tests for KyroAI class
+    - Test initialization and provider detection
+    - Test getAvailableProviders with API keys
+    - Test mock mode operation without API keys
+    - _Requirements: 14.1, 14.2, 14.3_
+  - [ ] 15.2 Create unit tests for AI providers
+    - Test OpenAI provider integration
+    - Test Anthropic provider integration
+    - Test Groq provider integration
+    - Test Google provider integration
+    - _Requirements: 14.4_
+  - [ ] 15.3 Create unit tests for AI operations
+    - Test summarize with mock mode
+    - Test summarize with specific provider
+    - Test error handling for AI failures
+    - Test temperature and maxTokens options
+    - _Requirements: 14.3, 14.4, 14.5, 14.6_
+  - [ ] 15.4 Create integration tests for AI providers
+    - Test provider comparison
+    - Test provider fallback
+    - _Requirements: 14.4_
+
+- [ ] 16. Implement utility package tests
+  - [ ] 16.1 Create unit tests for design package
+    - Test design token access
+    - Test color utility functions
+    - Test spacing utility functions
+    - Test typography utility functions
+    - _Requirements: 15.1, 15.2, 15.3, 15.4_
+  - [ ] 16.2 Create unit tests for logger package
+    - Test log message formatting
+    - Test log level filtering
+    - Test structured logging (JSON output)
+    - Test error logging with stack traces
+    - _Requirements: 16.1, 16.2, 16.3, 16.4_
+  - [ ] 16.3 Create unit tests for utils package
+    - Test utility functions with valid inputs
+    - Test utility functions with invalid inputs
+    - Test edge case handling
+    - _Requirements: 17.1, 17.2, 17.3_
+  - [ ] 16.4 Create unit tests for prompt package
+    - Test generateDeckFromPrompt with natural language
+    - Test prompt parsing error handling
+    - Test specific slide type requests
+    - Test slide count specification
+    - _Requirements: 18.1, 18.2, 18.3, 18.4_
+
+- [ ] 17. Implement CLI application tests
+  - [ ] 17.1 Expand existing magic command tests
+    - Add tests for all magic command options
+    - Add tests for theme selection
+    - Add tests for output file specification
+    - _Requirements: 1.10_
+  - [ ] 17.2 Create unit tests for AI commands
+    - Test "ai list" command
+    - Test "ai test" command with prompt
+    - Test "ai compare" command
+    - _Requirements: 1.1, 1.2, 1.3_
+  - [ ] 17.3 Create unit tests for generate command
+    - Test generate from JSON file
+    - Test generate with --prompt option
+    - Test output file creation
+    - _Requirements: 1.5, 1.6_
+  - [ ] 17.4 Create unit tests for other CLI commands
+    - Test "dev" command with watch mode
+    - Test "init" command
+    - Test "validate" command with valid deck
+    - Test "validate" command with invalid deck
+    - _Requirements: 1.4, 1.7, 1.8, 1.9_
+  - [ ] 17.5 Create unit tests for CLI utilities
+    - Test logger utility
+    - Test load-file utility
+    - _Requirements: 1.1, 1.5_
+  - [ ] 17.6 Create integration tests for CLI
+    - Test command parsing and option handling
+    - Test file I/O operations
+    - Test error reporting with context
+    - Test integration with core package
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10_
+
+- [ ] 18. Implement API server tests
+  - [ ] 18.1 Create unit tests for API routes
+    - Test GET /api/health endpoint
+    - Test POST /api/validate with valid blueprint
+    - Test POST /api/validate with invalid blueprint
+    - Test POST /api/generate with valid blueprint
+    - Test POST /api/generate without blueprint
+    - Test GET /api/layouts endpoint
+    - Test GET /api/themes endpoint
+    - Test POST /api/ai endpoints
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8_
+  - [ ] 18.2 Create integration tests for API server
+    - Test HTTP request/response handling
+    - Test request validation
+    - Test error responses (400, 404, 500)
+    - Test CORS configuration
+    - Test file upload/download
+    - Test route registration
+    - _Requirements: 2.9, 2.10_
+
+- [ ] 19. Implement MCP server tests
+  - [ ] 19.1 Create unit tests for MCP tools
+    - Test generate_presentation tool with valid deck
+    - Test generate_presentation tool with invalid deck
+    - Test validate_deck tool with valid deck
+    - Test validate_deck tool with invalid deck
+    - Test get_kyro_info tool
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+  - [ ] 19.2 Create unit tests for MCP adapters
+    - Test Kyro adapter integration
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [ ] 19.3 Create integration tests for MCP server
+    - Test ListTools request handling
+    - Test CallTool request for unknown tool
+    - Test stdio transport connection
+    - Test tool schema validation
+    - _Requirements: 3.6, 3.7, 3.8_
+
+- [ ] 20. Implement web application tests
+  - [ ] 20.1 Create unit tests for web pages
+    - Test AI page rendering
+    - Test builder page rendering
+    - Test editor page rendering
+    - Test preview page rendering
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [ ] 20.2 Create unit tests for web components
+    - Test preview modal component
+    - Test UI button component
+    - _Requirements: 4.5_
+  - [ ] 20.3 Create unit tests for API routes
+    - Test Next.js API route handlers
+    - _Requirements: 4.6_
+  - [ ] 20.4 Create integration tests for web app
+    - Test API route calls from frontend
+    - Test state updates in builder
+    - Test build process
+    - _Requirements: 4.6, 4.7, 4.8_
+
+- [ ] 21. Checkpoint - Verify application tests
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 22. Implement error handling tests
+  - [ ] 22.1 Create validation error tests
+    - Test descriptive error messages for validation failures
+    - Test error context inclusion
+    - _Requirements: 19.1_
+  - [ ] 22.2 Create file system error tests
+    - Test file system error handling with file paths
+    - _Requirements: 19.2_
+  - [ ] 22.3 Create network error tests
+    - Test network error handling with retry information
+    - _Requirements: 19.3_
+  - [ ] 22.4 Create AI provider error tests
+    - Test AI provider error handling with provider context
+    - _Requirements: 19.4_
+  - [ ] 22.5 Create rendering error tests
+    - Test rendering error handling with slide context
+    - _Requirements: 19.5_
+  - [ ] 22.6 Create pipeline error tests
+    - Test pipeline error handling with stage context
+    - _Requirements: 19.6_
+
+- [ ] 23. Implement integration tests
+  - [ ] 23.1 Create CLI magic command integration test
+    - Test full pipeline execution from CLI
+    - Test PPTX file creation
+    - _Requirements: 20.1_
+  - [ ] 23.2 Create API integration test
+    - Test full stack from API request to PPTX generation
+    - _Requirements: 20.2_
+  - [ ] 23.3 Create web app integration test
+    - Test data flow between frontend and backend
+    - _Requirements: 20.3_
+  - [ ] 23.4 Create MCP server integration test
+    - Test core engine invocation from MCP tools
+    - _Requirements: 20.4_
+  - [ ] 23.5 Create layer interaction integration test
+    - Test data passing between layers
+    - _Requirements: 20.5_
+  - [ ] 23.6 Create multi-renderer integration test
+    - Test consistent output from different renderers
+    - _Requirements: 20.6_
+
+- [ ] 24. Implement E2E tests
+  - [ ] 24.1 Create CLI workflow E2E tests
+    - Test magic command with prompt
+    - Test generate command from JSON
+    - Test validate command
+    - Test init command
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10_
+  - [ ] 24.2 Create API workflow E2E tests
+    - Test complete API request/response cycle
+    - Test file generation and download
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8_
+  - [ ] 24.3 Create MCP workflow E2E tests
+    - Test MCP tool execution
+    - Test stdio communication
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
+  - [ ] 24.4 Create full pipeline E2E test
+    - Test complete presentation generation workflow
+    - Test all pipeline stages
+    - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6_
+
+- [ ] 25. Implement performance tests
+  - [ ] 25.1 Create single slide performance test
+    - Test generation completes within 100ms
+    - _Requirements: 21.1_
+  - [ ] 25.2 Create 10-slide performance test
+    - Test generation completes within 1 second
+    - _Requirements: 21.2_
+  - [ ] 25.3 Create layout engine performance test
+    - Test layout processing within 50ms per slide
+    - _Requirements: 21.3_
+  - [ ] 25.4 Create theme application performance test
+    - Test theme application within 20ms per slide
+    - _Requirements: 21.4_
+  - [ ] 25.5 Create PPTX rendering performance test
+    - Test PPTX rendering within 100ms per slide
+    - _Requirements: 21.5_
+
+- [ ] 26. Implement edge case tests
+  - [ ] 26.1 Create empty deck edge case tests
+    - Test empty deck handling
+    - _Requirements: 22.1_
+  - [ ] 26.2 Create long text edge case tests
+    - Test text wrapping and truncation
+    - _Requirements: 22.2_
+  - [ ] 26.3 Create invalid color edge case tests
+    - Test fallback color usage
+    - _Requirements: 22.3_
+  - [ ] 26.4 Create missing field edge case tests
+    - Test validation catches missing fields
+    - _Requirements: 22.4_
+  - [ ] 26.5 Create circular reference edge case tests
+    - Test circular reference detection
+    - _Requirements: 22.5_
+  - [ ] 26.6 Create maximum limit edge case tests
+    - Test warnings/errors for exceeding limits
+    - _Requirements: 22.6_
+
+- [ ] 27. Checkpoint - Verify all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 28. Set up CI/CD integration
+  - [ ] 28.1 Create GitHub Actions workflow
+    - Create test.yml workflow file
+    - Configure matrix for Node.js versions (18.x, 20.x)
+    - Set up pnpm and Node.js
+    - Configure test execution with mock mode
+    - _Requirements: 24.1, 24.2, 24.3_
+  - [ ] 28.2 Configure coverage reporting
+    - Set up coverage generation
+    - Configure Codecov upload
+    - Set up coverage threshold checking
+    - _Requirements: 24.1, 24.2, 24.3_
+  - [ ] 28.3 Configure test artifacts
+    - Set up test result archiving
+    - Configure coverage report archiving
+    - Set up E2E result archiving
+    - _Requirements: 24.1, 24.2, 24.3_
+  - [ ] 28.4 Configure Turbo for test caching
+    - Update turbo.json with test pipeline
+    - Configure cache outputs
+    - Set up cache inputs
+    - _Requirements: 24.1, 24.2, 24.3_
+  - [ ] 28.5 Add test scripts to package.json
+    - Add test:ci script
+    - Add test:coverage script
+    - Add test:e2e script
+    - Add test:unit and test:integration scripts
+    - _Requirements: 24.1, 24.2, 24.3_
+
+- [ ] 29. Verify coverage thresholds
+  - [ ] 29.1 Verify core package coverage (90%+)
+    - Check @kyro/core coverage
+    - _Requirements: 24.1_
+  - [ ] 29.2 Verify schema package coverage (90%+)
+    - Check @kyro/schema coverage
+    - _Requirements: 24.1_
+  - [ ] 29.3 Verify renderer package coverage (85%+)
+    - Check @kyro/renderer-pptx coverage
+    - Check @kyro/renderer-gslides coverage
+    - _Requirements: 24.1_
+  - [ ] 29.4 Verify layer package coverage (85%+)
+    - Check @kyro/theme-layer coverage
+    - Check @kyro/visual-layer coverage
+    - Check @kyro/export-layer coverage
+    - _Requirements: 24.1_
+  - [ ] 29.5 Verify utility package coverage (80%+)
+    - Check @kyro/design coverage
+    - Check @kyro/logger coverage
+    - Check @kyro/utils coverage
+    - Check @kyro/prompt coverage
+    - _Requirements: 24.1_
+  - [ ] 29.6 Verify application coverage (75%+)
+    - Check apps/cli coverage
+    - Check apps/api coverage
+    - Check apps/mcp-server coverage
+    - _Requirements: 24.1_
+  - [ ] 29.7 Verify overall coverage (80%+)
+    - Check workspace-wide coverage
+    - _Requirements: 24.2, 24.3_
+
+- [ ] 30. Final checkpoint and documentation
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- All tests use mock mode by default to avoid external API dependencies
+- Tests are organized following the co-location pattern (unit tests) and **tests** directories (integration tests)
+- E2E tests are placed in workspace-level test/e2e/ directory
+- Coverage thresholds are enforced: 80% overall, 90% for critical packages
+- Performance tests validate critical path execution times
+- CI/CD integration ensures automated test execution on every commit
+- Test data factories provide consistent, reusable test data
+- Mock infrastructure enables fast, deterministic testing without external dependencies

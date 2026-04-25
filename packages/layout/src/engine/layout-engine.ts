@@ -16,6 +16,8 @@ import type { Frame } from "../positioning/frame.js";
  * MUST be called before rendering
  */
 export function resolveLayout(tree: LayoutTree, bounds?: Frame): LayoutTree {
+  console.log(`            [resolveLayout] START - computing positions for ${(tree.root as any)?.children?.length || 0} children`);
+
   const defaultBounds: Frame = {
     x: 0,
     y: 0,
@@ -23,7 +25,21 @@ export function resolveLayout(tree: LayoutTree, bounds?: Frame): LayoutTree {
     height: 100,
   };
 
-  const positioned = layoutFlow(tree.root, bounds ?? defaultBounds);
+  const targetBounds = bounds ?? defaultBounds;
+  console.log(`            [resolveLayout] Bounds: ${targetBounds.width}% x ${targetBounds.height}% at (${targetBounds.x}%, ${targetBounds.y}%)`);
+
+  const positioned = layoutFlow(tree.root, targetBounds);
+
+  // Count positioned nodes
+  const countNodes = (node: any): number => {
+    if (!node) return 0;
+    if (node.type === "container" && node.children) {
+      return 1 + node.children.reduce((sum: number, child: any) => sum + countNodes(child), 0);
+    }
+    return 1;
+  };
+
+  console.log(`            [resolveLayout] COMPLETED - positioned ${countNodes(positioned)} nodes`);
 
   return {
     ...tree,

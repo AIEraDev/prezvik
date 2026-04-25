@@ -22,6 +22,8 @@ export interface TwoColumnContent {
 }
 
 export function layoutTwoColumn(content: TwoColumnContent): LayoutTree {
+  console.log(`        [layoutTwoColumn] Building two-column layout - title: "${content.title?.substring(0, 30) || "none"}...", left blocks: ${content.left?.length || 0}, right blocks: ${content.right?.length || 0}`);
+
   const children: (TextNode | ContainerNode)[] = [];
 
   // Title (optional)

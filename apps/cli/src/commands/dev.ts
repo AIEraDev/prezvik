@@ -55,7 +55,7 @@ async function generate(file: string, options: any) {
       return;
     }
 
-    await generateDeck(deck, options.output, options.theme);
+    await generateDeck(deck, options.output);
     log.success(`Generated ${options.output} (${deck.slides.length} slides)`);
   } catch (error: any) {
     logError(error);

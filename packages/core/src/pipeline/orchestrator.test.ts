@@ -28,9 +28,13 @@ describe("Pipeline Orchestrator", () => {
     if (fs.existsSync(testOutputDir)) {
       const files = fs.readdirSync(testOutputDir);
       for (const file of files) {
-        fs.unlinkSync(path.join(testOutputDir, file));
+        const filePath = path.join(testOutputDir, file);
+        const stat = fs.statSync(filePath);
+        if (stat.isFile()) {
+          fs.unlinkSync(filePath);
+        }
       }
-      fs.rmdirSync(testOutputDir);
+      // Don't remove the directory itself as it may contain subdirectories from other tests
     }
   });
 
@@ -40,6 +44,7 @@ describe("Pipeline Orchestrator", () => {
       const options: PipelineOptions = {
         outputPath,
         themeName: "executive",
+        mockMode: true,
       };
 
       await pipeline.execute("Create a 3-slide presentation about AI in education", options);
@@ -63,6 +68,7 @@ describe("Pipeline Orchestrator", () => {
         const outputPath = path.join(testOutputDir, `test-${testCase.type}.pptx`);
         const options: PipelineOptions = {
           outputPath,
+          mockMode: true,
         };
 
         await pipeline.execute(testCase.prompt, options);
@@ -80,6 +86,7 @@ describe("Pipeline Orchestrator", () => {
         const options: PipelineOptions = {
           outputPath,
           themeName: theme,
+          mockMode: true,
         };
 
         await pipeline.execute("Create a 3-slide presentation about AI", options);
@@ -94,6 +101,7 @@ describe("Pipeline Orchestrator", () => {
     it("should handle invalid output path", async () => {
       const options: PipelineOptions = {
         outputPath: "/invalid/path/that/does/not/exist/test.pptx",
+        mockMode: true,
       };
 
       await expect(pipeline.execute("Create a presentation", options)).rejects.toThrow();
@@ -103,6 +111,7 @@ describe("Pipeline Orchestrator", () => {
       const outputPath = path.join(testOutputDir, "test-empty.pptx");
       const options: PipelineOptions = {
         outputPath,
+        mockMode: true,
       };
 
       // Empty prompt should still generate a valid presentation
@@ -118,6 +127,7 @@ describe("Pipeline Orchestrator", () => {
       const outputPath = path.join(testOutputDir, "test-performance.pptx");
       const options: PipelineOptions = {
         outputPath,
+        mockMode: true,
       };
 
       const startTime = Date.now();

@@ -25,29 +25,39 @@ export * from "./clamp.js";
  * This is the main entry point - composes all polish operations
  */
 export function polishLayout(tree: LayoutTree): LayoutTree {
+  console.log(`          [polishLayout] START - root type: ${tree.root?.type}, children: ${(tree.root as any)?.children?.length || 0}`);
+
   let result = tree.root;
 
   // 1. Enforce hierarchy (clear visual levels)
+  console.log(`          [polishLayout] 1. Enforcing hierarchy...`);
   result = enforceHierarchy(result);
 
   // 2. Normalize padding (prevent cramped layouts)
+  console.log(`          [polishLayout] 2. Normalizing padding...`);
   result = normalizePadding(result, 4);
 
   // 3. Add breathing room (prevent dense content)
+  console.log(`          [polishLayout] 3. Adding breathing room...`);
   result = addBreathingRoom(result);
 
   // 4. Prevent excessive whitespace (keep it tight)
+  console.log(`          [polishLayout] 4. Preventing excessive whitespace...`);
   result = preventExcessiveWhitespace(result, 12);
 
   // 5. Normalize spacing (harmonic scale)
+  console.log(`          [polishLayout] 5. Normalizing spacing...`);
   result = normalizeSpacing(result);
 
   // 6. Apply vertical rhythm (baseline grid)
+  console.log(`          [polishLayout] 6. Applying vertical rhythm...`);
   result = applyVerticalRhythm(result, 4);
 
   // 7. Balance layout (visual stability)
+  console.log(`          [polishLayout] 7. Balancing layout...`);
   result = balanceLayout(result);
 
+  console.log(`          [polishLayout] COMPLETED`);
   return {
     ...tree,
     root: result,

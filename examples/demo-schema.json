@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "meta": {
+    "title": "Layered Mode Demo",
+    "language": "en",
+    "goal": "inform",
+    "tone": "modern"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "type": "hero",
+      "intent": "Title slide introducing the presentation",
+      "layout": "center_focus",
+      "content": [
+        {
+          "type": "heading",
+          "value": "Layered Architecture Demo",
+          "level": "h1",
+          "emphasis": "high"
+        },
+        {
+          "type": "text",
+          "value": "Comparing Legacy vs Layered Rendering Modes",
+          "emphasis": "medium"
+        }
+      ]
+    },
+    {
+      "id": "slide-2",
+      "type": "content",
+      "intent": "Explain the three layers",
+      "layout": "two_column",
+      "content": [
+        {
+          "type": "heading",
+          "value": "Three-Layer Architecture",
+          "level": "h2",
+          "emphasis": "high"
+        },
+        {
+          "type": "bullets",
+          "items": [{ "text": "Theme Layer: Color palette generation" }, { "text": "Visual Layer: Procedural backgrounds and shapes" }, { "text": "Export Layer: Multi-format rendering" }]
+        }
+      ]
+    },
+    {
+      "id": "slide-3",
+      "type": "data",
+      "intent": "Show performance metrics",
+      "layout": "grid_2x2",
+      "content": [
+        {
+          "type": "heading",
+          "value": "Performance Metrics",
+          "level": "h2",
+          "emphasis": "high"
+        },
+        {
+          "type": "stat",
+          "value": "< 100ms",
+          "label": "Theme Layer",
+          "visualWeight": "hero"
+        },
+        {
+          "type": "stat",
+          "value": "< 500ms",
+          "label": "Visual Layer",
+          "visualWeight": "emphasis"
+        },
+        {
+          "type": "stat",
+          "value": "< 1000ms",
+          "label": "Export Layer",
+          "visualWeight": "emphasis"
+        }
+      ]
+    },
+    {
+      "id": "slide-4",
+      "type": "closing",
+      "intent": "Closing slide",
+      "layout": "center_focus",
+      "content": [
+        {
+          "type": "heading",
+          "value": "Ready for Testing",
+          "level": "h1",
+          "emphasis": "high"
+        },
+        {
+          "type": "text",
+          "value": "Enable with KYRO_PIPELINE_MODE=layered",
+          "emphasis": "medium"
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js"
     }
   },
   "scripts": {
@@ -17,14 +21,18 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "openai": "^4.0.0",
-    "@anthropic-ai/sdk": "^0.32.0",
-    "groq-sdk": "^0.8.0"
+    "ai": "^4.1.1",
+    "@ai-sdk/openai": "^1.0.4",
+    "@ai-sdk/anthropic": "^1.0.4",
+    "@ai-sdk/groq": "^1.0.4",
+    "@ai-sdk/google": "^1.0.4",
+    "@kyro/schema": "workspace:*",
+    "@kyro/logger": "workspace:*",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.4.0",
-    "vitest": "^1.0.0",
-    "@kyro/schema": "workspace:*"
+    "vitest": "^1.0.0"
   }
 }

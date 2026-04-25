@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/black.css">
+  <style>
+/* Base styles */
+.reveal {
+  font-family: Open Sans, sans-serif;
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: Montserrat, sans-serif;
+}
+
+/* Slide container */
+.reveal .slides section {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Decorations layer */
+.slide-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Content layer */
+.slide-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+/* Text content */
+.text-content {
+  box-sizing: border-box;
+}
+
+/* Image content */
+.image-content {
+  overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .text-content {
+    font-size: 0.8em;
+  }
+}
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+    <section data-slide-id="slide-1" style="background: linear-gradient(45deg, #1a365d 0%, #2c5282 50%, #2c7a7b 100%);">
+      <div class="slide-decorations">
+        <svg class="shape-decoration" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+          <rect x="50" y="50" width="200" height="100" rx="10" fill="#3182ce"  opacity="0.8" />
+        </svg>
+        <svg class="shape-decoration" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+          <circle cx="750" cy="450" r="50" fill="#e53e3e"  opacity="0.6" />
+        </svg>
+      </div>
+      <div class="slide-content">
+        <div class="text-content" style="position: absolute; left: 100px; top: 200px; width: 760px; height: 100px; opacity: 1; font-family: Arial;
+        font-size: 48px;
+        color: #ffffff;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        font-weight: bold;">
+          Export Layer Verification
+        </div>
+        <div class="text-content" style="position: absolute; left: 100px; top: 320px; width: 760px; height: 60px; opacity: 1; font-family: Arial;
+        font-size: 24px;
+        color: #cbd5e0;
+        text-align: center;
+        display: flex;
+        align-items: center;">
+          Testing PPTX and HTML rendering with gradients and shapes
+        </div>
+      </div>
+    </section>
+    <section data-slide-id="slide-2" style="background: radial-gradient(circle 70% at 50% 50%, #667eea 0%, #764ba2 100%);">
+      <div class="slide-decorations">
+
+      </div>
+      <div class="slide-content">
+        <div class="text-content" style="position: absolute; left: 100px; top: 150px; width: 760px; height: 240px; opacity: 1; font-family: Arial;
+        font-size: 32px;
+        color: #ffffff;
+        text-align: center;
+        display: flex;
+        align-items: center;">
+          Radial Gradient Background
+
+This slide demonstrates radial gradient rendering in both PPTX and HTML formats.
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      transition: 'slide',
+      controls: true,
+      progress: true,
+      center: false,
+      width: 960,
+      height: 540,
+      margin: 0,
+      minScale: 0.2,
+      maxScale: 2.0
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+/**
+ * Pipeline Stage Integration Tests
+ *
+ * Tests the transformation between each pipeline stage:
+ * - Blueprint → Layout
+ * - Layout → Positioning
+ * - Positioning → Theming
+ * - Theming → Rendering
+ */
+
+import { describe, it, expect, beforeEach } from "vitest";
+import { BlueprintGenerator } from "@kyro/ai";
+import { validateBlueprint } from "@kyro/schema";
+import { LayoutEngineV2, PositioningEngine } from "@kyro/layout";
+import { ThemeResolver } from "@kyro/design";
+import { renderPPTXToFile } from "@kyro/renderer-pptx";
+import type { KyroBlueprint } from "@kyro/schema";
+import * as fs from "node:fs";
+import * as path from "node:path";
+
+describe("Pipeline Stage Integration Tests", () => {
+  let testOutputDir: string;
+
+  beforeEach(() => {
+    testOutputDir = path.join(process.cwd(), "test-output");
+    if (!fs.existsSync(testOutputDir)) {
+      fs.mkdirSync(testOutputDir, { recursive: true });
+    }
+  });
+
+  describe("Stage 1→2: Blueprint → Layout Transformation", () => {
+    it("should transform valid Blueprint into LayoutTree structures", async () => {
+      // Generate Blueprint using mock mode
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 3-slide presentation about AI", { mockMode: true });
+
+      // Validate Blueprint
+      const validationResult = validateBlueprint(blueprint);
+      expect(validationResult.success).toBe(true);
+
+      // Transform to Layout
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      // Verify layout trees were created
+      expect(layoutTrees).toBeDefined();
+      expect(Array.isArray(layoutTrees)).toBe(true);
+      expect(layoutTrees.length).toBe(blueprint.slides.length);
+
+      // Verify each layout tree has a root node
+      layoutTrees.forEach((tree) => {
+        expect(tree.root).toBeDefined();
+        expect(tree.root.id).toBeDefined();
+        expect(tree.root.type).toBeDefined();
+
+        // Verify root is a container
+        expect(tree.root.type).toBe("container");
+      });
+    });
+
+    it("should apply correct layout rules based on slide layout type", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      // Verify layout rules were applied
+      layoutTrees.forEach((tree) => {
+        const container = tree.root as any;
+
+        // Verify layout mode is set
+        expect(container.layout).toBeDefined();
+        expect(container.layout.type).toBeDefined();
+
+        // Verify layout type is one of the valid modes
+        expect(["flow", "grid", "absolute"].includes(container.layout.type)).toBe(true);
+      });
+    });
+
+    it("should convert content blocks into layout nodes", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation with various content types", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      // Verify content blocks were converted
+      layoutTrees.forEach((tree) => {
+        const container = tree.root as any;
+
+        // Should have children for content blocks
+        expect(container.children).toBeDefined();
+        expect(Array.isArray(container.children)).toBe(true);
+
+        // Verify children have proper node types
+        container.children.forEach((child: any) => {
+          expect(child.id).toBeDefined();
+          expect(child.type).toBeDefined();
+          expect(["text", "container"].includes(child.type)).toBe(true);
+        });
+      });
+    });
+
+    it("should handle all slide types correctly", async () => {
+      const slideTypes = ["hero", "section", "content", "quote", "data", "closing"];
+
+      for (const slideType of slideTypes) {
+        const blueprint: KyroBlueprint = {
+          version: "2.0",
+          meta: {
+            title: `Test ${slideType}`,
+            language: "en",
+            goal: "inform",
+            tone: "modern",
+          },
+          slides: [
+            {
+              id: "s1",
+              type: slideType as any,
+              intent: `Test ${slideType} slide`,
+              layout: "center_focus",
+              content: [
+                {
+                  type: "heading",
+                  value: "Test Heading",
+                  level: "h1",
+                  emphasis: "high",
+                },
+              ],
+            },
+          ],
+        };
+
+        const layoutEngine = new LayoutEngineV2();
+        const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+        expect(layoutTrees).toHaveLength(1);
+        expect(layoutTrees[0].root).toBeDefined();
+      }
+    });
+  });
+
+  describe("Stage 2→3: Layout → Positioning Transformation", () => {
+    it("should add _rect property to all layout nodes", async () => {
+      // Generate Blueprint and Layout
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      // Apply positioning
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Verify all nodes have _rect
+      positionedTrees.forEach((tree) => {
+        expect(tree.root._rect).toBeDefined();
+        expect(tree.root._rect?.x).toBeGreaterThanOrEqual(0);
+        expect(tree.root._rect?.y).toBeGreaterThanOrEqual(0);
+        expect(tree.root._rect?.width).toBeGreaterThan(0);
+        expect(tree.root._rect?.height).toBeGreaterThan(0);
+
+        // Check children recursively
+        const checkChildren = (node: any) => {
+          if (node.children) {
+            node.children.forEach((child: any) => {
+              expect(child._rect).toBeDefined();
+              expect(child._rect.x).toBeGreaterThanOrEqual(0);
+              expect(child._rect.y).toBeGreaterThanOrEqual(0);
+              expect(child._rect.width).toBeGreaterThan(0);
+              expect(child._rect.height).toBeGreaterThan(0);
+
+              checkChildren(child);
+            });
+          }
+        };
+
+        checkChildren(tree.root);
+      });
+    });
+
+    it("should use percentage-based coordinates (0-100)", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Verify coordinates are in 0-100 range (or larger for overflow)
+      positionedTrees.forEach((tree) => {
+        const checkCoordinates = (node: any) => {
+          if (node._rect) {
+            expect(node._rect.x).toBeGreaterThanOrEqual(0);
+            expect(node._rect.y).toBeGreaterThanOrEqual(0);
+            expect(node._rect.width).toBeGreaterThan(0);
+            expect(node._rect.height).toBeGreaterThan(0);
+
+            // Note: Height can exceed 100 if content overflows
+            // This is expected behavior for text estimation
+          }
+
+          if (node.children) {
+            node.children.forEach(checkCoordinates);
+          }
+        };
+
+        checkCoordinates(tree.root);
+      });
+    });
+
+    it("should respect layout modes (flow, grid, absolute)", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Verify positioning respects layout modes
+      positionedTrees.forEach((tree) => {
+        const container = tree.root as any;
+
+        if (container.layout?.type === "flow" && container.children?.length > 1) {
+          // Flow layout: children should be stacked or side-by-side
+          const child1 = container.children[0];
+          const child2 = container.children[1];
+
+          if (container.layout.direction === "vertical") {
+            // Vertical flow: second child should be below first
+            expect(child2._rect.y).toBeGreaterThan(child1._rect.y);
+          } else {
+            // Horizontal flow: second child should be to the right of first
+            expect(child2._rect.x).toBeGreaterThan(child1._rect.x);
+          }
+        }
+
+        if (container.layout?.type === "grid" && container.children?.length > 1) {
+          // Grid layout: children should be arranged in grid
+          const columns = container.layout.columns || 2;
+          const child1 = container.children[0];
+
+          // Second child should be in same row or next row
+          if (container.children.length >= columns) {
+            const childInNextColumn = container.children[1];
+            expect(childInNextColumn._rect.x).toBeGreaterThan(child1._rect.x);
+          }
+        }
+      });
+    });
+
+    it("should handle padding and margin correctly", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Verify padding is applied
+      positionedTrees.forEach((tree) => {
+        const container = tree.root as any;
+
+        if (container.padding && container.children?.length > 0) {
+          const firstChild = container.children[0];
+
+          // First child should start after padding
+          expect(firstChild._rect.x).toBeGreaterThanOrEqual(container.padding.left || 0);
+          expect(firstChild._rect.y).toBeGreaterThanOrEqual(container.padding.top || 0);
+        }
+      });
+    });
+  });
+
+  describe("Stage 3→4: Positioning → Theming Transformation", () => {
+    it("should apply theme tokens to positioned layout trees", async () => {
+      // Generate and position layout
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Apply theme
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify theme was applied
+      themedTrees.forEach((tree) => {
+        // Check background color
+        expect(tree.background).toBeDefined();
+        expect(tree.background).toBe("#FFFFFF"); // executive background
+
+        // Check text nodes have colors and fonts
+        const checkTextNodes = (node: any) => {
+          if (node.type === "text") {
+            expect(node.text.fontFamily).toBeDefined();
+            expect(node.text.color).toBeDefined();
+          }
+
+          if (node.children) {
+            node.children.forEach(checkTextNodes);
+          }
+        };
+
+        checkTextNodes(tree.root);
+      });
+    });
+
+    it("should resolve font roles to actual font families", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify font families are set
+      themedTrees.forEach((tree) => {
+        const checkFonts = (node: any) => {
+          if (node.type === "text") {
+            expect(node.text.fontFamily).toBe("Calibri"); // executive font
+          }
+
+          if (node.children) {
+            node.children.forEach(checkFonts);
+          }
+        };
+
+        checkFonts(tree.root);
+      });
+    });
+
+    it("should resolve color roles to actual color values", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify colors are set
+      themedTrees.forEach((tree) => {
+        const checkColors = (node: any) => {
+          if (node.type === "text") {
+            expect(node.text.color).toBeDefined();
+            expect(node.text.color).toMatch(/^#[0-9A-F]{6}$/i); // Valid hex color
+          }
+
+          if (node.children) {
+            node.children.forEach(checkColors);
+          }
+        };
+
+        checkColors(tree.root);
+      });
+    });
+
+    it("should preserve _rect coordinates after theming", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      // Store original coordinates
+      const originalCoords = positionedTrees.map((tree) => ({
+        x: tree.root._rect?.x,
+        y: tree.root._rect?.y,
+        width: tree.root._rect?.width,
+        height: tree.root._rect?.height,
+      }));
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify coordinates are preserved
+      themedTrees.forEach((tree, index) => {
+        expect(tree.root._rect?.x).toBe(originalCoords[index].x);
+        expect(tree.root._rect?.y).toBe(originalCoords[index].y);
+        expect(tree.root._rect?.width).toBe(originalCoords[index].width);
+        expect(tree.root._rect?.height).toBe(originalCoords[index].height);
+      });
+    });
+
+    it("should apply different themes correctly", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+
+      // Test different themes
+      const themes = ["executive", "minimal", "modern"];
+      const expectedBackgrounds = {
+        executive: "#FFFFFF",
+        minimal: "#FAFAFA",
+        modern: "#FFFFFF",
+      };
+
+      for (const theme of themes) {
+        const themedTrees = themeResolver.apply(positionedTrees, theme);
+
+        themedTrees.forEach((tree) => {
+          expect(tree.background).toBe(expectedBackgrounds[theme as keyof typeof expectedBackgrounds]);
+        });
+      }
+    });
+  });
+
+  describe("Stage 4→5: Theming → Rendering Transformation", () => {
+    it("should render themed layout trees to PPTX files", async () => {
+      // Generate complete pipeline
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 3-slide presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Render to PPTX
+      const outputPath = path.join(testOutputDir, "stage-integration-test.pptx");
+      await renderPPTXToFile(themedTrees, outputPath);
+
+      // Verify file was created
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Verify file size
+      const stats = fs.statSync(outputPath);
+      expect(stats.size).toBeGreaterThan(10000); // At least 10KB
+
+      // Verify file is a valid ZIP (PPTX is a ZIP archive)
+      const buffer = fs.readFileSync(outputPath);
+      const header = buffer.toString("hex", 0, 4);
+      expect(header).toBe("504b0304"); // ZIP file signature
+
+      // Clean up
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should create correct number of slides", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 5-slide pitch deck", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      const outputPath = path.join(testOutputDir, "stage-integration-slides.pptx");
+      await renderPPTXToFile(themedTrees, outputPath);
+
+      // Verify file was created
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Note: We can't easily verify slide count without parsing PPTX
+      // But we can verify the file is valid and has content
+
+      // Clean up
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should use coordinates from _rect property", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify all nodes have _rect before rendering
+      themedTrees.forEach((tree) => {
+        expect(tree.root._rect).toBeDefined();
+      });
+
+      const outputPath = path.join(testOutputDir, "stage-integration-coords.pptx");
+      await renderPPTXToFile(themedTrees, outputPath);
+
+      // Verify file was created (renderer didn't throw error about missing _rect)
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Clean up
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should apply fonts and colors from theme", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a presentation", { mockMode: true });
+
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify theme properties are set
+      themedTrees.forEach((tree) => {
+        const checkThemeProperties = (node: any) => {
+          if (node.type === "text") {
+            expect(node.text.fontFamily).toBeDefined();
+            expect(node.text.color).toBeDefined();
+          }
+
+          if (node.children) {
+            node.children.forEach(checkThemeProperties);
+          }
+        };
+
+        checkThemeProperties(tree.root);
+      });
+
+      const outputPath = path.join(testOutputDir, "stage-integration-theme.pptx");
+      await renderPPTXToFile(themedTrees, outputPath);
+
+      // Verify file was created
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Clean up
+      fs.unlinkSync(outputPath);
+    });
+  });
+
+  describe("End-to-End Stage Integration", () => {
+    it("should complete all stages without errors", async () => {
+      // Stage 1: Blueprint Generation
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 3-slide presentation about AI in education", { mockMode: true });
+
+      expect(blueprint).toBeDefined();
+      expect(blueprint.version).toBe("2.0");
+
+      // Stage 2: Validation
+      const validationResult = validateBlueprint(blueprint);
+      expect(validationResult.success).toBe(true);
+
+      // Stage 3: Layout Generation
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+      expect(layoutTrees).toHaveLength(blueprint.slides.length);
+
+      // Stage 4: Positioning
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+      expect(positionedTrees).toHaveLength(layoutTrees.length);
+      positionedTrees.forEach((tree) => {
+        expect(tree.root._rect).toBeDefined();
+      });
+
+      // Stage 5: Theming
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+      expect(themedTrees).toHaveLength(positionedTrees.length);
+      themedTrees.forEach((tree) => {
+        expect(tree.background).toBeDefined();
+      });
+
+      // Stage 6: Rendering
+      const outputPath = path.join(testOutputDir, "stage-integration-e2e.pptx");
+      await renderPPTXToFile(themedTrees, outputPath);
+
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Clean up
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should preserve data integrity through all stages", async () => {
+      const generator = new BlueprintGenerator({} as any);
+      const blueprint = await generator.generate("Create a 5-slide pitch deck for our AI startup", { mockMode: true });
+
+      const originalSlideCount = blueprint.slides.length;
+
+      // Run through all stages
+      const layoutEngine = new LayoutEngineV2();
+      const layoutTrees = await layoutEngine.generateLayout(blueprint);
+
+      const positioningEngine = new PositioningEngine();
+      const positionedTrees = positioningEngine.position(layoutTrees);
+
+      const themeResolver = new ThemeResolver();
+      const themedTrees = themeResolver.apply(positionedTrees, "executive");
+
+      // Verify data integrity
+      expect(themedTrees).toHaveLength(originalSlideCount);
+
+      // Verify coordinates are still valid
+      themedTrees.forEach((tree) => {
+        expect(tree.root._rect).toBeDefined();
+        expect(tree.root._rect?.x).toBeGreaterThanOrEqual(0);
+        expect(tree.root._rect?.y).toBeGreaterThanOrEqual(0);
+      });
+
+      // Verify theme is applied
+      themedTrees.forEach((tree) => {
+        expect(tree.background).toBeDefined();
+      });
+    });
+  });
+});

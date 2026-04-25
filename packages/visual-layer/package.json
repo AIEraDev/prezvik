@@ -1,0 +1,30 @@
+{
+  "name": "@kyro/visual-layer",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "@kyro/theme-layer": "workspace:*",
+    "canvas": "^3.2.3",
+    "konva": "^9.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "fast-check": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  }
+}

@@ -197,23 +197,24 @@ describe("BlueprintGenerator", () => {
 
   describe("generate", () => {
     it("should generate Blueprint from prompt", async () => {
-      const mockResponse = JSON.stringify({
-        version: "2.0",
+      const mockResponse = {
+        version: "2.0" as const,
         meta: {
           title: "AI in Education",
-          goal: "inform",
-          tone: "modern",
+          goal: "inform" as const,
+          tone: "modern" as const,
+          language: "en",
         },
         slides: [
           {
             id: "s1",
-            type: "hero",
+            type: "hero" as const,
             intent: "Introduce topic",
-            layout: "center_focus",
-            content: [{ type: "heading", value: "AI in Education", level: "h1" }],
+            layout: "center_focus" as const,
+            content: [{ type: "heading" as const, value: "AI in Education", level: "h1" as const, emphasis: "high" as const }],
           },
         ],
-      });
+      };
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
@@ -225,23 +226,24 @@ describe("BlueprintGenerator", () => {
     });
 
     it("should merge inferred meta with generated meta", async () => {
-      const mockResponse = JSON.stringify({
-        version: "2.0",
+      const mockResponse = {
+        version: "2.0" as const,
         meta: {
           title: "Generated Title",
-          goal: "inform",
-          tone: "modern",
+          goal: "inform" as const,
+          tone: "modern" as const,
+          language: "en",
         },
         slides: [
           {
             id: "slide-1",
-            type: "hero",
+            type: "hero" as const,
             intent: "Test slide",
-            layout: "center_focus",
-            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+            layout: "center_focus" as const,
+            content: [{ type: "heading" as const, value: "Test", level: "h1" as const, emphasis: "high" as const }],
           },
         ],
-      });
+      };
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
@@ -253,19 +255,19 @@ describe("BlueprintGenerator", () => {
     });
 
     it("should pass provider option to KyroAI", async () => {
-      const mockResponse = JSON.stringify({
-        version: "2.0",
-        meta: { title: "Test", goal: "inform", tone: "modern" },
+      const mockResponse = {
+        version: "2.0" as const,
+        meta: { title: "Test", goal: "inform" as const, tone: "modern" as const, language: "en" },
         slides: [
           {
             id: "slide-1",
-            type: "hero",
+            type: "hero" as const,
             intent: "Test slide",
-            layout: "center_focus",
-            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+            layout: "center_focus" as const,
+            content: [{ type: "heading" as const, value: "Test", level: "h1" as const, emphasis: "high" as const }],
           },
         ],
-      });
+      };
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
@@ -275,25 +277,25 @@ describe("BlueprintGenerator", () => {
     });
 
     it("should pass strategy option to KyroAI", async () => {
-      const mockResponse = JSON.stringify({
-        version: "2.0",
-        meta: { title: "Test", goal: "inform", tone: "modern" },
+      const mockResponse = {
+        version: "2.0" as const,
+        meta: { title: "Test", goal: "inform" as const, tone: "modern" as const, language: "en" },
         slides: [
           {
             id: "slide-1",
-            type: "hero",
+            type: "hero" as const,
             intent: "Test slide",
-            layout: "center_focus",
-            content: [{ type: "heading", value: "Test", level: "h1", emphasis: "high" }],
+            layout: "center_focus" as const,
+            content: [{ type: "heading" as const, value: "Test", level: "h1" as const, emphasis: "high" as const }],
           },
         ],
-      });
+      };
 
       vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
-      await generator.generate("Test prompt", { strategy: "quality" });
+      await generator.generate("Test prompt", { provider: "openai", strategy: "quality" });
 
-      expect(mockKyroAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ strategy: "quality" }));
+      expect(mockKyroAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ provider: "openai", strategy: "quality" }));
     });
 
     it("should throw BlueprintGenerationError on AI failure", async () => {
@@ -302,17 +304,18 @@ describe("BlueprintGenerator", () => {
       await expect(generator.generate("Test prompt")).rejects.toThrow(BlueprintGenerationError);
     });
 
-    it("should throw BlueprintGenerationError on parse failure", async () => {
-      vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue("invalid json");
+    it("should throw BlueprintGenerationError when AI returns invalid structure", async () => {
+      // With generateObject, this shouldn't happen since Zod validates, but test the error path
+      vi.mocked(mockKyroAI.generateSlideDeck).mockRejectedValue(new Error("Validation failed"));
 
       await expect(generator.generate("Test prompt")).rejects.toThrow(BlueprintGenerationError);
     });
   });
 
   describe("buildSystemPrompt", () => {
-    it("should include Blueprint v2 schema definition", () => {
+    it("should include Blueprint schema definition", () => {
       const prompt = generator.buildSystemPrompt();
-      expect(prompt).toContain("Blueprint v2");
+      expect(prompt).toContain("Blueprint");
       expect(prompt).toContain("version");
       expect(prompt).toContain("2.0");
     });
@@ -341,16 +344,16 @@ describe("BlueprintGenerator", () => {
       expect(prompt).toContain("code");
     });
 
-    it("should include example output", () => {
+    it("should include version requirement", () => {
       const prompt = generator.buildSystemPrompt();
-      expect(prompt).toContain("EXAMPLE OUTPUT");
-      expect(prompt).toContain('"version": "2.0"');
+      expect(prompt).toContain('"2.0"');
+      expect(prompt).toContain("version");
     });
 
     it("should specify JSON-only output", () => {
       const prompt = generator.buildSystemPrompt();
-      expect(prompt).toContain("ONLY valid JSON");
-      expect(prompt).toContain("no markdown");
+      expect(prompt).toContain("ONLY raw JSON");
+      expect(prompt).toContain("Zero markdown");
     });
   });
 });

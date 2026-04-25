@@ -7,6 +7,8 @@
 
 import PptxGenJS from "pptxgenjs";
 import type { LayoutTree, LayoutNode, TextNode, ImageNode, ShapeNode } from "../types.js";
+import type { ThemeSpec, SlideTheme } from "@kyro/design";
+import { DecorationEngine } from "../decoration-engine.js";
 import { pctXtoIn, pctYtoIn } from "../utils/units.js";
 
 // Minimum dimension to prevent invalid EMU values (Google Slides compatibility)
@@ -17,29 +19,51 @@ const MIN_DIMENSION_PCT = 1.0; // 1% minimum
  *
  * Contract: All nodes MUST have _rect computed by layout engine
  */
-export async function renderPPTX(slides: LayoutTree[]): Promise<PptxGenJS> {
+export async function renderPPTX(slides: LayoutTree[], themeSpec?: ThemeSpec): Promise<PptxGenJS> {
+  console.log(`    [renderPPTX] Starting PPTX generation for ${slides.length} slides...`);
+  console.log(`    [renderPPTX] Creating PptxGenJS instance...`);
+
   const pptx = new PptxGenJS();
+  const decorationEngine = new DecorationEngine();
+
+  console.log(`    [renderPPTX] PptxGenJS instance created, decoration engine ready`);
 
   // 10" × 5.625" — must match SLIDE_WIDTH_IN / SLIDE_HEIGHT_IN
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "Kyro";
+  console.log(`    [renderPPTX] Layout set to LAYOUT_WIDE`);
 
-  for (const tree of slides) {
+  for (let i = 0; i < slides.length; i++) {
+    const tree = slides[i];
+    console.log(`    [renderPPTX] Processing slide ${i + 1}/${slides.length}...`);
     const slide = pptx.addSlide();
+    console.log(`    [renderPPTX] Slide ${i + 1} added to presentation`);
 
-    // Background color - FORCE TEST COLOR
-    console.log(`[pptx-renderer] Slide background: ${tree.background || "undefined"}`);
-    if (tree.background) {
+    // Get slide theme from ThemeSpec by index
+    const slideTheme = themeSpec?.slideRhythm[i];
+
+    // Background color from themeSpec or fallback to tree.background
+    if (slideTheme && themeSpec) {
+      const bgColor = slideTheme.backgroundMode === "dark" ? themeSpec.palette.darkBg : themeSpec.palette.lightBg;
+      slide.background = { color: bgColor };
+
+      // Header band (drawn BEFORE content so content sits on top)
+      if (slideTheme.headerStyle === "band") {
+        renderHeaderBand(slide, slideTheme);
+      }
+
+      // Decorative shapes
+      decorationEngine.apply(slide, pptx, slideTheme);
+    } else if (tree.background) {
+      // Fallback to tree.background if no themeSpec
       slide.background = { color: tree.background };
-      console.log(`[pptx-renderer] Applied background: ${tree.background}`);
-    } else {
-      // Force test color to verify pptxgenjs works
-      slide.background = { color: "FF0000" }; // RED for testing
-      console.log(`[pptx-renderer] Applied TEST RED background`);
     }
 
     // Render node tree
-    renderNode(slide, tree.root);
+    renderNode(slide, tree.root, themeSpec, slideTheme);
+
+    // Render slide number
+    renderSlideNumber(slide, i + 1, slides.length, slideTheme, themeSpec);
   }
 
   return pptx;
@@ -48,18 +72,94 @@ export async function renderPPTX(slides: LayoutTree[]): Promise<PptxGenJS> {
 /**
  * Render and save to file
  */
-export async function renderPPTXToFile(slides: LayoutTree[], fileName: string = "output.pptx"): Promise<void> {
-  const pptx = await renderPPTX(slides);
-  await pptx.writeFile({ fileName });
+export async function renderPPTXToFile(slides: LayoutTree[], fileName: string = "output.pptx", themeSpec?: ThemeSpec): Promise<void> {
+  console.log(`    [renderPPTXToFile] Starting render to file: ${fileName}`);
+  console.log(`    [renderPPTXToFile] Calling renderPPTX for ${slides.length} slides...`);
+
+  const pptx = await renderPPTX(slides, themeSpec);
+  console.log(`    [renderPPTXToFile] PPTX object ready, writing to file...`);
+
+  try {
+    await pptx.writeFile({ fileName });
+    console.log(`    [renderPPTXToFile] File written successfully: ${fileName}`);
+  } catch (writeError) {
+    console.error(`    [renderPPTXToFile] ERROR writing file:`, writeError);
+    throw writeError;
+  }
+}
+
+/**
+ * Render header band
+ */
+function renderHeaderBand(slide: any, slideTheme: SlideTheme): void {
+  slide.addShape("rect", {
+    x: 0,
+    y: 0,
+    w: 10,
+    h: 0.88,
+    fill: { color: slideTheme.accentColor },
+    line: { color: slideTheme.accentColor },
+  });
+}
+
+/**
+ * Render slide number
+ */
+function renderSlideNumber(slide: any, currentSlide: number, _totalSlides: number, slideTheme?: SlideTheme, themeSpec?: ThemeSpec): void {
+  const color = slideTheme && themeSpec ? (slideTheme.backgroundMode === "dark" ? themeSpec.palette.textOnDark : themeSpec.palette.textOnLight) : "666666";
+
+  slide.addText(`${currentSlide}`, {
+    x: 9.5,
+    y: 5.3,
+    w: 0.5,
+    h: 0.3,
+    fontSize: 12,
+    color,
+    align: "right",
+    valign: "bottom",
+  });
+}
+
+/**
+ * Render chart for data slides (placeholder)
+ * TODO: Implement actual chart rendering using pptxgenjs chart API
+ */
+export function _renderChart(_slide: any, _data: any, _slideTheme?: SlideTheme, _themeSpec?: ThemeSpec): void {
+  // Placeholder: chart rendering would use pptxgenjs addChart API
+  // This would render bar charts, line charts, pie charts based on data
+  console.log("[pptx-renderer] Chart rendering not yet implemented");
+}
+
+/**
+ * Render table for comparison slides (placeholder)
+ * TODO: Implement actual table rendering using pptxgenjs table API
+ */
+export function _renderTable(_slide: any, _data: any, _slideTheme?: SlideTheme, _themeSpec?: ThemeSpec): void {
+  // Placeholder: table rendering would use pptxgenjs addTable API
+  // This would render comparison tables with styled headers and cells
+  console.log("[pptx-renderer] Table rendering not yet implemented");
+}
+
+/**
+ * Render icon (placeholder)
+ * TODO: Implement icon rendering using react-icons + sharp
+ */
+export function _renderIcon(_slide: any, iconName: string, _x: number, _y: number, _size: number, _color?: string): void {
+  // Placeholder: icon rendering would:
+  // 1. Load icon from react-icons
+  // 2. Convert to SVG
+  // 3. Use sharp to convert to PNG
+  // 4. Add as image to slide
+  console.log(`[pptx-renderer] Icon rendering not yet implemented: ${iconName}`);
 }
 
 /**
  * Node dispatcher
  */
-function renderNode(slide: any, node: LayoutNode): void {
+function renderNode(slide: any, node: LayoutNode, themeSpec?: ThemeSpec, slideTheme?: SlideTheme): void {
   switch (node.type) {
     case "text":
-      renderText(slide, node);
+      renderText(slide, node, themeSpec, slideTheme);
       break;
 
     case "image":
@@ -71,7 +171,7 @@ function renderNode(slide: any, node: LayoutNode): void {
       break;
 
     case "container":
-      node.children.forEach((child) => renderNode(slide, child));
+      node.children.forEach((child) => renderNode(slide, child, themeSpec, slideTheme));
       break;
   }
 }
@@ -79,12 +179,24 @@ function renderNode(slide: any, node: LayoutNode): void {
 /**
  * Render text node
  */
-function renderText(slide: any, node: TextNode): void {
+function renderText(slide: any, node: TextNode, themeSpec?: ThemeSpec, slideTheme?: SlideTheme): void {
   const r = assertRect(node);
+  console.log(`        [renderText] Text: "${node.content?.substring(0, 30)}..." at (${r.x.toFixed(1)}%, ${r.y.toFixed(1)}%), size: ${r.width.toFixed(1)}% x ${r.height.toFixed(1)}%`);
 
   // Enforce minimum dimensions to prevent invalid EMU values
   const width = Math.max(r.width, MIN_DIMENSION_PCT);
   const height = Math.max(r.height, MIN_DIMENSION_PCT);
+
+  // Font selection: display font for titles, body font for everything else
+  const isTitle = node.text.fontRole === "hero" || node.text.fontRole === "h1" || node.text.fontRole === "h2";
+  const fontFace = isTitle && themeSpec ? themeSpec.typography.displayFont : (themeSpec?.typography.bodyFont ?? node.text.fontFamily ?? "Calibri");
+
+  // Color selection from ThemeSpec
+  let color = node.text.color;
+  if (!color && themeSpec && slideTheme) {
+    const isOnDark = slideTheme.backgroundMode === "dark";
+    color = isOnDark ? themeSpec.palette.textOnDark : themeSpec.palette.textOnLight;
+  }
 
   slide.addText(node.content, {
     x: pctXtoIn(r.x),
@@ -93,10 +205,10 @@ function renderText(slide: any, node: TextNode): void {
     h: pctYtoIn(height),
 
     fontSize: node.text.fontSize,
-    fontFace: node.text.fontFamily ?? "Calibri",
+    fontFace,
     bold: node.text.fontWeight === "bold",
     italic: node.text.italic ?? false,
-    color: node.text.color ?? "000000",
+    color: color ?? "000000",
     align: mapAlign(node.text.align),
     valign: "top",
 
@@ -132,10 +244,11 @@ function isValidImageUrl(url: string): boolean {
  */
 function renderImage(slide: any, node: ImageNode): void {
   const r = assertRect(node);
+  console.log(`        [renderImage] Image at (${r.x.toFixed(1)}%, ${r.y.toFixed(1)}%), src: ${node.src?.substring(0, 30)}...`);
 
   // Validate image URL
   if (!isValidImageUrl(node.src)) {
-    console.warn(`[pptx-renderer] Invalid or unsupported image URL: ${node.src?.substring(0, 50)}... Rendering placeholder.`);
+    console.warn(`        [renderImage] Invalid or unsupported image URL: ${node.src?.substring(0, 50)}... Rendering placeholder.`);
     // Render placeholder shape instead
     slide.addShape("rect", {
       x: pctXtoIn(r.x),
@@ -193,6 +306,7 @@ function renderImage(slide: any, node: ImageNode): void {
  */
 function renderShape(slide: any, node: ShapeNode): void {
   const r = assertRect(node);
+  console.log(`        [renderShape] Shape: ${node.shape} at (${r.x.toFixed(1)}%, ${r.y.toFixed(1)}%)`);
 
   // Enforce minimum dimensions to prevent invalid EMU values
   const width = Math.max(r.width, MIN_DIMENSION_PCT);

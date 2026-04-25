@@ -1,12 +1,14 @@
 /**
  * Blueprint Generator
  *
- * Transforms user prompts into valid Blueprint v2 JSON using KyroAI
+ * Transforms user prompts into valid Blueprint JSON using KyroAI
  */
 
 import type { KyroBlueprint, Slide } from "@kyro/schema";
 import type { KyroAI } from "../kyro-ai.js";
-import type { RoutingStrategy } from "../adapters/types.js";
+import { createLogger } from "@kyro/logger";
+
+const logger = createLogger({ context: "BlueprintGenerator" });
 
 /**
  * Blueprint Generator configuration options
@@ -16,7 +18,7 @@ import type { RoutingStrategy } from "../adapters/types.js";
  * const options: BlueprintGeneratorOptions = {
  *   provider: "openai",
  *   temperature: 0.7,
- *   maxTokens: 2000,
+ *   maxTokens: 4000,
  *   mockMode: false
  * };
  * ```
@@ -24,10 +26,17 @@ import type { RoutingStrategy } from "../adapters/types.js";
 export interface BlueprintGeneratorOptions {
   /**
    * AI provider for Blueprint generation
-   * @default "openai"
-   * @example "openai" | "anthropic" | "groq"
+   * @default "groq"
+   * @example "openai" | "anthropic" | "groq" | "gemini"
    */
   provider?: string;
+
+  /**
+   * Strategy for model selection - affects speed/quality tradeoff
+   * @default "speed"
+   * @example "speed" | "balanced" | "quality"
+   */
+  strategy?: "speed" | "balanced" | "quality";
 
   /**
    * Temperature for AI generation (0.0 - 1.0)
@@ -38,15 +47,9 @@ export interface BlueprintGeneratorOptions {
 
   /**
    * Maximum tokens for AI generation
-   * @default 2000
+   * @default 4000
    */
   maxTokens?: number;
-
-  /**
-   * Routing strategy for AI provider selection
-   * @default "balanced"
-   */
-  strategy?: RoutingStrategy;
 
   /**
    * Mock mode for testing - uses template generation instead of AI
@@ -159,34 +162,33 @@ export class BlueprintGenerator {
     try {
       // Only use mock mode if explicitly requested
       if (options.mockMode === true) {
-        console.log("  [AI] Using mock mode (template-based generation) - explicitly requested");
+        logger.info("Using mock mode (template-based generation) - explicitly requested");
         return this.generateFromTemplate(prompt);
       }
 
-      console.log(`  [AI] Provider: ${options.provider || "auto-detect"}`);
-      console.log(`  [AI] Temperature: ${options.temperature || 0.7}`);
-      console.log(`  [AI] Sending prompt to AI provider...`);
+      logger.info({ provider: options.provider || "auto-detect", temperature: options.temperature || 0.7 }, "Generating blueprint");
 
       // Infer meta information from prompt
       const meta = this.inferMeta(prompt);
-      console.log(`  [AI] Inferred meta - Goal: ${meta.goal}, Tone: ${meta.tone}`);
+      logger.info({ goal: meta.goal, tone: meta.tone }, "Inferred meta");
 
       // Build system prompt with Blueprint schema
       const systemPrompt = this.buildSystemPrompt();
 
-      // Generate Blueprint using KyroAI
+      // Generate Blueprint using KyroAI with structured outputs
+      // Returns validated KyroBlueprint directly - no parsing needed
       const startTime = Date.now();
-      const response = await this.kyroAI.generateSlideDeck(`${systemPrompt}\n\nUser request: ${prompt}`, {
+      const blueprint = await this.kyroAI.generateSlideDeck(`${systemPrompt}\n\nUser request: ${prompt}`, {
         provider: options.provider,
-        strategy: options.strategy || "balanced",
+        strategy: options.strategy || "speed",
+        temperature: options.temperature,
+        maxTokens: options.maxTokens,
       });
       const aiDuration = Date.now() - startTime;
-      console.log(`  [AI] Received response from AI provider (${(aiDuration / 1000).toFixed(2)}s)`);
+      logger.info({ duration: `${(aiDuration / 1000).toFixed(2)}s`, slides: blueprint.slides.length }, "Generated Blueprint via AI");
 
-      // Parse response and extract JSON
-      console.log(`  [AI] Parsing Blueprint JSON...`);
-      const blueprint = this.parseResponse(response);
-      console.log(`  [AI] Successfully parsed Blueprint with ${blueprint.slides.length} slides`);
+      // Note: With generateObject, the LLM is forced to follow the schema
+      // so manual validation of JSON-in-content is no longer necessary
 
       // Merge inferred meta with generated blueprint
       blueprint.meta = {
@@ -196,7 +198,7 @@ export class BlueprintGenerator {
 
       return blueprint;
     } catch (error) {
-      console.error(`  [AI] Generation failed: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error({ error: error instanceof Error ? error.message : String(error) }, "Generation failed");
 
       // Provide helpful error message if no providers are available
       if (error instanceof Error && error.message.includes("No LLM providers available")) {
@@ -245,7 +247,7 @@ export class BlueprintGenerator {
 
     // Extract topic (use first sentence or first 50 chars)
     const firstSentence = prompt.split(/[.!?]/)[0].trim();
-    const topic = firstSentence.length > 50 ? firstSentence.substring(0, 50) : firstSentence;
+    const topic = firstSentence.length > 50 ? firstSentence.substring(0, 50) : firstSentence || "Presentation";
 
     // Determine presentation type
     let presentationType: Keywords["presentationType"] = "generic";
@@ -271,33 +273,34 @@ export class BlueprintGenerator {
   }
 
   /**
-   * Build system prompt with Blueprint v2 schema and examples
+   * Build system prompt with Blueprint schema and examples
    */
   buildSystemPrompt(): string {
-    return `You are a presentation design expert. Generate a Blueprint v2 JSON structure for presentations.
+    return `You are a presentation design expert that outputs ONLY raw JSON.
 
-CRITICAL RULES:
-1. Output ONLY valid JSON - no markdown, no explanations, no code blocks
-2. Use Blueprint v2 schema with version "2.0"
-3. Include meta object with title, goal, tone, and audience
-4. Each slide must have: id, type, intent, layout, and content array
-5. Content blocks must be typed: heading, text, bullets, quote, stat, or code
+ABSOLUTE RULES — violating any of these makes the output unusable:
+1. Output RAW JSON only. Zero prose. Zero markdown. Zero code fences.
+2. Do NOT wrap output in \`\`\`json or \`\`\` — start your response with { and end with }
+3. Use Blueprint schema with version "2.0"
+4. Every slide needs: id, type, intent, layout, content (array)
+5. Do not truncate or summarize — output the complete JSON for all slides
 
 META FIELD VALUES:
 - goal: Must be one of ["inform", "persuade", "educate", "pitch", "report"]
 - tone: Must be one of ["formal", "modern", "bold", "minimal", "friendly"]
 - audience: Optional string describing target audience
 
-SLIDE TYPES:
-- hero: Opening slide with main title
-- section: Section divider
-- content: Main content slide
-- comparison: Side-by-side comparison
-- grid: Grid layout for multiple items
-- quote: Testimonial or quote
-- data: Data visualization or stats
-- callout: Important highlight
-- closing: Final slide
+SLIDE TYPES (use these — pick the best fit for each slide's content):
+- hero: Opening title slide (always use for slide 1)
+- section: Bold section divider between major topics
+- bullet-list: Content with a heading + bullet points (most common)
+- two-column: Two parallel columns of content or comparison
+- stat-trio: Exactly 3 key statistics or metrics
+- quote: Single powerful quote with attribution
+- comparison: Explicit A vs B comparison with labels
+- timeline: Ordered steps, phases, or milestones
+- grid: 4–6 items displayed as cards (features, benefits, team)
+- closing: Final slide — CTA, thank you, or next steps
 
 LAYOUT TYPES:
 - center_focus: Centered content
@@ -318,45 +321,7 @@ CONTENT BLOCK TYPES:
 - stat: { type: "stat", value: "number", label: "description", visualWeight: "normal"|"emphasis"|"hero" }
 - code: { type: "code", code: "code", language?: "javascript" }
 
-EXAMPLE OUTPUT:
-{
-  "version": "2.0",
-  "meta": {
-    "title": "AI in Education",
-    "goal": "educate",
-    "tone": "friendly",
-    "audience": "educators"
-  },
-  "slides": [
-    {
-      "id": "s1",
-      "type": "hero",
-      "intent": "Introduce the topic of AI in education",
-      "layout": "center_focus",
-      "content": [
-        { "type": "heading", "value": "AI in Education", "level": "h1", "emphasis": "high" },
-        { "type": "text", "value": "Transforming learning for the future", "emphasis": "medium" }
-      ]
-    },
-    {
-      "id": "s2",
-      "type": "content",
-      "intent": "Explain key benefits of AI in education",
-      "layout": "two_column",
-      "content": [
-        { "type": "heading", "value": "Key Benefits", "level": "h2" },
-        { 
-          "type": "bullets", 
-          "items": [
-            { "text": "Personalized learning paths", "icon": "🎯" },
-            { "text": "Real-time feedback", "icon": "⚡" },
-            { "text": "Adaptive assessments", "icon": "📊" }
-          ]
-        }
-      ]
-    }
-  ]
-}`;
+Your entire response must be parseable by JSON.parse(). Start now with {`;
   }
 
   /**
@@ -420,6 +385,11 @@ EXAMPLE OUTPUT:
    * Generate title from prompt
    */
   private generateTitle(prompt: string): string {
+    // Handle empty prompt
+    if (!prompt || prompt.trim().length === 0) {
+      return "Untitled Presentation";
+    }
+
     // Extract first sentence or first 50 characters
     const firstSentence = prompt.split(/[.!?]/)[0].trim();
     const title = firstSentence.length > 50 ? firstSentence.substring(0, 50) + "..." : firstSentence;
@@ -514,32 +484,35 @@ EXAMPLE OUTPUT:
 
   /**
    * Repair common JSON formatting issues from LLM output
+   * Detects and rejects severely truncated JSON early
    */
   private repairJSON(jsonText: string): string {
-    let repaired = jsonText;
+    let repaired = jsonText.trim();
 
-    // Fix trailing commas in objects/arrays
+    // Strip any accidental code fences that slipped through
+    repaired = repaired.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+
+    // Fix trailing commas
     repaired = repaired.replace(/,(\s*[}\]])/g, "$1");
 
-    // Fix unclosed strings (basic attempt)
-    const openQuotes = (repaired.match(/"/g) || []).length;
-    if (openQuotes % 2 !== 0) {
-      repaired = repaired + '"';
-    }
-
-    // Fix unclosed objects/arrays (basic attempt)
+    // Detect and reject severely truncated JSON early
+    // (brace-stuffing creates valid-but-broken blueprints)
     const openBraces = (repaired.match(/{/g) || []).length;
     const closeBraces = (repaired.match(/}/g) || []).length;
-    const openBrackets = (repaired.match(/\[/g) || []).length;
-    const closeBrackets = (repaired.match(/\]/g) || []).length;
+    const deficit = openBraces - closeBraces;
 
-    // Add missing closing brackets/braces
-    for (let i = 0; i < openBraces - closeBraces; i++) {
-      repaired = repaired + "}";
+    if (deficit > 3) {
+      // More than 3 unclosed objects = response was cut off mid-slide
+      // Attempting to close this will produce broken content
+      throw new BlueprintGenerationError(`AI response was truncated (${deficit} unclosed objects). ` + `Try increasing maxTokens or reducing the number of slides.`, jsonText);
     }
-    for (let i = 0; i < openBrackets - closeBrackets; i++) {
-      repaired = repaired + "]";
-    }
+
+    // Safe to close small deficits (trailing comma cleanup artifacts)
+    for (let i = 0; i < deficit; i++) repaired += "}";
+
+    const openBrackets = (repaired.match(/\[/g) || []).length;
+    const closeBrackets = (repaired.match(/]/g) || []).length;
+    for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += "]";
 
     return repaired;
   }
@@ -566,10 +539,13 @@ EXAMPLE OUTPUT:
   private fillTemplate(template: BlueprintTemplate, keywords: Keywords): KyroBlueprint {
     const slides = template.slides.slice(0, keywords.slideCount);
 
+    // Use fallback text if topic is empty
+    const topicText = keywords.topic || "Presentation";
+
     return {
       version: "2.0",
       meta: {
-        title: keywords.topic,
+        title: keywords.topic || "Untitled Presentation",
         language: "en",
         goal: keywords.goal,
         tone: keywords.tone,
@@ -578,12 +554,12 @@ EXAMPLE OUTPUT:
       slides: slides.map((slide, index) => ({
         ...slide,
         id: `s${index + 1}`,
-        intent: slide.intent.replace("{topic}", keywords.topic),
+        intent: slide.intent.replace("{topic}", topicText),
         content: slide.content.map((block) => {
           if (block.type === "heading" || block.type === "text") {
             return {
               ...block,
-              value: block.value.replace("{topic}", keywords.topic),
+              value: block.value.replace("{topic}", topicText),
             };
           }
           return block;

@@ -1,147 +1,208 @@
 /**
- * Kyro AI
+ * Kyro AI - Vercel AI SDK Implementation
  *
- * High-level AI interface for Kyro-specific tasks
- * Wraps the adapter layer with domain-specific methods
+ * High-level AI interface using generateObject with Zod schemas
+ * Eliminates manual JSON parsing and repair logic
  */
 
-import { getRouter } from "./adapters/index.js";
-import type { LLMRequest, RoutingStrategy } from "./adapters/types.js";
+import { generateObject } from "ai";
+import { openai, anthropic, groq, google } from "./providers/index.js";
+import { getModelConfig, type Strategy } from "./model-router.js";
+import { KyroBlueprintSchema, type KyroBlueprint } from "@kyro/schema";
+import { KyroThemeSchema, type KyroTheme } from "@kyro/schema";
+import { z } from "zod";
+
+/**
+ * Helper to get provider instance by name
+ */
+function getProviderInstance(providerName: string): any {
+  const providers: Record<string, any> = {
+    openai,
+    anthropic,
+    groq,
+    google,
+    gemini: google,
+  };
+  return providers[providerName] || openai;
+}
 
 export class KyroAI {
-  private router = getRouter();
-
   /**
-   * Generate slide deck from prompt
+   * Generate slide deck blueprint using structured outputs
+   * Returns validated KyroBlueprint directly - no manual parsing needed
    */
-  async generateSlideDeck(prompt: string, options: { provider?: string; strategy?: RoutingStrategy } = {}): Promise<string> {
-    const request: LLMRequest = {
-      messages: [
-        {
-          role: "system",
-          content: "You are a presentation expert. Generate structured slide content in JSON format.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      maxTokens: 2000,
-    };
+  async generateSlideDeck(prompt: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number; timeout?: number } = {}): Promise<KyroBlueprint> {
+    const strategy = options.strategy || "speed";
+    const modelConfig = getModelConfig("blueprint", strategy, options.provider);
+    const timeout = options.timeout || 30000;
 
-    const response = options.provider ? await this.router.generate(options.provider, request) : await this.router.generateSmart(options.strategy || "balanced", request);
+    console.log(`      [KyroAI.generateSlideDeck] Task: blueprint, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
-    return response.text;
+    const providerInstance = getProviderInstance(modelConfig.provider);
+
+    const startTime = Date.now();
+    const { object } = await generateObject({
+      model: providerInstance(modelConfig.model),
+      schema: KyroBlueprintSchema,
+      system: `You are a presentation expert. Generate structured slide content following the Blueprint schema.
+
+Rules:
+- Each slide must have a unique ID, type, intent, layout, and content array
+- Content blocks must use the discriminated union pattern (type field determines structure)
+- Valid slide types: hero, section, content, comparison, grid, quote, data, callout, closing
+- Valid layouts: center_focus, two_column, three_column, split_screen, grid_2x2, hero_overlay, timeline, stat_highlight, image_dominant
+- Content emphasis: "low" | "medium" | "high"
+- Version must be "2.0"`,
+      prompt,
+      temperature: options.temperature ?? modelConfig.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? modelConfig.maxTokens ?? 4000,
+      // @ts-ignore
+      abortSignal: AbortSignal.timeout(timeout),
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`      [KyroAI.generateSlideDeck] SUCCESS in ${duration}ms, slides: ${object.slides?.length || 0}`);
+
+    return object as KyroBlueprint;
   }
 
   /**
-   * Enhance slide content
+   * Enhance slide content with structured output
    */
-  async enhanceContent(content: string, options: { provider?: string; strategy?: RoutingStrategy } = {}): Promise<string> {
-    const request: LLMRequest = {
-      messages: [
-        {
-          role: "system",
-          content: "You are a presentation expert. Improve slide content for clarity and impact.",
-        },
-        {
-          role: "user",
-          content: `Enhance this slide content:\n\n${content}`,
-        },
-      ],
-      temperature: 0.7,
-      maxTokens: 500,
-    };
+  async enhanceContent(content: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<{ enhanced: string; improvements: string[] }> {
+    const strategy = options.strategy || "balanced";
+    const modelConfig = getModelConfig("enhance", strategy, options.provider);
+    const providerInstance = getProviderInstance(modelConfig.provider);
 
-    const response = options.provider ? await this.router.generate(options.provider, request) : await this.router.generateSmart(options.strategy || "quality", request);
+    console.log(`      [KyroAI.enhanceContent] provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
-    return response.text;
+    const EnhancementSchema = z.object({
+      enhanced: z.string().describe("The improved slide content"),
+      improvements: z.array(z.string()).describe("List of specific improvements made"),
+    });
+
+    const { object } = await generateObject({
+      model: providerInstance(modelConfig.model),
+      schema: EnhancementSchema,
+      system: "You are a presentation expert. Improve slide content for clarity, impact, and engagement.",
+      prompt: `Enhance this slide content:\n\n${content}`,
+      temperature: options.temperature ?? modelConfig.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? modelConfig.maxTokens ?? 500,
+    });
+
+    return object as { enhanced: string; improvements: string[] };
   }
 
   /**
-   * Generate theme from description
+   * Generate theme from description using structured outputs
+   * Returns validated KyroTheme directly - no manual parsing needed
    */
-  async generateTheme(description: string, options: { provider?: string; strategy?: RoutingStrategy } = {}): Promise<any> {
-    const request: LLMRequest = {
-      messages: [
-        {
-          role: "system",
-          content: "You are a design system expert. Generate theme JSON with colors, typography, and spacing.",
-        },
-        {
-          role: "user",
-          content: `Generate a theme for: ${description}`,
-        },
-      ],
-      temperature: 0.7,
-      maxTokens: 1000,
-    };
+  async generateTheme(description: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<KyroTheme> {
+    const strategy = options.strategy || "speed";
+    const modelConfig = getModelConfig("theme", strategy, options.provider);
+    const providerInstance = getProviderInstance(modelConfig.provider);
 
-    const response = options.provider ? await this.router.generate(options.provider, request) : await this.router.generateSmart(options.strategy || "quality", request);
+    console.log(`      [KyroAI.generateTheme] Task: theme, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
-    return JSON.parse(response.text);
+    const startTime = Date.now();
+    const { object } = await generateObject({
+      model: providerInstance(modelConfig.model),
+      schema: KyroThemeSchema,
+      system: `You are a design system expert. Generate a complete theme following the Theme schema.
+
+Guidelines:
+- Use 6-digit hex colors without # prefix (e.g., "FF5733")
+- Typography scale: hero (24-120pt), h1 (20-80pt), h2 (16-60pt), h3 (14-48pt), body (10-32pt), caption (8-18pt)
+- Mood options: bold, minimal, corporate, playful, luxury, academic, tech, creative, elegant
+- Spacing scale: xs, sm, md, lg, xl, 2xl, 3xl (in points)
+- Motion defaultEntrance: fade, slide, zoom, scale, none
+- Include all required fields: id, name, version, mood, colorSystem, typography, spacing, radii, layout, media, icons`,
+      prompt: `Generate a theme for: ${description}\n\nCreate a complete design system with colors, typography, spacing, and visual effects.`,
+      temperature: options.temperature ?? modelConfig.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? modelConfig.maxTokens ?? 1000,
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`      [KyroAI.generateTheme] SUCCESS in ${duration}ms`);
+
+    return object as KyroTheme;
   }
 
   /**
-   * Summarize text
+   * Summarize text with structured output
    */
-  async summarize(text: string, maxLength: number = 100, options: { provider?: string; strategy?: RoutingStrategy } = {}): Promise<string> {
-    const request: LLMRequest = {
-      messages: [
-        {
-          role: "user",
-          content: `Summarize this in ${maxLength} characters or less:\n\n${text}`,
-        },
-      ],
-      temperature: 0.5,
-      maxTokens: 200,
-    };
+  async summarize(text: string, maxLength: number = 100, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<{ summary: string; keyPoints: string[] }> {
+    const strategy = options.strategy || "speed";
+    const modelConfig = getModelConfig("summarize", strategy, options.provider);
+    const providerInstance = getProviderInstance(modelConfig.provider);
 
-    const response = options.provider ? await this.router.generate(options.provider, request) : await this.router.generateSmart(options.strategy || "speed", request);
+    const SummarySchema = z.object({
+      summary: z.string().max(maxLength).describe(`Summary in ${maxLength} characters or less`),
+      keyPoints: z.array(z.string()).describe("Key points extracted from the text"),
+    });
 
-    return response.text;
+    const { object } = await generateObject<typeof SummarySchema._type>({
+      model: providerInstance(modelConfig.model),
+      schema: SummarySchema,
+      prompt: `Summarize this text:\n\n${text}\n\nProvide a summary within ${maxLength} characters and list key points.`,
+      temperature: options.temperature ?? modelConfig.temperature ?? 0.5,
+      maxTokens: options.maxTokens ?? modelConfig.maxTokens ?? 200,
+    });
+
+    return object;
   }
 
   /**
-   * Score content quality
+   * Score content quality with structured output
    */
-  async scoreContent(text: string, options: { provider?: string; strategy?: RoutingStrategy } = {}): Promise<{ score: number; feedback: string }> {
-    const request: LLMRequest = {
-      messages: [
-        {
-          role: "user",
-          content: `Score this presentation text from 1-10 for quality. Return JSON: { score: number, feedback: string }\n\n"${text}"`,
-        },
-      ],
-      temperature: 0.3,
-      maxTokens: 200,
-    };
+  async scoreContent(text: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<{ score: number; feedback: string; suggestions: string[] }> {
+    const strategy = options.strategy || "balanced";
+    const modelConfig = getModelConfig("score", strategy, options.provider);
+    const providerInstance = getProviderInstance(modelConfig.provider);
 
-    const response = options.provider ? await this.router.generate(options.provider, request) : await this.router.generateSmart(options.strategy || "quality", request);
+    const ScoreSchema = z.object({
+      score: z.number().min(1).max(10).describe("Quality score from 1-10"),
+      feedback: z.string().describe("Brief feedback on the content quality"),
+      suggestions: z.array(z.string()).describe("Specific suggestions for improvement"),
+    });
 
-    return JSON.parse(response.text);
+    const { object } = await generateObject<typeof ScoreSchema._type>({
+      model: providerInstance(modelConfig.model),
+      schema: ScoreSchema,
+      prompt: `Score this presentation text for quality:\n\n"${text}"\n\nProvide a score (1-10), feedback, and improvement suggestions.`,
+      temperature: options.temperature ?? modelConfig.temperature ?? 0.3,
+      maxTokens: options.maxTokens ?? modelConfig.maxTokens ?? 200,
+    });
+
+    return object;
   }
 
   /**
    * Get available providers
    */
   getAvailableProviders(): string[] {
-    return this.router.getAvailableAdapters().map((a) => a.name);
+    const providers: string[] = [];
+    if (process.env.OPENAI_API_KEY) providers.push("openai");
+    if (process.env.ANTHROPIC_API_KEY) providers.push("anthropic");
+    if (process.env.GROQ_API_KEY) providers.push("groq");
+    if (process.env.GEMINI_API_KEY) providers.push("gemini");
+    console.log(`      [KyroAI.getAvailableProviders] Found: ${providers.join(", ") || "none"}`);
+    return providers;
   }
 
   /**
    * Check if any provider is available
    */
   isAvailable(): boolean {
-    return this.router.hasAvailableAdapter();
+    return this.getAvailableProviders().length > 0;
   }
 
   /**
-   * Set default provider
+   * Set default provider (no-op in Vercel SDK - provider selected per call)
    */
-  setDefaultProvider(name: string): void {
-    this.router.setDefaultProvider(name);
+  setDefaultProvider(_name: string): void {
+    // Vercel SDK selects provider per call, so this is deprecated
+    console.warn("setDefaultProvider is deprecated with Vercel AI SDK - select provider per call instead");
   }
 }
 
@@ -155,7 +216,10 @@ let globalKyroAI: KyroAI | null = null;
  */
 export function getKyroAI(): KyroAI {
   if (!globalKyroAI) {
+    console.log("      [KyroAI] Creating new global instance");
     globalKyroAI = new KyroAI();
+  } else {
+    console.log("      [KyroAI] Reusing existing global instance");
   }
   return globalKyroAI;
 }

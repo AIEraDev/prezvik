@@ -12,7 +12,6 @@ import * as path from "path";
  * Generate presentation from deck schema
  */
 export async function generatePresentation(deck: any, options?: { theme?: string; outputDir?: string }): Promise<{ fileName: string; path: string }> {
-  const theme = options?.theme || deck.meta?.theme || "executive";
   const outputDir = options?.outputDir || process.cwd();
 
   // Generate unique filename
@@ -21,7 +20,7 @@ export async function generatePresentation(deck: any, options?: { theme?: string
   const filePath = path.join(outputDir, fileName);
 
   // Call core pipeline
-  await generateDeck(deck, filePath, theme);
+  await generateDeck(deck, filePath);
 
   return {
     fileName,
