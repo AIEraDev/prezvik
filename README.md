@@ -414,7 +414,7 @@ See our [Contributing Guide](./CONTRIBUTING.md) for details.
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
-Copyright (c) 2024 Prezvik
+Copyright (c) 2026 Prezvik
 
 ---
 
