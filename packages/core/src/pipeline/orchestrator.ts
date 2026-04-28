@@ -1,7 +1,7 @@
 /**
  * Pipeline Orchestrator
  *
- * Coordinates all 6 stages of the Kyro v1 pipeline:
+ * Coordinates all 6 stages of the Prezvik v1 pipeline:
  * 1. Blueprint generation (using BlueprintGenerator)
  * 2. Blueprint validation (using validateBlueprint)
  * 3. Layout generation (using LayoutEngine)
@@ -22,12 +22,13 @@ declare const console: {
   warn(...args: any[]): void;
 };
 
-import type { KyroBlueprint } from "@kyro/schema";
-import type { LayoutTree } from "@kyro/layout";
-import { BlueprintGenerator, type BlueprintGeneratorOptions, KyroAI } from "@kyro/ai";
-import { validateBlueprint, type ValidationResult } from "@kyro/schema";
-import { LayoutEngine, PositioningEngine, polishLayout } from "@kyro/layout";
-import { renderPPTXToFile } from "@kyro/renderer-pptx";
+import type { PrezVikBlueprint } from "@prezvik/schema";
+import type { LayoutTree } from "@prezvik/layout";
+import { BlueprintGenerator, type BlueprintGeneratorOptions, PrezVikAI } from "@prezvik/ai";
+import { validateBlueprint, type ValidationResult } from "@prezvik/schema";
+import { LayoutEngine, PositioningEngine, polishLayout } from "@prezvik/layout";
+import { ThemeAgent, buildStaticThemeSpec } from "@prezvik/design";
+import { renderPPTXToFile } from "@prezvik/renderer-pptx";
 import * as fs from "node:fs";
 
 /**
@@ -105,7 +106,10 @@ export interface PipelineContext {
    */
   stages: {
     /** Generated Blueprint v2 JSON (Stage 1) */
-    blueprint?: KyroBlueprint;
+    blueprint?: PrezVikBlueprint;
+
+    /** AI-generated theme specification (Stage 2.5) */
+    themeSpec?: import("@prezvik/design").ThemeSpec;
 
     /** Unpositioned layout trees (Stage 3) */
     layoutTrees?: LayoutTree[];
@@ -206,7 +210,7 @@ export class PipelineExecutionError extends Error {
 /**
  * Pipeline Orchestrator
  *
- * Executes the complete Kyro v1 pipeline from prompt to PPTX.
+ * Executes the complete Prezvik v1 pipeline from prompt to PPTX.
  *
  * The pipeline consists of 6 stages:
  * 1. Blueprint Generation - Transform prompt into Blueprint v2 JSON
@@ -234,8 +238,8 @@ export class Pipeline {
 
   constructor() {
     // Initialize components
-    const kyroAI = new KyroAI();
-    this.blueprintGenerator = new BlueprintGenerator(kyroAI);
+    const prezVikAI = new PrezVikAI();
+    this.blueprintGenerator = new BlueprintGenerator(prezVikAI);
     this.layoutEngine = new LayoutEngine();
     this.positioningEngine = new PositioningEngine({ overflowStrategy: "truncate" });
   }
@@ -288,7 +292,7 @@ export class Pipeline {
 
     // Log pipeline start
     console.log(`\n${"=".repeat(60)}`);
-    console.log(`Kyro Pipeline v1.0 - Starting Execution`);
+    console.log(`Prezvik Pipeline v1.0 - Starting Execution`);
     console.log(`${"=".repeat(60)}`);
     console.log(`Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}"`);
     console.log(`Theme: ${options.themeName || "executive"}`);
@@ -301,6 +305,9 @@ export class Pipeline {
 
       // Stage 2: Blueprint validation
       await this.executeStage2(context);
+
+      // Stage 2.5: ThemeAgent
+      await this.executeStageThemeAgent(context);
 
       // Stage 3: Layout generation
       await this.executeStage3(context);
@@ -388,7 +395,7 @@ export class Pipeline {
       }
 
       console.log(`  Validating Blueprint structure...`);
-      const result: ValidationResult<KyroBlueprint> = validateBlueprint(context.stages.blueprint);
+      const result: ValidationResult<PrezVikBlueprint> = validateBlueprint(context.stages.blueprint);
 
       if (!result.success) {
         const errorMessages = result.errors?.map((err) => `  - ${err.path.join(".")}: ${err.message}`).join("\n");
@@ -404,6 +411,27 @@ export class Pipeline {
       }
     } catch (error) {
       throw new PipelineExecutionError(`Blueprint validation failed: ${error instanceof Error ? error.message : String(error)}`, stage, { blueprint: context.stages.blueprint }, error instanceof Error ? error : undefined);
+    }
+  }
+
+  /**
+   * Stage 2.5: ThemeAgent — generate AI theme spec with fallback
+   */
+  private async executeStageThemeAgent(context: PipelineContext): Promise<void> {
+    console.log(`\n→ Stage 2.5: ThemeAgent`);
+    try {
+      const agent = new ThemeAgent();
+      context.stages.themeSpec = await agent.generateTheme(
+        context.stages.blueprint!,
+        { fallbackTheme: context.options.themeName || "executive" },
+      );
+      console.log("✓ Stage 2.5: ThemeAgent complete");
+    } catch (err) {
+      console.warn(`⚠ ThemeAgent failed, using static fallback: ${err}`);
+      context.stages.themeSpec = buildStaticThemeSpec(
+        context.stages.blueprint!,
+        context.options.themeName || "executive",
+      );
     }
   }
 
@@ -553,7 +581,7 @@ export class Pipeline {
         throw new Error("Positioned trees not found in context");
       }
 
-      await renderPPTXToFile(context.stages.positionedTrees, context.options.outputPath);
+      await renderPPTXToFile(context.stages.positionedTrees, context.options.outputPath, context.stages.themeSpec);
 
       // Verify output file exists
       if (!fs.existsSync(context.options.outputPath)) {

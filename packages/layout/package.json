@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/layout",
+  "name": "@prezvik/layout",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/schema": "workspace:*"
+    "@prezvik/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

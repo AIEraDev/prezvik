@@ -28,7 +28,7 @@ RUN npm install -g pnpm
 RUN pnpm build
 
 # Build the web app
-RUN pnpm --filter @kyro/web build
+RUN pnpm --filter @prezvik/web build
 
 # Production image, copy all the files and run next
 FROM base AS runner

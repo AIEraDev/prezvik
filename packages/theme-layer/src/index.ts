@@ -1,7 +1,7 @@
 /**
- * @kyro/theme-layer
+ * @prezvik/theme-layer
  *
- * Theme/Color Layer for Kyro presentation generation.
+ * Theme/Color Layer for Prezvik presentation generation.
  * Provides centralized color management, palette generation,
  * gradient creation, and blend mode operations.
  */

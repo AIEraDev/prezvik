@@ -191,7 +191,7 @@ export function getDefaultLayout(slideType: string): LayoutType {
 
 /**
  * Register a custom layout rule
- * Allows extending Kyro with custom layouts at runtime
+ * Allows extending Prezvik with custom layouts at runtime
  *
  * @param layoutId - Unique identifier for the layout
  * @param rule - Layout rule configuration

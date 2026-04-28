@@ -4,9 +4,9 @@
  * Provides error handling with fallback strategies for each pipeline layer.
  */
 
-import type { ColorPalette } from "@kyro/theme-layer";
-import type { VisualContext } from "@kyro/visual-layer";
-import type { RenderResult } from "@kyro/export-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
+import type { RenderResult } from "@prezvik/export-layer";
 
 /**
  * Custom error types for pipeline failures

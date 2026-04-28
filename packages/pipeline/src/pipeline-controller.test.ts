@@ -7,9 +7,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PipelineController } from "./pipeline-controller";
 import type { ThemeLayerFacade, VisualLayerFacade, ExportLayerFacade, CacheManager, PerformanceMonitor, LayoutTree, ThemeSpec } from "./pipeline-controller";
-import type { ColorPalette } from "@kyro/theme-layer";
-import type { SlideVisualContext } from "@kyro/visual-layer";
-import type { RenderResult, ValidationResult } from "@kyro/export-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
+import type { SlideVisualContext } from "@prezvik/visual-layer";
+import type { RenderResult, ValidationResult } from "@prezvik/export-layer";
 
 describe("PipelineController", () => {
   let mockThemeLayer: ThemeLayerFacade;

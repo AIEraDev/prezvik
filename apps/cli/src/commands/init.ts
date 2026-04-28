@@ -17,14 +17,14 @@ export const initCommand = new Command("init")
       version: "1.0",
       meta: {
         title: "My First Deck",
-        author: "Kyro",
+        author: "Prezvik",
       },
       slides: [
         {
           id: "slide-1",
           type: "hero",
           content: {
-            title: "Welcome to Kyro",
+            title: "Welcome to Prezvik",
             subtitle: "Generate professional slides with code",
           },
         },
@@ -32,7 +32,7 @@ export const initCommand = new Command("init")
           id: "slide-2",
           type: "bullet-list",
           content: {
-            title: "Why Kyro?",
+            title: "Why Prezvik?",
             bullets: ["Type-safe schema validation", "Adaptive layout engine", "Professional design system", "Flow-based positioning", "Visual polish layer"],
           },
         },
@@ -53,5 +53,5 @@ export const initCommand = new Command("init")
 
     writeJSON(options.output, template);
     log.success(`Created ${options.output}`);
-    log.info(`Run: kyro generate ${options.output}`);
+    log.info(`Run: prezvik generate ${options.output}`);
   });

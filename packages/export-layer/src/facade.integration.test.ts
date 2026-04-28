@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "vitest";
 import { ExportLayerFacade } from "./facade.js";
-import type { VisualContext } from "@kyro/visual-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
 
 describe("ExportLayerFacade Integration", () => {
   // Create a minimal valid Visual Context for testing

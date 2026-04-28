@@ -4,10 +4,10 @@
  * Generates Blueprint IR for reports
  */
 
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import type { Intent } from "../intent-detector.js";
 
-export function reportTemplate(intent: Intent): KyroBlueprint {
+export function reportTemplate(intent: Intent): PrezVikBlueprint {
   return {
     version: "2.0",
 
@@ -20,7 +20,7 @@ export function reportTemplate(intent: Intent): KyroBlueprint {
     },
 
     theme: {
-      name: "kyro_executive",
+      name: "prezvik_executive",
     },
 
     slides: [

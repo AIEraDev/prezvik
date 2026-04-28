@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/renderer-gslides",
+  "name": "@prezvik/renderer-gslides",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kyro/layout": "workspace:*",
+    "@prezvik/layout": "workspace:*",
     "googleapis": "^134.0.0"
   },
   "devDependencies": {

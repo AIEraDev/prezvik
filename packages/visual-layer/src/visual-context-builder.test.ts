@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { VisualContextBuilder } from "./visual-context-builder.js";
 import type { LayoutTree } from "./visual-context-builder.js";
 import type { LayoutNode } from "./theme-engine.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { VisualElement, BackgroundElement, ShapeElement } from "./models/visual-element.js";
 import type { ThemeTone, ThemeTypography } from "./models/visual-context.js";
 

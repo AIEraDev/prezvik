@@ -7,7 +7,7 @@
 
 import PptxGenJS from "pptxgenjs";
 import type { LayoutTree, LayoutNode, TextNode, ImageNode, ShapeNode } from "../types.js";
-import type { ThemeSpec, SlideTheme } from "@kyro/design";
+import type { ThemeSpec, SlideTheme, BackgroundStyle } from "@prezvik/design";
 import { DecorationEngine } from "../decoration-engine.js";
 import { pctXtoIn, pctYtoIn } from "../utils/units.js";
 
@@ -21,6 +21,21 @@ const MIN_DIMENSION_PCT = 1.0; // 1% minimum
  */
 export async function renderPPTX(slides: LayoutTree[], themeSpec?: ThemeSpec): Promise<PptxGenJS> {
   console.log(`    [renderPPTX] Starting PPTX generation for ${slides.length} slides...`);
+
+  if (themeSpec) {
+    console.log(`    [renderPPTX] ========== THEME SPEC RECEIVED ==========`);
+    console.log(`    [renderPPTX] Primary: ${themeSpec.palette.primary}`);
+    console.log(`    [renderPPTX] Secondary: ${themeSpec.palette.secondary}`);
+    console.log(`    [renderPPTX] Dark BG: ${themeSpec.palette.darkBg}`);
+    console.log(`    [renderPPTX] Light BG: ${themeSpec.palette.lightBg}`);
+    console.log(`    [renderPPTX] Display Font: ${themeSpec.typography.displayFont}`);
+    console.log(`    [renderPPTX] Body Font: ${themeSpec.typography.bodyFont}`);
+    console.log(`    [renderPPTX] Slide Rhythm: ${themeSpec.slideRhythm.length} slides`);
+    console.log(`    [renderPPTX] ============================================`);
+  } else {
+    console.log(`    [renderPPTX] WARNING: No ThemeSpec provided!`);
+  }
+
   console.log(`    [renderPPTX] Creating PptxGenJS instance...`);
 
   const pptx = new PptxGenJS();
@@ -30,7 +45,7 @@ export async function renderPPTX(slides: LayoutTree[], themeSpec?: ThemeSpec): P
 
   // 10" × 5.625" — must match SLIDE_WIDTH_IN / SLIDE_HEIGHT_IN
   pptx.layout = "LAYOUT_WIDE";
-  pptx.author = "Kyro";
+  pptx.author = "Prezvik";
   console.log(`    [renderPPTX] Layout set to LAYOUT_WIDE`);
 
   for (let i = 0; i < slides.length; i++) {
@@ -44,19 +59,57 @@ export async function renderPPTX(slides: LayoutTree[], themeSpec?: ThemeSpec): P
 
     // Background color from themeSpec or fallback to tree.background
     if (slideTheme && themeSpec) {
-      const bgColor = slideTheme.backgroundMode === "dark" ? themeSpec.palette.darkBg : themeSpec.palette.lightBg;
-      slide.background = { color: bgColor };
+      // Check if this slide needs a generated background image
+      const IMAGE_STYLES: BackgroundStyle[] = ["dark-geometric", "gradient-diagonal", "dark-gradient", "mesh-vivid", "noise-overlay", "split-panel", "brand-saturated"];
+      const needsBackgroundImage = IMAGE_STYLES.includes(slideTheme.backgroundStyle);
+
+      if (needsBackgroundImage) {
+        // Generate background image with geometric shapes
+        console.log(`    [renderPPTX] Slide ${i + 1}: Generating background image (${slideTheme.backgroundStyle})`);
+        try {
+          const { BackgroundGenerator } = await import("@prezvik/design");
+          const bgGenerator = new BackgroundGenerator();
+          const base64Bg = await bgGenerator.generate({
+            style: slideTheme.backgroundStyle,
+            palette: themeSpec.palette,
+            slideType: tree.slideId ?? "content",
+          });
+
+          // Apply as image background
+          slide.background = { data: base64Bg };
+          console.log(`    [renderPPTX] Slide ${i + 1}: Background image applied`);
+        } catch (error) {
+          console.error(`    [renderPPTX] Slide ${i + 1}: Failed to generate background image:`, error);
+          // Fallback to solid color
+          const bgColor = slideTheme.backgroundMode === "dark" ? themeSpec.palette.darkBg : themeSpec.palette.lightBg;
+          slide.background = { color: bgColor };
+        }
+      } else {
+        // Use solid color background
+        const bgColor = slideTheme.backgroundMode === "dark" ? themeSpec.palette.darkBg : themeSpec.palette.lightBg;
+        console.log(`    [renderPPTX] Slide ${i + 1}: Applying ${slideTheme.backgroundMode} background (${bgColor})`);
+        slide.background = { color: bgColor };
+      }
 
       // Header band (drawn BEFORE content so content sits on top)
       if (slideTheme.headerStyle === "band") {
+        console.log(`    [renderPPTX] Slide ${i + 1}: Adding header band (${slideTheme.accentColor})`);
         renderHeaderBand(slide, slideTheme);
       }
 
-      // Decorative shapes
-      decorationEngine.apply(slide, pptx, slideTheme);
+      // Only run DecorationEngine for solid color backgrounds
+      // Image backgrounds already contain all their visual chrome
+      const nonGeometricDecorations = slideTheme.decorations.filter((d) => d.kind !== "geometric-split");
+      if (!needsBackgroundImage && nonGeometricDecorations.length > 0) {
+        console.log(`    [renderPPTX] Slide ${i + 1}: Adding ${nonGeometricDecorations.length} decorations`);
+        decorationEngine.apply(slide, pptx, { ...slideTheme, decorations: nonGeometricDecorations });
+      }
     } else if (tree.background) {
+      console.log(`    [renderPPTX] Slide ${i + 1}: Using fallback background (${tree.background})`);
       // Fallback to tree.background if no themeSpec
       slide.background = { color: tree.background };
+    } else {
+      console.log(`    [renderPPTX] Slide ${i + 1}: WARNING - No background applied!`);
     }
 
     // Render node tree
@@ -157,6 +210,8 @@ export function _renderIcon(_slide: any, iconName: string, _x: number, _y: numbe
  * Node dispatcher
  */
 function renderNode(slide: any, node: LayoutNode, themeSpec?: ThemeSpec, slideTheme?: SlideTheme): void {
+  console.log(`        [renderNode] Processing node: type=${node.type}, id=${node.id}, hasContent=${!!(node as any).content}`);
+
   switch (node.type) {
     case "text":
       renderText(slide, node, themeSpec, slideTheme);
@@ -171,8 +226,12 @@ function renderNode(slide: any, node: LayoutNode, themeSpec?: ThemeSpec, slideTh
       break;
 
     case "container":
+      console.log(`        [renderNode] Container has ${node.children.length} children`);
       node.children.forEach((child) => renderNode(slide, child, themeSpec, slideTheme));
       break;
+
+    default:
+      console.warn(`        [renderNode] Unknown node type: ${(node as any).type}`);
   }
 }
 

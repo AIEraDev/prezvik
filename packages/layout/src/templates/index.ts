@@ -1,5 +1,5 @@
 /**
- * Kyro Template Agent
+ * Prezvik Template Agent
  *
  * Infinite template generation with bounded constraints.
  *

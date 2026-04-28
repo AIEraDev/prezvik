@@ -1,5 +1,5 @@
 /**
- * Kyro Layout Engine
+ * Prezvik Layout Engine
  *
  * Pure function: validated content → positioned elements
  * This is the moat.

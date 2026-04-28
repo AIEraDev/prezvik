@@ -1,5 +1,5 @@
 /**
- * Kyro Layout Rules Engine v1
+ * Prezvik Layout Rules Engine v1
  *
  * Spatial validation and quality scoring for layout trees.
  *

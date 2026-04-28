@@ -2,7 +2,7 @@
  * AI Generation Endpoint
  *
  * POST /api/ai/generate
- * Generates a KyroBlueprint from a prompt using AI
+ * Generates a PrezVikBlueprint from a prompt using AI
  */
 
 import { Router, Request, Response } from "express";
@@ -38,7 +38,7 @@ router.post("/generate", async (req: Request, res: Response) => {
 
     const { prompt, provider, options } = result.data;
 
-    // TODO: Integrate with @kyro/ai package
+    // TODO: Integrate with @prezvik/ai package
     // For now, return a placeholder response
     return res.json({
       message: "AI generation not yet implemented",

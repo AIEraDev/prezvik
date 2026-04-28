@@ -4,10 +4,10 @@
  * Generates Blueprint IR for pitch decks
  */
 
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import type { Intent } from "../intent-detector.js";
 
-export function pitchTemplate(intent: Intent): KyroBlueprint {
+export function pitchTemplate(intent: Intent): PrezVikBlueprint {
   return {
     version: "2.0",
 
@@ -20,7 +20,7 @@ export function pitchTemplate(intent: Intent): KyroBlueprint {
     },
 
     theme: {
-      name: "kyro_modern",
+      name: "prezvik_modern",
     },
 
     slides: [

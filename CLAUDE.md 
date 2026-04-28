@@ -1,0 +1,91 @@
+# Prezvik — AI Presentation Engine
+
+## FIRST: Read the PPTX skill before touching any slide output
+Path: /mnt/skills/public/pptx/SKILL.md
+This skill defines: design rules, QA workflow, image conversion, typography.
+Follow it exactly. Do not skip the visual QA step.
+
+## Absolute Rules
+- NEVER rewrite a working file — patch only the broken section
+- NEVER ask clarifying questions — infer and proceed
+- NEVER add packages without checking monorepo package.json first
+- Build only the changed package: `pnpm build --filter=@prezvik/<name>`
+- Stop and report if an error repeats more than twice — do not loop
+
+## Monorepo Map
+apps/web              → Next.js 15 + React 19 + App Router (port 3000)
+apps/cli              → `prezvik magic "<prompt>"`
+packages/core         → Pipeline orchestrator (7 stages)
+packages/ai           → BlueprintGenerator + PrezVikAI (Vercel AI SDK)
+packages/schema       → Zod schemas for PrezVikBlueprint v2
+packages/layout       → LayoutEngineV2 + PositioningEngine + 10 strategies
+packages/design       → ThemeAgent + BackgroundGenerator + PaletteEngine + vocabulary
+packages/renderer-pptx → pptxgenjs renderer + DecorationEngine
+
+## Stack
+Vercel AI SDK: @ai-sdk/groq, @ai-sdk/google, @ai-sdk/anthropic
+Backgrounds: svgdom + @svgdotjs/svg.js + sharp
+Colors: chroma-js  
+Output: pptxgenjs (LAYOUT_WIDE, 10" x 5.625")
+Web: Next.js 15, Tailwind CSS, shadcn/ui
+
+## Model Router (already implemented in PrezVikAI)
+Blueprint → groq/llama-3.3-70b-versatile, maxTokens: 4000
+ThemeAgent → groq/llama-3.1-8b-instant, maxTokens: 800
+Use generateObject from Vercel AI SDK — no manual JSON parsing
+
+## 7-Stage Pipeline (packages/core/src/pipeline/orchestrator.ts)
+1. BlueprintGenerator → PrezVikBlueprint v2 (generateObject + Zod)
+2. validateBlueprint (Zod)
+3. ThemeAgent → AgentThemeDecision (named vocabulary, fallback to buildStaticThemeSpec)
+4. LayoutEngineV2 → LayoutTree[] (10 strategies by slide.type)
+5. ThemeResolver → apply ThemeSpec to trees
+6. PositioningEngine → _rect on every node
+7. renderPPTXToFile (BackgroundGenerator + DecorationEngine + pptxgenjs)
+
+## Critical Fixes (DO NOT REVERT)
+1. estimateHeight: lineHeightPct = (fontSize*1.4)/72/5.625*100  (pt→% conversion)
+2. Flow centering: startY = bounds.y + (bounds.height - totalContentHeight)/2
+3. BackgroundGenerator triggered by slideTheme.backgroundStyle (not decoration kind)
+4. DecorationEngine: raw inches to pptxgenjs, never pctXtoIn()
+5. slide.background = { data: base64PNG } for image backgrounds
+
+## 10 Layout Strategies (packages/layout/src/strategies/)
+All call extractFromBlocks(slide) — never access slide.content directly
+hero, section, bullet-list, two-column, stat-trio, quote, comparison, timeline, grid, closing
+Default dispatcher: layoutFallback routes by available content
+
+## ThemeSpec / SlideTheme
+SlideTheme fields: slideId, backgroundMode, backgroundStyle, accentColor, headerStyle, decorations[]
+backgroundStyle drives BackgroundGenerator (not decoration kind)
+Dark slides → background = base64 PNG image (all chrome inside image)
+Light slides → solid color + DecorationEngine shapes on top
+
+## Background Styles (packages/design/src/background-generator.ts)
+dark-geometric    → svgjs: quarter-circle + rects + circles on dark base
+light-minimal     → lightBg + 6px accent bar + faint watermark circle
+gradient-diagonal → svgjs linear gradient primary→secondary
+dark-gradient     → svgjs vertical gradient
+mesh-vivid        → 4 radial gradients at corners
+split-panel       → left 38% dark, right 62% light, 2px divider
+noise-overlay     → base + sharp noise composite at 8% opacity
+brand-saturated   → solid accent color
+
+## PPTX Design Rules (from /mnt/skills/public/pptx/SKILL.md)
+- Dark backgrounds for hero + closing, light for content slides ("sandwich")
+- One dominant color (60-70%), 1-2 supporting, one sharp accent
+- Title font: Georgia or Trebuchet MS, Body: Calibri (36-44pt titles, 14-16pt body)
+- Every slide needs a visual element — no text-only slides
+- Left-align body text, center only titles
+- NEVER use accent lines under titles
+- NEVER use decorative full-width colored bars/header bands
+- Minimum 0.5" margins, 0.3-0.5" between content blocks
+
+## QA Commands (run after every generation)
+python scripts/office/soffice.py --headless --convert-to pdf output.pptx
+rm -f slide-*.jpg && pdftoppm -jpeg -r 150 output.pdf slide
+extract-text output.pptx
+
+## Environment Variables
+GROQ_API_KEY, GOOGLE_API_KEY, ANTHROPIC_API_KEY in root .env
+Copy to apps/web/.env.local for Next.js

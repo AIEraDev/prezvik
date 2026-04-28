@@ -5,7 +5,7 @@
  */
 
 import { ZodError } from "zod";
-import { KyroBlueprintSchema, SlideSchema, ContentBlockSchema, type KyroBlueprint, type Slide, type ContentBlock } from "./blueprint.js";
+import { PrezVikBlueprintSchema, SlideSchema, ContentBlockSchema, type PrezVikBlueprint, type Slide, type ContentBlock } from "./blueprint.js";
 
 /**
  * Validation result interface
@@ -17,7 +17,7 @@ import { KyroBlueprintSchema, SlideSchema, ContentBlockSchema, type KyroBlueprin
  *
  * @example
  * ```typescript
- * const result: ValidationResult<KyroBlueprint> = validateBlueprint(json);
+ * const result: ValidationResult<PrezVikBlueprint> = validateBlueprint(json);
  *
  * if (result.success) {
  *   console.log("Valid Blueprint:", result.data);
@@ -92,8 +92,8 @@ export interface ValidationError {
  * }
  * ```
  */
-export function validateBlueprint(json: unknown): ValidationResult<KyroBlueprint> {
-  const result = KyroBlueprintSchema.safeParse(json);
+export function validateBlueprint(json: unknown): ValidationResult<PrezVikBlueprint> {
+  const result = PrezVikBlueprintSchema.safeParse(json);
 
   if (result.success) {
     return {

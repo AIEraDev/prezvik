@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document specifies the design for implementing a three-layer architecture for Kyro presentation generation. The architecture separates concerns into distinct layers: **Theme/Color Layer**, **Visual Generation Layer**, and **Export/Rendering Layer**. This separation enables procedural generation of backgrounds, gradients, shapes, and spacing rules on top of a constrained layout system, moving beyond template-based approaches to create a true theme engine.
+This document specifies the design for implementing a three-layer architecture for Prezvik presentation generation. The architecture separates concerns into distinct layers: **Theme/Color Layer**, **Visual Generation Layer**, and **Export/Rendering Layer**. This separation enables procedural generation of backgrounds, gradients, shapes, and spacing rules on top of a constrained layout system, moving beyond template-based approaches to create a true theme engine.
 
 ### Current Architecture
 
-The current Kyro architecture follows this pipeline:
+The current Prezvik architecture follows this pipeline:
 
 ```
 Blueprint (Schema) → Layout Engine → Theme Application → PPTX Renderer → Output File
@@ -14,10 +14,10 @@ Blueprint (Schema) → Layout Engine → Theme Application → PPTX Renderer →
 
 **Current Components:**
 
-- `@kyro/schema`: Blueprint definitions
-- `@kyro/layout`: Layout tree generation and resolution
-- `@kyro/design`: Theme specifications (ThemeSpec, ThemeAgent)
-- `@kyro/renderer-pptx`: Direct PPTX rendering using PptxGenJS
+- `@prezvik/schema`: Blueprint definitions
+- `@prezvik/layout`: Layout tree generation and resolution
+- `@prezvik/design`: Theme specifications (ThemeSpec, ThemeAgent)
+- `@prezvik/renderer-pptx`: Direct PPTX rendering using PptxGenJS
 
 **Current Limitations:**
 
@@ -1487,15 +1487,15 @@ The migration from the current monolithic architecture to the layered architectu
 **Tasks:**
 
 1. Create new package structure:
-   - `@kyro/theme-layer`: Theme/Color Layer implementation
-   - `@kyro/visual-layer`: Visual Generation Layer implementation
-   - `@kyro/export-layer`: Export/Rendering Layer implementation
-   - `@kyro/pipeline`: Pipeline orchestration
+   - `@prezvik/theme-layer`: Theme/Color Layer implementation
+   - `@prezvik/visual-layer`: Visual Generation Layer implementation
+   - `@prezvik/export-layer`: Export/Rendering Layer implementation
+   - `@prezvik/pipeline`: Pipeline orchestration
 
 2. Install dependencies:
-   - Add `culori` to `@kyro/theme-layer`
-   - Add `konva` to `@kyro/visual-layer`
-   - Keep existing `pptxgenjs` in `@kyro/renderer-pptx`
+   - Add `culori` to `@prezvik/theme-layer`
+   - Add `konva` to `@prezvik/visual-layer`
+   - Keep existing `pptxgenjs` in `@prezvik/renderer-pptx`
 
 3. Implement data models:
    - Define `ColorPalette` interface
@@ -1503,7 +1503,7 @@ The migration from the current monolithic architecture to the layered architectu
    - Define `VisualElement` types
 
 4. Create pipeline controller with dual-mode support:
-   - `mode: 'legacy'` - uses existing `@kyro/renderer-pptx` directly
+   - `mode: 'legacy'` - uses existing `@prezvik/renderer-pptx` directly
    - `mode: 'layered'` - uses new three-layer architecture
 
 **Success Criteria:**
@@ -1607,7 +1607,7 @@ The migration from the current monolithic architecture to the layered architectu
    - Convert shapes to SVG
    - Support responsive design
 
-4. Refactor existing `@kyro/renderer-pptx`:
+4. Refactor existing `@prezvik/renderer-pptx`:
    - Extract reusable logic
    - Maintain backward compatibility
 
@@ -1689,7 +1689,7 @@ The migration from the current monolithic architecture to the layered architectu
 **Dual-Mode Pipeline:**
 
 ```typescript
-// In @kyro/core/src/deck.ts
+// In @prezvik/core/src/deck.ts
 export async function generateDeck(schema: any, outputPath: string = "output.pptx", options: GenerateDeckOptions = {}): Promise<void> {
   const mode = options.mode || "legacy"; // Default to legacy initially
 
@@ -2879,15 +2879,15 @@ packages/
 
 ```mermaid
 graph TD
-    Core[@kyro/core]
-    Pipeline[@kyro/pipeline]
-    ThemeLayer[@kyro/theme-layer]
-    VisualLayer[@kyro/visual-layer]
-    ExportLayer[@kyro/export-layer]
-    Design[@kyro/design]
-    Layout[@kyro/layout]
-    Schema[@kyro/schema]
-    RendererPPTX[@kyro/renderer-pptx]
+    Core[@prezvik/core]
+    Pipeline[@prezvik/pipeline]
+    ThemeLayer[@prezvik/theme-layer]
+    VisualLayer[@prezvik/visual-layer]
+    ExportLayer[@prezvik/export-layer]
+    Design[@prezvik/design]
+    Layout[@prezvik/layout]
+    Schema[@prezvik/schema]
+    RendererPPTX[@prezvik/renderer-pptx]
 
     Core --> Pipeline
     Core --> Design
@@ -2925,9 +2925,9 @@ graph TD
 **Existing Dependencies:**
 
 - `pptxgenjs` (^4.0.1): PowerPoint generation
-- `@kyro/design`: Theme specifications
-- `@kyro/layout`: Layout tree generation
-- `@kyro/schema`: Blueprint definitions
+- `@prezvik/design`: Theme specifications
+- `@prezvik/layout`: Layout tree generation
+- `@prezvik/schema`: Blueprint definitions
 
 ### Implementation Priorities
 

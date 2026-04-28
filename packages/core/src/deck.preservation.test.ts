@@ -18,7 +18,7 @@
 
 import { describe, it, expect } from "vitest";
 import { generateDeck } from "./deck.js";
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import * as fs from "fs";
 import * as path from "path";
 import * as fc from "fast-check";
@@ -95,7 +95,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        * **Property**: For any valid blueprint, generateDeck SHALL produce a file that exists
        */
       await fc.assert(
-        fc.asyncProperty(blueprintArb, async (blueprint: KyroBlueprint) => {
+        fc.asyncProperty(blueprintArb, async (blueprint: PrezVikBlueprint) => {
           const outputPath = path.join(testOutputDir, `preservation-${Date.now()}-${Math.random().toString(36).substring(7)}.pptx`);
 
           // Act: Generate the deck
@@ -124,7 +124,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        * and that the renderer processes all slides.
        */
       await fc.assert(
-        fc.asyncProperty(blueprintArb, async (blueprint: KyroBlueprint) => {
+        fc.asyncProperty(blueprintArb, async (blueprint: PrezVikBlueprint) => {
           const outputPath = path.join(testOutputDir, `slide-count-${Date.now()}-${Math.random().toString(36).substring(7)}.pptx`);
 
           // Act: Generate the deck
@@ -154,7 +154,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        *
        * This is an important edge case for layout computation and rendering.
        */
-      const singleSlideBlueprint: KyroBlueprint = {
+      const singleSlideBlueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Single Slide Test",
@@ -204,7 +204,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        *
        * This verifies that different layout strategies work correctly together.
        */
-      const mixedSlideBlueprint: KyroBlueprint = {
+      const mixedSlideBlueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Mixed Slide Types",
@@ -296,7 +296,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        *
        * This verifies that text rendering works correctly for different content types.
        */
-      const variedContentBlueprint: KyroBlueprint = {
+      const variedContentBlueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Varied Content",
@@ -375,7 +375,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
        *
        * This verifies that the rendering is deterministic (excluding background colors).
        */
-      const blueprint: KyroBlueprint = {
+      const blueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Consistency Test",
@@ -463,7 +463,7 @@ describe("Preservation Property Tests - Non-Background Rendering", () => {
       });
 
       await fc.assert(
-        fc.asyncProperty(blueprintArb, async (blueprint: KyroBlueprint) => {
+        fc.asyncProperty(blueprintArb, async (blueprint: PrezVikBlueprint) => {
           const outputPath = path.join(testOutputDir, `layout-${Date.now()}-${Math.random().toString(36).substring(7)}.pptx`);
 
           // Act: Generate the deck - should not throw

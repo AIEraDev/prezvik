@@ -1,5 +1,5 @@
 /**
- * Kyro Schema
+ * Prezvik Schema
  *
  * Core type definitions and validation schemas for presentation generation
  */

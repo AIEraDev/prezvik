@@ -6,7 +6,7 @@
  */
 
 import { Command } from "commander";
-import { getPipeline, type PipelineOptions } from "@kyro/core";
+import { getPipeline, type PipelineOptions } from "@prezvik/core";
 import { log, logError } from "../utils/logger.js";
 
 /**
@@ -37,12 +37,12 @@ function detectTheme(prompt: string): string {
 export const magicCommand = new Command("magic")
   .description("Generate a complete presentation from a prompt (AI-powered)")
   .argument("<prompt>", "Describe your presentation")
-  .option("-o, --output <file>", "Output file", "kyro-magic.pptx")
+  .option("-o, --output <file>", "Output file", "prezvik-magic.pptx")
   .option("-t, --theme <theme>", "Theme name (executive, minimal, modern)", undefined)
-  .option("--provider <name>", "AI provider (openai, anthropic, groq)", process.env.KYRO_DEFAULT_PROVIDER)
+  .option("--provider <name>", "AI provider (openai, anthropic, groq)", process.env.PREZVIK_DEFAULT_PROVIDER)
   .action(async (prompt, options) => {
     try {
-      log.rocket("Kyro Magic");
+      log.rocket("Prezvik Magic");
       console.log("");
 
       const startTime = Date.now();

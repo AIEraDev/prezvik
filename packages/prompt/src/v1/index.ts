@@ -1,7 +1,7 @@
 /**
  * Blueprint Generator
  *
- * Prompt → Kyro Blueprint IR
+ * Prompt → Prezvik Blueprint IR
  */
 
 export * from "./blueprint-generator.js";

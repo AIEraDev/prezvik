@@ -11,8 +11,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { PPTXRenderer } from "./pptx-renderer.js";
 import { WebRenderer } from "./web-renderer.js";
-import type { VisualContext, SlideVisualContext } from "@kyro/visual-layer";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { VisualContext, SlideVisualContext } from "@prezvik/visual-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 
 describe("Export Layer Performance Tests", () => {
   let pptxRenderer: PPTXRenderer;

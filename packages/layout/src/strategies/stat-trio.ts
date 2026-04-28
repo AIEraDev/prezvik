@@ -46,7 +46,7 @@ export function layoutStatTrio(content: StatTrioContent): LayoutTree {
         type: "text",
         content: stat.value,
         text: {
-          fontSize: 72,
+          fontSize: 28,
           fontWeight: "bold",
           align: "center",
           fontRole: "hero" as any,
@@ -59,7 +59,7 @@ export function layoutStatTrio(content: StatTrioContent): LayoutTree {
         type: "text",
         content: stat.label,
         text: {
-          fontSize: 18,
+          fontSize: 12,
           align: "center",
           fontRole: "body" as any,
           colorRole: "textMuted" as any,
@@ -90,7 +90,7 @@ export function layoutStatTrio(content: StatTrioContent): LayoutTree {
       layout: {
         type: "flow",
         direction: "vertical",
-        gap: 1,
+        gap: 0.5,
       },
     };
   });
@@ -102,7 +102,7 @@ export function layoutStatTrio(content: StatTrioContent): LayoutTree {
     layout: {
       type: "grid",
       columns: 3,
-      columnGap: 4,
+      columnGap: 2,
     },
   });
 
@@ -113,13 +113,13 @@ export function layoutStatTrio(content: StatTrioContent): LayoutTree {
     layout: {
       type: "flow",
       direction: "vertical",
-      gap: 4,
+      gap: 3,
     },
     padding: {
-      top: 5,
-      right: 5,
-      bottom: 5,
-      left: 5,
+      top: 4,
+      right: 4,
+      bottom: 4,
+      left: 4,
     },
   };
 

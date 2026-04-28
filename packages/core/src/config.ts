@@ -1,22 +1,22 @@
 /**
- * Configuration for Kyro Core
+ * Configuration for Prezvik Core
  *
  * Manages feature flags and configuration options for the pipeline.
  */
 
-import type { PipelineMode } from "@kyro/pipeline";
+import type { PipelineMode } from "@prezvik/pipeline";
 
 /**
- * Configuration options for Kyro
+ * Configuration options for Prezvik
  */
-export interface KyroConfig {
+export interface PrezVikConfig {
   /**
    * Pipeline rendering mode
    * - 'legacy': Use current monolithic rendering (DEPRECATED - will be removed in v2.0)
    * - 'layered': Use new three-layer architecture (Theme → Visual → Export) (default)
    *
    * Can be set via:
-   * 1. Environment variable: KYRO_PIPELINE_MODE=layered
+   * 1. Environment variable: PREZVIK_PIPELINE_MODE=layered
    * 2. Configuration file
    * 3. Function parameter (highest priority)
    */
@@ -41,7 +41,7 @@ export interface KyroConfig {
 /**
  * Default configuration
  */
-const DEFAULT_CONFIG: KyroConfig = {
+const DEFAULT_CONFIG: PrezVikConfig = {
   pipelineMode: "layered",
   enablePerformanceMonitoring: true,
   enableCaching: true,
@@ -51,36 +51,36 @@ const DEFAULT_CONFIG: KyroConfig = {
 /**
  * Current configuration (mutable)
  */
-let currentConfig: KyroConfig = { ...DEFAULT_CONFIG };
+let currentConfig: PrezVikConfig = { ...DEFAULT_CONFIG };
 
 /**
  * Load configuration from environment variables
  */
-function loadFromEnvironment(): Partial<KyroConfig> {
-  const config: Partial<KyroConfig> = {};
+function loadFromEnvironment(): Partial<PrezVikConfig> {
+  const config: Partial<PrezVikConfig> = {};
 
   // Pipeline mode
-  const pipelineMode = process.env.KYRO_PIPELINE_MODE;
+  const pipelineMode = process.env.PREZVIK_PIPELINE_MODE;
   if (pipelineMode === "legacy" || pipelineMode === "layered") {
     config.pipelineMode = pipelineMode;
   } else if (pipelineMode) {
-    console.warn(`[Config] Invalid KYRO_PIPELINE_MODE: ${pipelineMode}. Using default: ${DEFAULT_CONFIG.pipelineMode}`);
+    console.warn(`[Config] Invalid PREZVIK_PIPELINE_MODE: ${pipelineMode}. Using default: ${DEFAULT_CONFIG.pipelineMode}`);
   }
 
   // Performance monitoring
-  const enablePerformanceMonitoring = process.env.KYRO_ENABLE_PERFORMANCE_MONITORING;
+  const enablePerformanceMonitoring = process.env.PREZVIK_ENABLE_PERFORMANCE_MONITORING;
   if (enablePerformanceMonitoring === "true" || enablePerformanceMonitoring === "false") {
     config.enablePerformanceMonitoring = enablePerformanceMonitoring === "true";
   }
 
   // Caching
-  const enableCaching = process.env.KYRO_ENABLE_CACHING;
+  const enableCaching = process.env.PREZVIK_ENABLE_CACHING;
   if (enableCaching === "true" || enableCaching === "false") {
     config.enableCaching = enableCaching === "true";
   }
 
   // Log level
-  const logLevel = process.env.KYRO_LOG_LEVEL;
+  const logLevel = process.env.PREZVIK_LOG_LEVEL;
   if (logLevel === "debug" || logLevel === "info" || logLevel === "warn" || logLevel === "error") {
     config.logLevel = logLevel;
   }
@@ -97,7 +97,7 @@ export function initConfig(): void {
   currentConfig = { ...DEFAULT_CONFIG, ...envConfig };
 
   if (currentConfig.logLevel === "debug" || currentConfig.logLevel === "info") {
-    console.log("[Config] Kyro configuration initialized:");
+    console.log("[Config] Prezvik configuration initialized:");
     console.log(`  - Pipeline Mode: ${currentConfig.pipelineMode}`);
     console.log(`  - Performance Monitoring: ${currentConfig.enablePerformanceMonitoring}`);
     console.log(`  - Caching: ${currentConfig.enableCaching}`);
@@ -108,7 +108,7 @@ export function initConfig(): void {
 /**
  * Get current configuration
  */
-export function getConfig(): Readonly<KyroConfig> {
+export function getConfig(): Readonly<PrezVikConfig> {
   return currentConfig;
 }
 
@@ -116,7 +116,7 @@ export function getConfig(): Readonly<KyroConfig> {
  * Update configuration
  * @param updates - Partial configuration updates
  */
-export function updateConfig(updates: Partial<KyroConfig>): void {
+export function updateConfig(updates: Partial<PrezVikConfig>): void {
   currentConfig = { ...currentConfig, ...updates };
 
   if (currentConfig.logLevel === "debug") {

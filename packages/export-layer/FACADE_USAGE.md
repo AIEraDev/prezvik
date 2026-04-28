@@ -6,10 +6,10 @@ The `ExportLayerFacade` provides a simplified interface to the Export Layer subs
 
 ## Installation
 
-The facade is exported from the `@kyro/export-layer` package:
+The facade is exported from the `@prezvik/export-layer` package:
 
 ```typescript
-import { ExportLayerFacade } from "@kyro/export-layer";
+import { ExportLayerFacade } from "@prezvik/export-layer";
 ```
 
 ## Basic Usage
@@ -17,7 +17,7 @@ import { ExportLayerFacade } from "@kyro/export-layer";
 ### Creating a Facade Instance
 
 ```typescript
-import { ExportLayerFacade } from "@kyro/export-layer";
+import { ExportLayerFacade } from "@prezvik/export-layer";
 
 const facade = new ExportLayerFacade();
 ```
@@ -40,8 +40,8 @@ const htmlRenderer = facade.getRenderer("html");
 ### Rendering Visual Context
 
 ```typescript
-import { ExportLayerFacade } from "@kyro/export-layer";
-import type { VisualContext } from "@kyro/visual-layer";
+import { ExportLayerFacade } from "@prezvik/export-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
 
 const facade = new ExportLayerFacade();
 const visualContext: VisualContext = /* ... */;
@@ -116,8 +116,8 @@ console.log("Custom shapes:", features.customShapes); // true
 The facade is designed to be used by the Pipeline Controller:
 
 ```typescript
-import { ExportLayerFacade } from "@kyro/export-layer";
-import type { VisualContext } from "@kyro/visual-layer";
+import { ExportLayerFacade } from "@prezvik/export-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
 
 class PipelineController {
   private exportLayer: ExportLayerFacade;

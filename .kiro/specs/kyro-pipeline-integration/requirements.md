@@ -2,17 +2,17 @@
 
 ## Introduction
 
-The Kyro v1 Pipeline Integration feature establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. This feature integrates existing components (Blueprint v2 schema, LayoutEngineV2, AI adapters) into a cohesive, locally executable workflow that validates the core Kyro architecture: Intent → Blueprint → Layout → Positioning → Theming → Rendering.
+The Prezvik v1 Pipeline Integration feature establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. This feature integrates existing components (Blueprint v2 schema, LayoutEngineV2, AI adapters) into a cohesive, locally executable workflow that validates the core Prezvik architecture: Intent → Blueprint → Layout → Positioning → Theming → Rendering.
 
 The pipeline must be testable without external dependencies (Google API credentials) and must produce valid Blueprint v2 JSON (not legacy v0 deck.json format). A critical gap exists in the current LayoutEngineV2: it creates unpositioned layout nodes without explicit x/y coordinates, which renderers require. This feature adds coordinate positioning to complete the layout-to-render bridge.
 
 ## Glossary
 
 - **Pipeline**: The complete transformation sequence from user prompt to rendered presentation file
-- **Blueprint_v2**: The Kyro intermediate representation (IR) defined in packages/schema/src/v2/blueprint.ts
+- **Blueprint_v2**: The Prezvik intermediate representation (IR) defined in packages/schema/src/v2/blueprint.ts
 - **LayoutEngineV2**: The layout engine in packages/layout/src/v2/layout-engine.ts that transforms Blueprint into layout trees
 - **LayoutTree**: The positioned node tree structure with explicit coordinates (x, y, width, height)
-- **KyroAI**: The AI adapter layer in packages/ai that routes requests to OpenAI, Anthropic, or Groq
+- **PrezVikAI**: The AI adapter layer in packages/ai that routes requests to OpenAI, Anthropic, or Groq
 - **PPTX_Renderer**: The PowerPoint renderer in packages/renderer-pptx
 - **Magic_Command**: The CLI command in apps/cli/src/commands/magic.ts
 - **Positioning_Engine**: The new component that converts relative layout nodes to absolute coordinates
@@ -27,7 +27,7 @@ The pipeline must be testable without external dependencies (Google API credenti
 
 #### Acceptance Criteria
 
-1. WHEN a user prompt is provided, THE KyroAI SHALL generate Blueprint v2 JSON conforming to KyroBlueprintSchema
+1. WHEN a user prompt is provided, THE PrezVikAI SHALL generate Blueprint v2 JSON conforming to PrezVikBlueprintSchema
 2. THE Blueprint_Generator SHALL include meta fields (title, goal, tone, audience) derived from the prompt
 3. THE Blueprint_Generator SHALL assign appropriate slide types (hero, content, section, etc.) based on content intent
 4. THE Blueprint_Generator SHALL assign layout types (center_focus, two_column, etc.) based on slide type and content structure
@@ -40,7 +40,7 @@ The pipeline must be testable without external dependencies (Google API credenti
 
 #### Acceptance Criteria
 
-1. THE Validation_Layer SHALL validate Blueprint v2 JSON using KyroBlueprintSchema from @kyro/schema/v2
+1. THE Validation_Layer SHALL validate Blueprint v2 JSON using PrezVikBlueprintSchema from @prezvik/schema/v2
 2. WHEN validation succeeds, THE Validation_Layer SHALL return the parsed Blueprint object
 3. WHEN validation fails, THE Validation_Layer SHALL return error messages indicating which fields are invalid
 4. THE Validation_Layer SHALL verify all required fields (version, meta, slides) are present
@@ -107,7 +107,7 @@ The pipeline must be testable without external dependencies (Google API credenti
 
 ### Requirement 7: End-to-End Pipeline Integration
 
-**User Story:** As a developer, I want to execute the complete pipeline from prompt to PPTX, so that I can test the entire Kyro architecture.
+**User Story:** As a developer, I want to execute the complete pipeline from prompt to PPTX, so that I can test the entire Prezvik architecture.
 
 #### Acceptance Criteria
 
@@ -139,7 +139,7 @@ The pipeline must be testable without external dependencies (Google API credenti
 #### Acceptance Criteria
 
 1. THE Pipeline SHALL NOT generate or consume v0 deck.json format
-2. THE Pipeline SHALL use KyroBlueprintSchema from @kyro/schema/v2 for all validation
+2. THE Pipeline SHALL use PrezVikBlueprintSchema from @prezvik/schema/v2 for all validation
 3. THE Pipeline SHALL use Blueprint v2 slide types (hero, section, content, comparison, grid, quote, data, callout, closing)
 4. THE Pipeline SHALL use Blueprint v2 layout types (center_focus, two_column, three_column, split_screen, grid_2x2, hero_overlay, timeline, stat_highlight, image_dominant)
 5. THE Pipeline SHALL use Blueprint v2 content blocks (heading, text, bullets, quote, stat, code)

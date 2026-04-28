@@ -21,7 +21,7 @@ describe("Dual-Mode Comparison Tests", () => {
 
   beforeEach(() => {
     // Create temp directory for test outputs
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyro-dual-mode-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prezvik-dual-mode-test-"));
     legacyOutputPath = path.join(tempDir, "legacy-output.pptx");
     layeredOutputPath = path.join(tempDir, "layered-output.pptx");
   });

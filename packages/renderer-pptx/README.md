@@ -1,10 +1,10 @@
-# @kyro/renderer-pptx
+# @prezvik/renderer-pptx
 
-PowerPoint (PPTX) renderer for Kyro layout trees.
+PowerPoint (PPTX) renderer for Prezvik layout trees.
 
 ## Overview
 
-This package renders positioned and themed LayoutTree structures into PowerPoint (.pptx) files. It is the final stage in the Kyro pipeline that converts layout nodes with computed coordinates into presentation slides.
+This package renders positioned and themed LayoutTree structures into PowerPoint (.pptx) files. It is the final stage in the Prezvik pipeline that converts layout nodes with computed coordinates into presentation slides.
 
 ## Features
 
@@ -17,7 +17,7 @@ This package renders positioned and themed LayoutTree structures into PowerPoint
 ## Installation
 
 ```bash
-pnpm add @kyro/renderer-pptx
+pnpm add @prezvik/renderer-pptx
 ```
 
 ## Usage
@@ -25,8 +25,8 @@ pnpm add @kyro/renderer-pptx
 ### Basic Rendering
 
 ```typescript
-import { renderPPTXToFile } from "@kyro/renderer-pptx";
-import type { LayoutTree } from "@kyro/layout";
+import { renderPPTXToFile } from "@prezvik/renderer-pptx";
+import type { LayoutTree } from "@prezvik/layout";
 
 const tree: LayoutTree = {
   root: {
@@ -119,7 +119,7 @@ The renderer converts percentage coordinates to inches, which pptxgenjs then con
 ### Conversion Functions
 
 ```typescript
-import { pctXtoIn, pctYtoIn } from "@kyro/renderer-pptx/utils/units";
+import { pctXtoIn, pctYtoIn } from "@prezvik/renderer-pptx/utils/units";
 
 // Convert X coordinate (horizontal)
 const xInches = pctXtoIn(50); // 5 inches (50% of 10")
@@ -142,8 +142,8 @@ Did you forget to call resolveLayout() before rendering?
 ### Example: Correct Usage
 
 ```typescript
-import { PositioningEngine } from "@kyro/layout";
-import { renderPPTXToFile } from "@kyro/renderer-pptx";
+import { PositioningEngine } from "@prezvik/layout";
+import { renderPPTXToFile } from "@prezvik/renderer-pptx";
 
 // 1. Create layout tree (without _rect)
 const layoutTree = createLayoutTree();
@@ -278,8 +278,8 @@ This separation ensures:
 ## Dependencies
 
 - `pptxgenjs`: PowerPoint generation library
-- `@kyro/layout`: Layout types and interfaces
-- `@kyro/schema`: Blueprint schema definitions
+- `@prezvik/layout`: Layout types and interfaces
+- `@prezvik/schema`: Blueprint schema definitions
 
 ## License
 

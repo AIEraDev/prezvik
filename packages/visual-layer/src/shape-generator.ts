@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { ShapeElement, SolidFill, Stroke } from "./models/visual-element.js";
 import type { Rect, Point, SlideType, ThemeTone } from "./models/visual-context.js";
 import { ShapeCache } from "./optimizations/shape-cache.js";

@@ -1,7 +1,7 @@
 /**
  * Tool Registry
  *
- * All MCP tools exposed by Kyro
+ * All MCP tools exposed by Prezvik
  */
 
 import { generateTool } from "./generate.js";

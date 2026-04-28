@@ -8,8 +8,8 @@
  * - Expected PPTX output characteristics
  */
 
-import type { KyroBlueprint } from "@kyro/schema";
-import type { LayoutTree, ContainerNode, TextNode } from "@kyro/layout";
+import type { PrezVikBlueprint } from "@prezvik/schema";
+import type { LayoutTree, ContainerNode, TextNode } from "@prezvik/layout";
 
 /**
  * Sample Prompts for Various Presentation Types
@@ -44,7 +44,7 @@ export const SAMPLE_PROMPTS = {
  */
 
 // Minimal Valid Blueprint (1 slide, basic content)
-export const MINIMAL_BLUEPRINT: KyroBlueprint = {
+export const MINIMAL_BLUEPRINT: PrezVikBlueprint = {
   version: "2.0",
   meta: {
     title: "Minimal Test Presentation",
@@ -71,7 +71,7 @@ export const MINIMAL_BLUEPRINT: KyroBlueprint = {
 };
 
 // Complex Blueprint (multiple slides, all content types)
-export const COMPLEX_BLUEPRINT: KyroBlueprint = {
+export const COMPLEX_BLUEPRINT: PrezVikBlueprint = {
   version: "2.0",
   meta: {
     title: "Complex Test Presentation",
@@ -650,7 +650,7 @@ export const ERROR_TEST_CASES = {
 /**
  * Utility function to create a test Blueprint with specific characteristics
  */
-export function createTestBlueprint(options: { slideCount?: number; slideTypes?: string[]; layoutTypes?: string[]; contentTypes?: string[]; theme?: string }): KyroBlueprint {
+export function createTestBlueprint(options: { slideCount?: number; slideTypes?: string[]; layoutTypes?: string[]; contentTypes?: string[]; theme?: string }): PrezVikBlueprint {
   const { slideCount = 3, slideTypes = ["hero", "content", "closing"], layoutTypes = ["center_focus"], contentTypes = ["heading", "text"], theme = "executive" } = options;
 
   const slides = Array.from({ length: slideCount }, (_, i) => ({

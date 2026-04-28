@@ -1,7 +1,7 @@
 /**
- * @kyro/pipeline
+ * @prezvik/pipeline
  *
- * Pipeline Orchestrator for Kyro presentation generation.
+ * Pipeline Orchestrator for Prezvik presentation generation.
  * Coordinates execution of Theme Layer, Visual Layer, and Export Layer
  * with error handling, performance monitoring, and caching.
  */

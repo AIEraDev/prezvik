@@ -7,15 +7,15 @@
 
 import { generateObject } from "ai";
 import { openai, anthropic, groq, google } from "../providers/index.js";
-import { KyroThemeSchema, type KyroTheme } from "@kyro/schema";
+import { PrezVikThemeSchema, type PrezVikTheme } from "@prezvik/schema";
 import { getModelConfig } from "../model-router.js";
 import { normalizeTheme } from "./normalizer.js";
 
 /**
  * Generate theme from description using structured outputs
- * Returns validated KyroTheme directly - no manual parsing needed
+ * Returns validated PrezVikTheme directly - no manual parsing needed
  */
-export async function generateTheme(description: string, options: { provider?: string; strategy?: "speed" | "balanced" | "quality" } = {}): Promise<KyroTheme> {
+export async function generateTheme(description: string, options: { provider?: string; strategy?: "speed" | "balanced" | "quality" } = {}): Promise<PrezVikTheme> {
   const strategy = options.strategy || "speed";
   const modelConfig = getModelConfig("theme", strategy, options.provider);
 
@@ -28,7 +28,7 @@ export async function generateTheme(description: string, options: { provider?: s
   const startTime = Date.now();
   const { object } = await generateObject({
     model: provider(modelConfig.model),
-    schema: KyroThemeSchema,
+    schema: PrezVikThemeSchema,
     system: `You are a design system expert. Generate a complete theme following the Theme schema.
 
 Guidelines:
@@ -47,7 +47,7 @@ Guidelines:
   console.log(`  [ThemeGenerator] Generated theme in ${duration}ms`);
 
   // Normalize theme (apply any additional transformations)
-  return normalizeTheme(object as KyroTheme);
+  return normalizeTheme(object as PrezVikTheme);
 }
 
 /**

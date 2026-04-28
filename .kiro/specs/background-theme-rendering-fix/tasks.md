@@ -42,7 +42,7 @@
 
 - [x] 3. Fix for background theme rendering
   - [x] 3.1 Implement the fix in packages/core/src/deck.ts
-    - Import ThemeAgent from @kyro/design at the top of the file
+    - Import ThemeAgent from @prezvik/design at the top of the file
     - Instantiate ThemeAgent after logging starts: `const themeAgent = new ThemeAgent();`
     - Generate ThemeSpec before layout generation: `const themeSpec = await themeAgent.generateTheme(schema, { fallbackTheme: "executive" });`
     - Add console.log to confirm theme generation: `console.log(\` [generateDeck] Theme generated: \${themeSpec.palette.primary}\`);`

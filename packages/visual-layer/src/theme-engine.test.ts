@@ -12,7 +12,7 @@ import { ThemeEngine } from "./theme-engine.js";
 import type { LayoutNode } from "./theme-engine.js";
 import { BackgroundGenerator } from "./background-generator.js";
 import { ShapeGenerator } from "./shape-generator.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { SlideType, ThemeTone } from "./models/visual-context.js";
 import type { BackgroundElement, ShapeElement } from "./models/visual-element.js";
 

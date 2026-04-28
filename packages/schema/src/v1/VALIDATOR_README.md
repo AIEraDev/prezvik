@@ -1,6 +1,6 @@
 # Validation Layer
 
-The Validation Layer provides robust validation for Blueprint v2 JSON structures using Zod schemas. It ensures that all Blueprint data conforms to the KyroBlueprintSchema before being processed by the layout engine.
+The Validation Layer provides robust validation for Blueprint v2 JSON structures using Zod schemas. It ensures that all Blueprint data conforms to the PrezVikBlueprintSchema before being processed by the layout engine.
 
 ## Features
 
@@ -13,15 +13,15 @@ The Validation Layer provides robust validation for Blueprint v2 JSON structures
 
 ## Installation
 
-The validator is part of the `@kyro/schema` package:
+The validator is part of the `@prezvik/schema` package:
 
 ```typescript
-import { validateBlueprint, validateSlide, validateContentBlock } from "@kyro/schema/v2/validator";
+import { validateBlueprint, validateSlide, validateContentBlock } from "@prezvik/schema/v2/validator";
 ```
 
 ## API Reference
 
-### `validateBlueprint(json: unknown): ValidationResult<KyroBlueprint>`
+### `validateBlueprint(json: unknown): ValidationResult<PrezVikBlueprint>`
 
 Validates a complete Blueprint v2 structure.
 
@@ -31,7 +31,7 @@ Validates a complete Blueprint v2 structure.
 
 **Returns:**
 
-- `ValidationResult<KyroBlueprint>` - Result object with success flag, data, or errors
+- `ValidationResult<PrezVikBlueprint>` - Result object with success flag, data, or errors
 
 **Example:**
 
@@ -128,7 +128,7 @@ interface ValidationError {
 ### Example 1: Validate Blueprint from API
 
 ```typescript
-import { validateBlueprint } from "@kyro/schema/v2/validator";
+import { validateBlueprint } from "@prezvik/schema/v2/validator";
 
 async function handleBlueprintUpload(req, res) {
   const result = validateBlueprint(req.body);
@@ -149,8 +149,8 @@ async function handleBlueprintUpload(req, res) {
 ### Example 2: Validate Before Layout Generation
 
 ```typescript
-import { validateBlueprint } from "@kyro/schema/v2/validator";
-import { LayoutEngineV2 } from "@kyro/layout/v2";
+import { validateBlueprint } from "@prezvik/schema/v2/validator";
+import { LayoutEngineV2 } from "@prezvik/layout/v2";
 
 function generateLayout(blueprintJSON: unknown) {
   // Validate first
@@ -169,7 +169,7 @@ function generateLayout(blueprintJSON: unknown) {
 ### Example 3: Display User-Friendly Errors
 
 ```typescript
-import { validateBlueprint } from "@kyro/schema/v2/validator";
+import { validateBlueprint } from "@prezvik/schema/v2/validator";
 
 function displayValidationErrors(blueprintJSON: unknown) {
   const result = validateBlueprint(blueprintJSON);
@@ -261,7 +261,7 @@ pnpm test
 
 This implementation satisfies the following requirements from the spec:
 
-- **Requirement 2.1**: Validate Blueprint v2 JSON using KyroBlueprintSchema
+- **Requirement 2.1**: Validate Blueprint v2 JSON using PrezVikBlueprintSchema
 - **Requirement 2.2**: Return parsed Blueprint object on success
 - **Requirement 2.3**: Return error messages with field paths on failure
 - **Requirement 2.4**: Verify required fields (version, meta, slides)

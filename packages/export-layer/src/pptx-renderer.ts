@@ -1,7 +1,7 @@
 import PptxGenJS from "pptxgenjs";
 import type { Renderer, RenderOptions, RenderResult, ValidationResult, FeatureSupport } from "./renderer-interface.js";
-import type { VisualContext } from "@kyro/visual-layer";
-import type { LinearGradient, RadialGradient, Fill, ShapeElement, ContentElement, TextContent, ImageContent } from "@kyro/visual-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
+import type { LinearGradient, RadialGradient, Fill, ShapeElement, ContentElement, TextContent, ImageContent } from "@prezvik/visual-layer";
 
 /**
  * PPTX-specific render options

@@ -5,6 +5,8 @@
  * Defines palette, typography, and per-slide visual rhythm (backgrounds, decorations).
  */
 
+import type { BackgroundStyle } from "./vocabulary.js";
+
 /**
  * Color palette with semantic naming
  */
@@ -42,12 +44,7 @@ export interface ThemeTypography {
 /**
  * Decoration types
  */
-export type Decoration =
-  | { kind: "left-bar"; color: string; width: number }
-  | { kind: "oval"; x: number; y: number; w: number; h: number; color: string; opacity: number }
-  | { kind: "bottom-bar"; color: string; height: number }
-  | { kind: "timeline-spine"; color: string }
-  | { kind: "corner-accent"; position: "top-right" | "top-left"; color: string };
+export type Decoration = { kind: "left-bar"; color: string; width: number } | { kind: "oval"; x: number; y: number; w: number; h: number; color: string; opacity: number } | { kind: "bottom-bar"; color: string; height: number } | { kind: "timeline-spine"; color: string } | { kind: "corner-accent"; position: "top-right" | "top-left"; color: string } | { kind: "geometric-split"; colors: string[] };
 
 /**
  * Per-slide theme specification
@@ -57,6 +54,8 @@ export interface SlideTheme {
   slideId: string;
   /** Background mode determines which bg color to use */
   backgroundMode: "dark" | "light";
+  /** Background style determines which generator to use */
+  backgroundStyle: BackgroundStyle;
   /** Specific accent color for this slide */
   accentColor: string;
   /** Whether to draw a full-width header band */

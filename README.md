@@ -1,4 +1,4 @@
-# Kyro
+# Prezvik
 
 **AI-native presentation engine**
 
@@ -7,7 +7,7 @@
 ## 🪄 Magic Command (The Viral Moment)
 
 ```bash
-kyro magic "AI startup pitch deck"
+prezvik magic "AI startup pitch deck"
 ```
 
 **Output**: Professional 6-slide presentation in **< 1 second**
@@ -85,20 +85,20 @@ Build individual services:
 
 ```bash
 # Web app
-docker build -f apps/web/Dockerfile -t kyro-web .
-docker run -p 3000:3000 -e GROQ_API_KEY=gsk_... kyro-web
+docker build -f apps/web/Dockerfile -t prezvik-web .
+docker run -p 3000:3000 -e GROQ_API_KEY=gsk_... prezvik-web
 
 # API server
-docker build -f apps/api/Dockerfile -t kyro-api .
-docker run -p 3001:3001 -e GROQ_API_KEY=gsk_... kyro-api
+docker build -f apps/api/Dockerfile -t prezvik-api .
+docker run -p 3001:3001 -e GROQ_API_KEY=gsk_... prezvik-api
 
 # CLI tool
-docker build -f apps/cli/Dockerfile -t kyro-cli .
-docker run -e GROQ_API_KEY=gsk_... kyro-cli magic "your prompt"
+docker build -f apps/cli/Dockerfile -t prezvik-cli .
+docker run -e GROQ_API_KEY=gsk_... prezvik-cli magic "your prompt"
 
 # MCP server
-docker build -f apps/mcp-server/Dockerfile -t kyro-mcp .
-docker run -e GROQ_API_KEY=gsk_... kyro-mcp
+docker build -f apps/mcp-server/Dockerfile -t prezvik-mcp .
+docker run -e GROQ_API_KEY=gsk_... prezvik-mcp
 ```
 
 ## What You Get
@@ -137,7 +137,7 @@ docker run -e GROQ_API_KEY=gsk_... kyro-mcp
 
 ## The Pipeline
 
-Kyro v1 implements a complete 6-stage pipeline that transforms natural language prompts into professional presentations:
+Prezvik v1 implements a complete 6-stage pipeline that transforms natural language prompts into professional presentations:
 
 ```
 User Prompt
@@ -204,7 +204,7 @@ Output File (.pptx)
 
 ### Blueprint Format
 
-Kyro uses Blueprint as its intermediate representation (IR). Blueprint is a structured JSON format that describes presentation content, layout, and styling:
+Prezvik uses Blueprint as its intermediate representation (IR). Blueprint is a structured JSON format that describes presentation content, layout, and styling:
 
 ```json
 {
@@ -243,7 +243,7 @@ Kyro uses Blueprint as its intermediate representation (IR). Blueprint is a stru
 
 ### Coordinate System
 
-Kyro uses a percentage-based coordinate system (0-100) for renderer independence:
+Prezvik uses a percentage-based coordinate system (0-100) for renderer independence:
 
 - **X/Y coordinates**: 0-100 (percentage of slide dimensions)
 - **Width/Height**: 0-100 (percentage of slide dimensions)
@@ -256,19 +256,19 @@ This approach allows the same positioned layout to be rendered to different targ
 
 ```bash
 # Magic - one command, full pipeline
-kyro magic "AI startup pitch"
+prezvik magic "AI startup pitch"
 
 # Generate - JSON to PPTX
-kyro generate deck.json
+prezvik generate deck.json
 
 # Init - create starter deck
-kyro init
+prezvik init
 
 # Validate - check schema
-kyro validate deck.json
+prezvik validate deck.json
 
 # Dev - watch mode
-kyro dev deck.json
+prezvik dev deck.json
 ```
 
 ## Examples
@@ -278,23 +278,23 @@ kyro dev deck.json
 export OPENAI_API_KEY="sk-..."
 
 # Startup pitch
-kyro magic "AI-powered developer tools startup pitch"
+prezvik magic "AI-powered developer tools startup pitch"
 
 # Financial report
-kyro magic "Q3 2024 financial report for enterprise SaaS"
+prezvik magic "Q3 2024 financial report for enterprise SaaS"
 
 # Educational content
-kyro magic "Introduction to machine learning for beginners"
+prezvik magic "Introduction to machine learning for beginners"
 
 # With different provider
 export ANTHROPIC_API_KEY="sk-ant-..."
-kyro magic "startup pitch deck" --provider anthropic
+prezvik magic "startup pitch deck" --provider anthropic
 
 # With custom theme
-kyro magic "fintech product launch" --theme modern
+prezvik magic "fintech product launch" --theme modern
 ```
 
-## Why Kyro?
+## Why Prezvik?
 
 ### For Users
 
@@ -330,7 +330,7 @@ pnpm install
 pnpm build
 
 # Build specific package
-pnpm --filter @kyro/layout build
+pnpm --filter @prezvik/layout build
 
 # Run tests
 ./test-magic.sh
@@ -357,7 +357,7 @@ pnpm --filter @kyro/layout build
 
 **🎉 NEW: Layered Mode is Now Default**
 
-Kyro now uses a modern three-layer architecture by default:
+Prezvik now uses a modern three-layer architecture by default:
 
 - **Theme Layer**: Advanced color management with procedural palette generation
 - **Visual Layer**: Procedural background and shape generation
@@ -381,7 +381,7 @@ Kyro now uses a modern three-layer architecture by default:
 
 ## Documentation
 
-- [Implementation Spec](./.kiro/specs/kyro-pipeline-integration/) - Complete pipeline implementation spec
+- [Implementation Spec](./.kiro/specs/prezvik-pipeline-integration/) - Complete pipeline implementation spec
 - [Layered Architecture Spec](./.kiro/specs/layered-presentation-architecture/) - Three-layer architecture design
 - [Migration Guide](./docs/migration-guide.md) - Migrating from legacy to layered mode
 - [CLI README](./apps/cli/README.md) - Full CLI documentation

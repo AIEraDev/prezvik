@@ -1,5 +1,5 @@
 /**
- * Kyro Theme Schema v1
+ * Prezvik Theme Schema v1
  *
  * Comprehensive design token system for theme-aware presentation generation
  *
@@ -264,9 +264,9 @@ export const IconStyleSchema = z.enum(["filled", "outlined", "duotone", "emoji",
 export type IconStyle = z.infer<typeof IconStyleSchema>;
 
 /**
- * Complete KyroTheme Schema
+ * Complete PrezVikTheme Schema
  */
-export const KyroThemeSchema = z.object({
+export const PrezVikThemeSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/, "Theme ID must be lowercase kebab-case"),
   name: z.string(),
   version: z.literal("1.0"),
@@ -292,13 +292,13 @@ export const KyroThemeSchema = z.object({
     .optional(),
 });
 
-export type KyroTheme = z.infer<typeof KyroThemeSchema>;
+export type PrezVikTheme = z.infer<typeof PrezVikThemeSchema>;
 
 /**
  * Theme Validation
  */
-export function validateTheme(theme: unknown): { success: true; data: KyroTheme } | { success: false; errors: string[] } {
-  const result = KyroThemeSchema.safeParse(theme);
+export function validateTheme(theme: unknown): { success: true; data: PrezVikTheme } | { success: false; errors: string[] } {
+  const result = PrezVikThemeSchema.safeParse(theme);
   if (result.success) {
     return { success: true, data: result.data };
   }
@@ -311,4 +311,4 @@ export function validateTheme(theme: unknown): { success: true; data: KyroTheme 
 /**
  * Theme Registry Type
  */
-export type ThemeRegistry = Record<string, KyroTheme>;
+export type ThemeRegistry = Record<string, PrezVikTheme>;

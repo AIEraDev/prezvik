@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createLogger } from "@kyro/logger";
-import * as os from "node:os";
+import { createLogger } from "@prezvik/logger";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 
 const logger = createLogger({ context: "API:ai/generate" });
 
-const TEMP_DIR = path.join(os.tmpdir(), "kyro-preview");
+// Save to project directory instead of system temp
+const TEMP_DIR = path.join(process.cwd(), "generated-presentations");
 
 // Ensure temp directory exists
 if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true });
+  console.log(`[API] Created presentations directory: ${TEMP_DIR}`);
 }
 
 const GenerateRequestSchema = z.object({
@@ -45,23 +46,23 @@ export async function POST(request: NextRequest) {
     const { prompt, provider, strategy, options } = result.data;
     console.log(`[2] PARSED INPUT - prompt: "${prompt.substring(0, 50)}...", provider: ${provider}, strategy: ${strategy}, options:`, options);
 
-    // Use @kyro/ai to generate the blueprint
-    console.log("[3] IMPORTING @kyro/ai...");
-    const { getKyroAI } = await import("@kyro/ai");
-    const kyroAI = getKyroAI();
-    console.log("[3.1] KyroAI instantiated");
+    // Use @prezvik/ai to generate the blueprint
+    console.log("[3] IMPORTING @prezvik/ai...");
+    const { getPrezVikAI } = await import("@prezvik/ai");
+    const prezVikAI = getPrezVikAI();
+    console.log("[3.1] PrezVikAI instantiated");
 
-    const availableProviders = kyroAI.getAvailableProviders();
+    const availableProviders = prezVikAI.getAvailableProviders();
     console.log("[4] AI PROVIDER STATUS:");
     console.log("    - Available providers:", availableProviders);
-    console.log("    - Is available:", kyroAI.isAvailable());
+    console.log("    - Is available:", prezVikAI.isAvailable());
     console.log("    - Selected provider:", provider);
     console.log("    - OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
     console.log("    - ANTHROPIC_API_KEY exists:", !!process.env.ANTHROPIC_API_KEY);
     console.log("    - GROQ_API_KEY exists:", !!process.env.GROQ_API_KEY);
     console.log("    - GEMINI_API_KEY exists:", !!process.env.GEMINI_API_KEY);
 
-    if (!kyroAI.isAvailable()) {
+    if (!prezVikAI.isAvailable()) {
       console.error("[4.1] NO AI PROVIDERS AVAILABLE");
       return NextResponse.json({ error: "AI service not available", message: "No AI provider configured. Please set API keys for OpenAI, Anthropic, or Groq." }, { status: 503 });
     }
@@ -69,8 +70,8 @@ export async function POST(request: NextRequest) {
     console.log(`[5] CALLING AI GENERATION with provider: ${provider}, strategy: ${strategy}`);
     const aiStartTime = Date.now();
 
-    // Generate blueprint using structured outputs (returns valid KyroBlueprint directly)
-    const blueprint = await kyroAI.generateSlideDeck(prompt, { provider, strategy });
+    // Generate blueprint using structured outputs (returns valid PrezVikBlueprint directly)
+    const blueprint = await prezVikAI.generateSlideDeck(prompt, { provider, strategy });
 
     const aiDuration = Date.now() - aiStartTime;
     console.log(`[5.1] BLUEPRINT GENERATED in ${aiDuration}ms:`);
@@ -83,8 +84,8 @@ export async function POST(request: NextRequest) {
     const title = blueprint.meta?.title || "AI Generated Presentation";
 
     // Skip Zod validation - layout strategies have different expectations than schema
-    console.log("[8] IMPORTING @kyro/core for generateDeck...");
-    const { generateDeck } = await import("@kyro/core");
+    console.log("[8] IMPORTING @prezvik/core for generateDeck...");
+    const { generateDeck } = await import("@prezvik/core");
     const fileId = randomUUID();
     const outputPath = path.join(TEMP_DIR, `${fileId}.pptx`);
     console.log(`[8.1] FILE ID: ${fileId}`);

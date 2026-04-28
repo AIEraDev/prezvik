@@ -1,11 +1,11 @@
 /**
- * Kyro Adapter
+ * Prezvik Adapter
  *
  * Thin wrapper around core engine
  * NO business logic here - just calls the pipeline
  */
 
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 import * as path from "path";
 
 /**
@@ -16,7 +16,7 @@ export async function generatePresentation(deck: any, options?: { theme?: string
 
   // Generate unique filename
   const timestamp = Date.now();
-  const fileName = `kyro-${timestamp}.pptx`;
+  const fileName = `prezvik-${timestamp}.pptx`;
   const filePath = path.join(outputDir, fileName);
 
   // Call core pipeline

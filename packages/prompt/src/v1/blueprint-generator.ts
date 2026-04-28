@@ -1,11 +1,11 @@
 /**
  * Blueprint Generator
  *
- * Converts user intent → Kyro Blueprint IR
+ * Converts user intent → Prezvik Blueprint IR
  * Template-driven - deterministic, fast
  */
 
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import { detectIntent } from "./intent-detector.js";
 import { pitchTemplate } from "./templates/pitch.js";
 import { reportTemplate } from "./templates/report.js";
@@ -14,7 +14,7 @@ import { educationalTemplate } from "./templates/educational.js";
 /**
  * Generate blueprint from prompt
  */
-export function generateBlueprint(prompt: string): KyroBlueprint {
+export function generateBlueprint(prompt: string): PrezVikBlueprint {
   // Detect intent
   const intent = detectIntent(prompt);
 

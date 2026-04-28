@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document specifies requirements for implementing a layered architecture for Kyro presentation generation. The architecture separates concerns into three distinct layers: Theme/Color Layer, Visual Generation Layer, and Export/Rendering Layer. This separation enables procedural generation of backgrounds, gradients, shapes, and spacing rules on top of a constrained layout system, moving beyond template-based approaches to create a true theme engine.
+This document specifies requirements for implementing a layered architecture for Prezvik presentation generation. The architecture separates concerns into three distinct layers: Theme/Color Layer, Visual Generation Layer, and Export/Rendering Layer. This separation enables procedural generation of backgrounds, gradients, shapes, and spacing rules on top of a constrained layout system, moving beyond template-based approaches to create a true theme engine.
 
 The layered architecture will replace the current monolithic rendering approach with a modular stack that provides clear separation between color/theme management, visual element generation, and output format rendering.
 

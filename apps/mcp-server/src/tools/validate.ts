@@ -4,17 +4,17 @@
  * MCP tool for validating deck schemas
  */
 
-import { validateDeck } from "../adapters/kyro.js";
+import { validateDeck } from "../adapters/prezvik.js";
 
 export const validateTool = {
   name: "validate_deck",
-  description: "Validate a Kyro deck schema. Checks structure and returns slide count and types.",
+  description: "Validate a Prezvik deck schema. Checks structure and returns slide count and types.",
   inputSchema: {
     type: "object",
     properties: {
       deck: {
         type: "object",
-        description: "Kyro deck schema to validate",
+        description: "Prezvik deck schema to validate",
       },
     },
     required: ["deck"],

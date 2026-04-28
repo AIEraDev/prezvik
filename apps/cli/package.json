@@ -1,9 +1,9 @@
 {
-  "name": "kyro",
+  "name": "prezvik",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "kyro": "./dist/index.js"
+    "prezvik": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -12,10 +12,10 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/ai": "workspace:*",
-    "@kyro/core": "workspace:*",
-    "@kyro/prompt": "workspace:*",
-    "@kyro/schema": "workspace:*",
+    "@prezvik/ai": "workspace:*",
+    "@prezvik/core": "workspace:*",
+    "@prezvik/prompt": "workspace:*",
+    "@prezvik/schema": "workspace:*",
     "chokidar": "^3.6.0",
     "commander": "^12.0.0",
     "dotenv": "^17.4.2"

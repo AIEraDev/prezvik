@@ -5,7 +5,7 @@
  * based on slide type, position, and theme.
  */
 
-import type { SlideTheme } from "@kyro/design";
+import type { SlideTheme } from "@prezvik/design";
 
 export interface DecorationConfig {
   showAccentBar: boolean;

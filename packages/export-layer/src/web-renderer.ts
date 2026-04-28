@@ -1,5 +1,5 @@
 import type { Renderer, RenderOptions, RenderResult, ValidationResult, FeatureSupport } from "./renderer-interface.js";
-import type { VisualContext, SlideVisualContext, LinearGradient, RadialGradient, Fill, ShapeElement, ContentElement, TextContent, ImageContent } from "@kyro/visual-layer";
+import type { VisualContext, SlideVisualContext, LinearGradient, RadialGradient, Fill, ShapeElement, ContentElement, TextContent, ImageContent } from "@prezvik/visual-layer";
 
 /**
  * Web-specific render options

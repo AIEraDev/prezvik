@@ -1,8 +1,8 @@
-# Implementation Plan: Kyro Pipeline Integration
+# Implementation Plan: Prezvik Pipeline Integration
 
 ## Overview
 
-This implementation plan establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. The pipeline integrates existing components (Blueprint schema, LayoutEngine, KyroAI) into a cohesive workflow: **Intent → Blueprint → Layout → Positioning → Theming → Rendering**.
+This implementation plan establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. The pipeline integrates existing components (Blueprint schema, LayoutEngine, PrezVikAI) into a cohesive workflow: **Intent → Blueprint → Layout → Positioning → Theming → Rendering**.
 
 The implementation follows a phased approach:
 
@@ -111,7 +111,7 @@ The implementation follows a phased approach:
 - [x] 4. Implement Blueprint Generator
   - [x] 4.1 Create BlueprintGenerator class
     - Create `packages/ai/src/blueprint/generator.ts`
-    - Implement `generate(prompt: string, options?: BlueprintGeneratorOptions): Promise<KyroBlueprint>` method
+    - Implement `generate(prompt: string, options?: BlueprintGeneratorOptions): Promise<PrezVikBlueprint>` method
     - Define BlueprintGeneratorOptions interface (provider, temperature, maxTokens)
     - _Requirements: 1.1, 1.6_
 
@@ -131,7 +131,7 @@ The implementation follows a phased approach:
     - _Requirements: 1.2_
 
   - [x] 4.4 Implement JSON parsing and error handling
-    - Implement `parseResponse(text: string): KyroBlueprint` method
+    - Implement `parseResponse(text: string): PrezVikBlueprint` method
     - Extract JSON from LLM response (handle markdown code blocks)
     - Handle malformed JSON with descriptive errors
     - Throw BlueprintGenerationError on parsing failures
@@ -141,7 +141,7 @@ The implementation follows a phased approach:
     - Test prompt parsing and meta inference with example prompts
     - Test JSON extraction from LLM responses with sample responses
     - Test error handling for invalid AI responses (malformed JSON, missing fields)
-    - Mock KyroAI to avoid API calls in tests
+    - Mock PrezVikAI to avoid API calls in tests
 
 - [x] 5. Implement Validation Layer
   - [x] 5.1 Create validation functions using Zod
@@ -175,7 +175,7 @@ The implementation follows a phased approach:
 
 - [x] 6. Implement Mock Mode for Blueprint Generation
   - [x] 6.1 Create template-based Blueprint generator
-    - Implement `generateFromTemplate(prompt: string): KyroBlueprint` method in BlueprintGenerator
+    - Implement `generateFromTemplate(prompt: string): PrezVikBlueprint` method in BlueprintGenerator
     - Implement `extractKeywords(prompt: string): Keywords` method
     - Parse prompt for slide count, topic, presentation type
     - _Requirements: 8.3_
@@ -189,7 +189,7 @@ The implementation follows a phased approach:
 
   - [x] 6.3 Implement template selection and filling
     - Implement `selectTemplate(keywords: Keywords): BlueprintTemplate` method
-    - Implement `fillTemplate(template: BlueprintTemplate, keywords: Keywords): KyroBlueprint` method
+    - Implement `fillTemplate(template: BlueprintTemplate, keywords: Keywords): PrezVikBlueprint` method
     - Fill template with extracted content from prompt
     - Ensure generated Blueprint is valid v2 format
     - _Requirements: 8.3, 9.1, 9.6_
@@ -345,7 +345,7 @@ The implementation follows a phased approach:
     - Verify PPTX output file is created and valid
 
 - [ ] 11. Checkpoint - Verify end-to-end pipeline
-  - Run magic command with mock mode: `kyro magic "Create a 3-slide presentation about AI" --mock`
+  - Run magic command with mock mode: `prezvik magic "Create a 3-slide presentation about AI" --mock`
   - Run magic command with real AI (if API key available)
   - Verify PPTX file is created and opens in PowerPoint/Keynote
   - Verify slide count matches prompt

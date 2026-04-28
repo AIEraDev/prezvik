@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { ShapeGenerator } from "./shape-generator.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { Rect, SlideType, ThemeTone } from "./models/visual-context.js";
 
 describe("ShapeGenerator", () => {

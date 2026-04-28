@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import { BackgroundGenerator } from "./background-generator.js";
 import { ShapeGenerator } from "./shape-generator.js";
 import type { VisualElement } from "./models/visual-element.js";

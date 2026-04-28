@@ -1,8 +1,8 @@
-# Design Document: Kyro v1 Pipeline Integration
+# Design Document: Prezvik v1 Pipeline Integration
 
 ## Overview
 
-The Kyro v1 Pipeline Integration establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. This design integrates existing components (Blueprint v2 schema, LayoutEngineV2, KyroAI) into a cohesive workflow that validates the core Kyro architecture: **Intent → Blueprint → Layout → Positioning → Theming → Rendering**.
+The Prezvik v1 Pipeline Integration establishes a complete, testable end-to-end pipeline that transforms user prompts into rendered PPTX presentations. This design integrates existing components (Blueprint v2 schema, LayoutEngineV2, PrezVikAI) into a cohesive workflow that validates the core Prezvik architecture: **Intent → Blueprint → Layout → Positioning → Theming → Rendering**.
 
 ### Key Design Goals
 
@@ -17,7 +17,7 @@ The Kyro v1 Pipeline Integration establishes a complete, testable end-to-end pip
 ```
 User Prompt
     ↓
-[1] Blueprint Generator (KyroAI)
+[1] Blueprint Generator (PrezVikAI)
     ↓
 [2] Validation Layer (Zod)
     ↓
@@ -41,13 +41,13 @@ Output File (.pptx)
 - **Input**: User prompt (string)
 - **Output**: Blueprint v2 JSON
 - **Responsibility**: Transform natural language intent into structured Blueprint IR
-- **Implementation**: Uses KyroAI with structured prompts
+- **Implementation**: Uses PrezVikAI with structured prompts
 
 #### 2. Validation Layer
 
 - **Input**: Blueprint v2 JSON
 - **Output**: Validated Blueprint object or error list
-- **Responsibility**: Ensure Blueprint conforms to KyroBlueprintSchema
+- **Responsibility**: Ensure Blueprint conforms to PrezVikBlueprintSchema
 - **Implementation**: Zod schema validation
 
 #### 3. Layout Engine v2
@@ -82,7 +82,7 @@ Output File (.pptx)
 
 ```typescript
 // Stage 1: Blueprint Generation
-const blueprintJSON = await kyroAI.generateBlueprint(prompt);
+const blueprintJSON = await prezVikAI.generateBlueprint(prompt);
 
 // Stage 2: Validation
 const blueprint = validateBlueprint(blueprintJSON);
@@ -114,9 +114,9 @@ export interface BlueprintGeneratorOptions {
 }
 
 export class BlueprintGenerator {
-  constructor(private kyroAI: KyroAI) {}
+  constructor(private prezVikAI: PrezVikAI) {}
 
-  async generate(prompt: string, options?: BlueprintGeneratorOptions): Promise<KyroBlueprint> {
+  async generate(prompt: string, options?: BlueprintGeneratorOptions): Promise<PrezVikBlueprint> {
     // Generate Blueprint v2 JSON from prompt
     // Use structured prompt with examples
     // Parse and return Blueprint object
@@ -138,7 +138,7 @@ export class BlueprintGenerator {
 ```typescript
 export interface ValidationResult {
   success: boolean;
-  data?: KyroBlueprint;
+  data?: PrezVikBlueprint;
   errors?: ValidationError[];
 }
 
@@ -149,7 +149,7 @@ export interface ValidationError {
 }
 
 export function validateBlueprint(json: unknown): ValidationResult {
-  const result = KyroBlueprintSchema.safeParse(json);
+  const result = PrezVikBlueprintSchema.safeParse(json);
 
   if (result.success) {
     return { success: true, data: result.data };
@@ -522,7 +522,7 @@ export interface Theme {
 Defined in `packages/schema/src/v2/blueprint.ts`:
 
 ```typescript
-interface KyroBlueprint {
+interface PrezVikBlueprint {
   version: "2.0";
   meta: BlueprintMeta;
   theme?: ThemeHints;
@@ -574,7 +574,7 @@ interface PipelineContext {
   prompt: string;
   options: PipelineOptions;
   stages: {
-    blueprint?: KyroBlueprint;
+    blueprint?: PrezVikBlueprint;
     layoutTrees?: LayoutTree[];
     positionedTrees?: LayoutTree[];
     themedTrees?: LayoutTree[];
@@ -705,7 +705,7 @@ try {
 - Test prompt parsing and meta inference
 - Test JSON extraction from LLM responses
 - Test error handling for invalid AI responses
-- Mock KyroAI to avoid API calls
+- Mock PrezVikAI to avoid API calls
 
 **Validation Layer**:
 
@@ -779,7 +779,7 @@ if (options.mockMode) {
   blueprint = generateFromTemplate(prompt);
 } else {
   // Use real AI
-  blueprint = await kyroAI.generate(prompt);
+  blueprint = await prezVikAI.generate(prompt);
 }
 ```
 
@@ -952,7 +952,7 @@ This feature is **not suitable for property-based testing** because:
 - Test prompt parsing and meta inference with example prompts
 - Test JSON extraction from LLM responses with sample responses
 - Test error handling for invalid AI responses (malformed JSON, missing fields)
-- Mock KyroAI to avoid API calls in tests
+- Mock PrezVikAI to avoid API calls in tests
 - Test template-based generation in mock mode
 
 **Validation Layer**:
@@ -1075,7 +1075,7 @@ export class BlueprintGenerator {
     }
   }
 
-  private generateFromTemplate(prompt: string): KyroBlueprint {
+  private generateFromTemplate(prompt: string): PrezVikBlueprint {
     // Parse prompt for keywords (slides, topic, type)
     const keywords = this.extractKeywords(prompt);
 

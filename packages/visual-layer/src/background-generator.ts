@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { BackgroundElement, Fill, GradientFill, LinearGradient, SolidFill } from "./models/visual-element.js";
 import type { Dimensions, SlideType } from "./models/visual-context.js";
 

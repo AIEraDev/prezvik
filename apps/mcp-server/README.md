@@ -1,10 +1,10 @@
-# Kyro MCP Server
+# Prezvik MCP Server
 
-Model Context Protocol server for Kyro. Exposes presentation generation as MCP tools for AI agents.
+Model Context Protocol server for Prezvik. Exposes presentation generation as MCP tools for AI agents.
 
 ## What is MCP?
 
-MCP (Model Context Protocol) is a standard for connecting AI agents to external tools and data sources. This server makes Kyro available to any MCP-compatible AI agent.
+MCP (Model Context Protocol) is a standard for connecting AI agents to external tools and data sources. This server makes Prezvik available to any MCP-compatible AI agent.
 
 ## Installation
 
@@ -22,9 +22,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ```json
 {
   "mcpServers": {
-    "kyro": {
+    "prezvik": {
       "command": "node",
-      "args": ["/path/to/Kyro/apps/mcp-server/dist/index.js"]
+      "args": ["/path/to/Prezvik/apps/mcp-server/dist/index.js"]
     }
   }
 }
@@ -90,7 +90,7 @@ Validate a deck schema before generating.
 
 - Validation result with slide count and types
 
-### `get_kyro_info`
+### `get_prezvik_info`
 
 Get information about available themes and slide types.
 
@@ -107,9 +107,9 @@ MCP Client (AI Agent)
   ↓
 MCP Protocol (stdio)
   ↓
-Kyro MCP Server (thin adapter)
+Prezvik MCP Server (thin adapter)
   ↓
-Kyro Core Engine
+Prezvik Core Engine
   ↓
 PPTX Output
 ```

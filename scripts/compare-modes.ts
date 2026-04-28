@@ -10,7 +10,7 @@
  *   node scripts/compare-modes.ts --schema path/to/schema.json --output report-dir
  */
 
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from "fs";
 import { join, basename, dirname } from "path";
 import { execSync } from "child_process";
@@ -278,7 +278,7 @@ function generateMarkdownReport(result: ComparisonResult): string {
     } else if (comparison.generationTimeDiff > 0 && comparison.generationTimeDiffPercent > 20) {
       md += `⚠ **Performance optimization needed**\n\n`;
       md += `Layered mode is significantly slower. Consider:\n`;
-      md += `- Enabling caching (KYRO_ENABLE_CACHING=true)\n`;
+      md += `- Enabling caching (PREZVIK_ENABLE_CACHING=true)\n`;
       md += `- Profiling the pipeline to identify bottlenecks\n`;
       md += `- Optimizing visual generation algorithms\n\n`;
     } else {

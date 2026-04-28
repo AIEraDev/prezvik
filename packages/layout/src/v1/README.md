@@ -15,8 +15,8 @@ The Positioning Engine converts relative layout trees into absolute coordinates.
 ## Usage
 
 ```typescript
-import { PositioningEngine } from "@kyro/layout/v1";
-import type { LayoutTree } from "@kyro/layout";
+import { PositioningEngine } from "@prezvik/layout/v1";
+import type { LayoutTree } from "@prezvik/layout";
 
 // Create engine
 const engine = new PositioningEngine();
@@ -204,7 +204,7 @@ See `positioning-engine.example.ts` for complete examples of:
 
 ## Integration
 
-The Positioning Engine is part of the Kyro v1 pipeline:
+The Positioning Engine is part of the Prezvik v1 pipeline:
 
 ```
 Blueprint → Layout Engine → Positioning Engine → Theme Resolver → Renderer

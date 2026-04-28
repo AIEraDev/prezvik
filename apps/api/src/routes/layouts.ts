@@ -6,7 +6,7 @@
  */
 
 import { Router, Request, Response } from "express";
-import { generateLayouts } from "@kyro/core";
+import { generateLayouts } from "@prezvik/core";
 
 const router: Router = Router();
 

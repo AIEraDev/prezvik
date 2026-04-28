@@ -2,7 +2,7 @@
 
 ## Overview
 
-This design establishes a comprehensive testing infrastructure for the Kyro presentation generation system. The system is a TypeScript monorepo using pnpm workspaces with Turborepo for build orchestration. Currently, only two test files exist (CLI magic command and PPTX renderer). This design provides a complete testing strategy covering unit tests, integration tests, and end-to-end tests across all applications and packages.
+This design establishes a comprehensive testing infrastructure for the Prezvik presentation generation system. The system is a TypeScript monorepo using pnpm workspaces with Turborepo for build orchestration. Currently, only two test files exist (CLI magic command and PPTX renderer). This design provides a complete testing strategy covering unit tests, integration tests, and end-to-end tests across all applications and packages.
 
 ### Current State
 
@@ -64,7 +64,7 @@ This design establishes a comprehensive testing infrastructure for the Kyro pres
 ### Directory Structure
 
 ```
-kyro/
+prezvik/
 ├── vitest.workspace.ts              # Workspace-level test configuration
 ├── vitest.config.shared.ts          # Shared configuration
 ├── test/                            # Workspace-level test infrastructure
@@ -125,8 +125,8 @@ kyro/
 │   │   │   │   ├── validate.ts
 │   │   │   │   └── validate.test.ts
 │   │   │   └── adapters/
-│   │   │       ├── kyro.ts
-│   │   │       └── kyro.test.ts
+│   │   │       ├── prezvik.ts
+│   │   │       └── prezvik.test.ts
 │   │   ├── __tests__/
 │   │   │   └── mcp-integration.test.ts
 │   │   └── vitest.config.ts
@@ -185,8 +185,8 @@ kyro/
     │   └── vitest.config.ts
     ├── ai/
     │   ├── src/
-    │   │   ├── kyro-ai.ts
-    │   │   ├── kyro-ai.test.ts
+    │   │   ├── prezvik-ai.ts
+    │   │   ├── prezvik-ai.test.ts
     │   │   └── providers/
     │   │       ├── openai.ts
     │   │       ├── openai.test.ts
@@ -201,7 +201,7 @@ kyro/
 ### Test Execution Flow
 
 1. **Local Development**: `pnpm test` runs all tests in affected packages
-2. **Package-Specific**: `pnpm --filter @kyro/core test` runs tests for one package
+2. **Package-Specific**: `pnpm --filter @prezvik/core test` runs tests for one package
 3. **Watch Mode**: `pnpm test:watch` runs tests in watch mode
 4. **Coverage**: `pnpm test:coverage` generates coverage reports
 5. **CI/CD**: Turbo cache ensures only changed packages are tested
@@ -296,7 +296,7 @@ export default mergeConfig(
   sharedConfig,
   defineConfig({
     test: {
-      name: "@kyro/core",
+      name: "@prezvik/core",
       include: ["src/**/*.test.ts", "__tests__/**/*.test.ts"],
       coverage: {
         include: ["src/**/*.ts"],
@@ -503,10 +503,10 @@ export const mockFileSystem = {
 #### Blueprint Factory (`test/factories/blueprint-factory.ts`)
 
 ```typescript
-import type { KyroBlueprint, Slide } from "@kyro/schema";
+import type { PrezVikBlueprint, Slide } from "@prezvik/schema";
 
 export class BlueprintFactory {
-  static create(overrides?: Partial<KyroBlueprint>): KyroBlueprint {
+  static create(overrides?: Partial<PrezVikBlueprint>): PrezVikBlueprint {
     return {
       version: "1.0",
       metadata: {
@@ -556,7 +556,7 @@ export class BlueprintFactory {
     };
   }
 
-  static createWithSlideCount(count: number): KyroBlueprint {
+  static createWithSlideCount(count: number): PrezVikBlueprint {
     const slides = Array.from({ length: count }, (_, i) => this.createContentSlide({ id: `slide-${i}` }));
     return this.create({ slides });
   }
@@ -573,7 +573,7 @@ export class BlueprintFactory {
 #### Layout Factory (`test/factories/layout-factory.ts`)
 
 ```typescript
-import type { LayoutTree, TextNode, ContainerNode } from "@kyro/schema";
+import type { LayoutTree, TextNode, ContainerNode } from "@prezvik/schema";
 
 export class LayoutFactory {
   static createTextNode(overrides?: Partial<TextNode>): TextNode {
@@ -650,9 +650,9 @@ export class LayoutFactory {
 
 ```typescript
 import { expect } from "vitest";
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 
-export function assertValidBlueprint(blueprint: any): asserts blueprint is KyroBlueprint {
+export function assertValidBlueprint(blueprint: any): asserts blueprint is PrezVikBlueprint {
   expect(blueprint).toBeDefined();
   expect(blueprint.version).toBeDefined();
   expect(blueprint.slides).toBeInstanceOf(Array);
@@ -1141,7 +1141,7 @@ describe("CLI E2E Tests", () => {
   describe("magic command", () => {
     it("should generate presentation from prompt", () => {
       const prompt = "Create a 3-slide presentation about AI";
-      const command = `pnpm kyro magic "${prompt}" --output "${testOutputFile}" --mock`;
+      const command = `pnpm prezvik magic "${prompt}" --output "${testOutputFile}" --mock`;
 
       const output = execSync(command, { encoding: "utf-8" });
 
@@ -1150,7 +1150,7 @@ describe("CLI E2E Tests", () => {
     });
 
     it("should respect --theme option", () => {
-      const command = `pnpm kyro magic "Test" --output "${testOutputFile}" --mock --theme minimal`;
+      const command = `pnpm prezvik magic "Test" --output "${testOutputFile}" --mock --theme minimal`;
 
       const output = execSync(command, { encoding: "utf-8" });
 
@@ -1159,7 +1159,7 @@ describe("CLI E2E Tests", () => {
     });
 
     it("should handle errors gracefully", () => {
-      const command = `pnpm kyro magic "" --output "${testOutputFile}" --mock`;
+      const command = `pnpm prezvik magic "" --output "${testOutputFile}" --mock`;
 
       expect(() => {
         execSync(command, { encoding: "utf-8" });
@@ -1173,7 +1173,7 @@ describe("CLI E2E Tests", () => {
       const blueprint = BlueprintFactory.create();
       await fs.writeFile(blueprintPath, JSON.stringify(blueprint));
 
-      const command = `pnpm kyro generate "${blueprintPath}" --output "${testOutputFile}"`;
+      const command = `pnpm prezvik generate "${blueprintPath}" --output "${testOutputFile}"`;
 
       const output = execSync(command, { encoding: "utf-8" });
 
@@ -1190,7 +1190,7 @@ describe("CLI E2E Tests", () => {
       const blueprint = BlueprintFactory.create();
       await fs.writeFile(blueprintPath, JSON.stringify(blueprint));
 
-      const command = `pnpm kyro validate "${blueprintPath}"`;
+      const command = `pnpm prezvik validate "${blueprintPath}"`;
 
       const output = execSync(command, { encoding: "utf-8" });
 
@@ -1204,7 +1204,7 @@ describe("CLI E2E Tests", () => {
       const blueprint = BlueprintFactory.createInvalid();
       await fs.writeFile(blueprintPath, JSON.stringify(blueprint));
 
-      const command = `pnpm kyro validate "${blueprintPath}"`;
+      const command = `pnpm prezvik validate "${blueprintPath}"`;
 
       expect(() => {
         execSync(command, { encoding: "utf-8" });
@@ -1418,7 +1418,7 @@ describe("POST /api/generate", () => {
 - `src/tools/generate.test.ts` (new)
 - `src/tools/validate.test.ts` (new)
 - `src/tools/info.test.ts` (new)
-- `src/adapters/kyro.test.ts` (new)
+- `src/adapters/prezvik.test.ts` (new)
 - `src/index.test.ts` (new)
 - `__tests__/mcp-integration.test.ts` (new)
 - `__tests__/tool-schemas.test.ts` (new)
@@ -1543,20 +1543,20 @@ describe("generate_presentation tool", () => {
 ```typescript
 // packages/schema/src/blueprint.test.ts
 import { describe, it, expect } from "vitest";
-import { KyroBlueprintSchema } from "./blueprint";
+import { PrezVikBlueprintSchema } from "./blueprint";
 import { BlueprintFactory } from "@test/factories/blueprint-factory";
 
-describe("KyroBlueprintSchema", () => {
+describe("PrezVikBlueprintSchema", () => {
   it("should validate valid blueprint", () => {
     const blueprint = BlueprintFactory.create();
-    const result = KyroBlueprintSchema.safeParse(blueprint);
+    const result = PrezVikBlueprintSchema.safeParse(blueprint);
 
     expect(result.success).toBe(true);
   });
 
   it("should reject blueprint without version", () => {
     const blueprint = BlueprintFactory.create({ version: undefined });
-    const result = KyroBlueprintSchema.safeParse(blueprint);
+    const result = PrezVikBlueprintSchema.safeParse(blueprint);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -1566,7 +1566,7 @@ describe("KyroBlueprintSchema", () => {
 
   it("should reject blueprint with empty slides", () => {
     const blueprint = BlueprintFactory.create({ slides: [] });
-    const result = KyroBlueprintSchema.safeParse(blueprint);
+    const result = PrezVikBlueprintSchema.safeParse(blueprint);
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -1578,7 +1578,7 @@ describe("KyroBlueprintSchema", () => {
     const blueprint = BlueprintFactory.create({
       slides: [BlueprintFactory.createTitleSlide(), BlueprintFactory.createContentSlide(), BlueprintFactory.createBulletSlide()],
     });
-    const result = KyroBlueprintSchema.safeParse(blueprint);
+    const result = PrezVikBlueprintSchema.safeParse(blueprint);
 
     expect(result.success).toBe(true);
   });
@@ -1643,7 +1643,7 @@ describe("KyroBlueprintSchema", () => {
 
 **Test Files**:
 
-- `src/kyro-ai.test.ts` (new)
+- `src/prezvik-ai.test.ts` (new)
 - `src/providers/openai.test.ts` (new)
 - `src/providers/anthropic.test.ts` (new)
 - `src/providers/groq.test.ts` (new)
@@ -1662,19 +1662,19 @@ describe("KyroBlueprintSchema", () => {
 **Example AI Test**:
 
 ```typescript
-// packages/ai/src/kyro-ai.test.ts
+// packages/ai/src/prezvik-ai.test.ts
 import { describe, it, expect, beforeEach } from "vitest";
-import { KyroAI } from "./kyro-ai";
+import { PrezVikAI } from "./prezvik-ai";
 import { mockAIProviders } from "@test/mocks/ai-providers";
 
-describe("KyroAI", () => {
+describe("PrezVikAI", () => {
   beforeEach(() => {
     mockAIProviders.setup();
   });
 
   describe("initialization", () => {
     it("should detect available providers", () => {
-      const ai = new KyroAI({ mockMode: true });
+      const ai = new PrezVikAI({ mockMode: true });
       const providers = ai.getAvailableProviders();
 
       expect(providers).toContain("openai");
@@ -1682,7 +1682,7 @@ describe("KyroAI", () => {
     });
 
     it("should work in mock mode without API keys", () => {
-      const ai = new KyroAI({ mockMode: true });
+      const ai = new PrezVikAI({ mockMode: true });
 
       expect(() => ai.getAvailableProviders()).not.toThrow();
     });
@@ -1690,7 +1690,7 @@ describe("KyroAI", () => {
 
   describe("summarize", () => {
     it("should return mock response in mock mode", async () => {
-      const ai = new KyroAI({ mockMode: true });
+      const ai = new PrezVikAI({ mockMode: true });
 
       const result = await ai.summarize("Test content", "openai");
 
@@ -1700,7 +1700,7 @@ describe("KyroAI", () => {
     });
 
     it("should use specified provider", async () => {
-      const ai = new KyroAI({ mockMode: true });
+      const ai = new PrezVikAI({ mockMode: true });
 
       const result = await ai.summarize("Test content", "anthropic");
 
@@ -1708,7 +1708,7 @@ describe("KyroAI", () => {
     });
 
     it("should handle errors gracefully", async () => {
-      const ai = new KyroAI({ mockMode: true });
+      const ai = new PrezVikAI({ mockMode: true });
       mockAIProviders.simulateError("openai", new Error("API Error"));
 
       await expect(async () => {
@@ -2092,7 +2092,7 @@ export const sharedConfig = defineConfig({
 - 30+ unit tests for core package
 - 10+ integration tests
 - 5+ performance tests
-- 80%+ coverage for `@kyro/core`
+- 80%+ coverage for `@prezvik/core`
 
 ### Phase 3: Schema and Validation Tests (Week 2)
 
@@ -2109,7 +2109,7 @@ export const sharedConfig = defineConfig({
 
 - 40+ unit tests for schema package
 - 5+ integration tests
-- 90%+ coverage for `@kyro/schema`
+- 90%+ coverage for `@prezvik/schema`
 
 ### Phase 4: Renderer Tests (Week 3)
 
@@ -2127,7 +2127,7 @@ export const sharedConfig = defineConfig({
 
 - 50+ unit tests for renderer packages
 - 10+ integration tests
-- 85%+ coverage for `@kyro/renderer-pptx` and `@kyro/renderer-gslides`
+- 85%+ coverage for `@prezvik/renderer-pptx` and `@prezvik/renderer-gslides`
 
 ### Phase 5: Layout and Layer Tests (Week 3)
 
@@ -2154,7 +2154,7 @@ export const sharedConfig = defineConfig({
 
 **Tasks**:
 
-1. Unit tests for KyroAI class
+1. Unit tests for PrezVikAI class
 2. Unit tests for each AI provider
 3. Integration tests for provider comparison
 4. Unit tests for design utilities
@@ -2441,8 +2441,8 @@ packages/core/__tests__/
 3. **Use `vi.mock` for Module Mocking**
 
    ```typescript
-   vi.mock("@kyro/ai", () => ({
-     KyroAI: vi.fn().mockImplementation(() => ({
+   vi.mock("@prezvik/ai", () => ({
+     PrezVikAI: vi.fn().mockImplementation(() => ({
        summarize: vi.fn().mockResolvedValue("mock response"),
      })),
    }));
@@ -2631,20 +2631,20 @@ packages/core/__tests__/
 
 | Package                | Target Coverage | Current Coverage | Status             |
 | ---------------------- | --------------- | ---------------- | ------------------ |
-| @kyro/core             | 90%             | <5%              | 🔴 Not Started     |
-| @kyro/schema           | 90%             | 0%               | 🔴 Not Started     |
-| @kyro/pipeline         | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/renderer-pptx    | 85%             | ~60%             | 🟡 In Progress     |
-| @kyro/renderer-gslides | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/layout           | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/theme-layer      | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/visual-layer     | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/export-layer     | 85%             | 0%               | 🔴 Not Started     |
-| @kyro/ai               | 80%             | 0%               | 🔴 Not Started     |
-| @kyro/design           | 80%             | 0%               | 🔴 Not Started     |
-| @kyro/logger           | 80%             | 0%               | 🔴 Not Started     |
-| @kyro/utils            | 80%             | 0%               | 🔴 Not Started     |
-| @kyro/prompt           | 80%             | 0%               | 🔴 Not Started     |
+| @prezvik/core             | 90%             | <5%              | 🔴 Not Started     |
+| @prezvik/schema           | 90%             | 0%               | 🔴 Not Started     |
+| @prezvik/pipeline         | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/renderer-pptx    | 85%             | ~60%             | 🟡 In Progress     |
+| @prezvik/renderer-gslides | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/layout           | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/theme-layer      | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/visual-layer     | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/export-layer     | 85%             | 0%               | 🔴 Not Started     |
+| @prezvik/ai               | 80%             | 0%               | 🔴 Not Started     |
+| @prezvik/design           | 80%             | 0%               | 🔴 Not Started     |
+| @prezvik/logger           | 80%             | 0%               | 🔴 Not Started     |
+| @prezvik/utils            | 80%             | 0%               | 🔴 Not Started     |
+| @prezvik/prompt           | 80%             | 0%               | 🔴 Not Started     |
 | apps/cli               | 75%             | ~10%             | 🟡 In Progress     |
 | apps/api               | 75%             | 0%               | 🔴 Not Started     |
 | apps/mcp-server        | 75%             | 0%               | 🔴 Not Started     |
@@ -2910,7 +2910,7 @@ describe("CLI E2E Tests", () => {
 
   it("should generate presentation from prompt", () => {
     const prompt = "Create a 3-slide presentation about AI";
-    const command = `pnpm kyro magic "${prompt}" --output "${testOutputFile}" --mock`;
+    const command = `pnpm prezvik magic "${prompt}" --output "${testOutputFile}" --mock`;
 
     const output = execSync(command, { encoding: "utf-8" });
 
@@ -3006,7 +3006,7 @@ export default mergeConfig(
   sharedConfig,
   defineConfig({
     test: {
-      name: "@kyro/core",
+      name: "@prezvik/core",
       include: ["src/**/*.test.ts", "__tests__/**/*.test.ts"],
       coverage: {
         include: ["src/**/*.ts"],
@@ -3030,7 +3030,7 @@ pnpm test:watch
 pnpm test:coverage
 
 # Run tests for specific package
-pnpm --filter @kyro/core test
+pnpm --filter @prezvik/core test
 
 # Run E2E tests only
 pnpm test:e2e

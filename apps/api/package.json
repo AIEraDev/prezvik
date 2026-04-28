@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/api",
+  "name": "@prezvik/api",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -9,11 +9,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kyro/ai": "workspace:*",
-    "@kyro/core": "workspace:*",
-    "@kyro/design": "workspace:*",
-    "@kyro/layout": "workspace:*",
-    "@kyro/schema": "workspace:*",
+    "@prezvik/ai": "workspace:*",
+    "@prezvik/core": "workspace:*",
+    "@prezvik/design": "workspace:*",
+    "@prezvik/layout": "workspace:*",
+    "@prezvik/schema": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "zod": "^3.23.0"

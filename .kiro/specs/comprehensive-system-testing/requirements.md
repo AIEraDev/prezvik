@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This document defines the requirements for comprehensive test coverage across the entire Kyro presentation generation system. The system is a monorepo containing multiple applications (API, CLI, MCP server, Web) and library packages (AI, Core, Design, Layout, Schema, Renderers, etc.). Currently, only two test files exist: one for the CLI magic command and one for the PPTX renderer. This specification aims to establish complete test coverage including unit tests, integration tests, and end-to-end tests for all components.
+This document defines the requirements for comprehensive test coverage across the entire Prezvik presentation generation system. The system is a monorepo containing multiple applications (API, CLI, MCP server, Web) and library packages (AI, Core, Design, Layout, Schema, Renderers, etc.). Currently, only two test files exist: one for the CLI magic command and one for the PPTX renderer. This specification aims to establish complete test coverage including unit tests, integration tests, and end-to-end tests for all components.
 
 ## Glossary
 
-- **Test_System**: The comprehensive testing infrastructure for Kyro
+- **Test_System**: The comprehensive testing infrastructure for Prezvik
 - **CLI**: Command-line interface application
 - **API_Server**: Express.js REST API service
 - **MCP_Server**: Model Context Protocol server
@@ -26,8 +26,8 @@ This document defines the requirements for comprehensive test coverage across th
 - **Integration_Test**: Test for interactions between components
 - **E2E_Test**: End-to-end test for complete user workflows
 - **Mock_Mode**: Testing mode using mock data instead of real AI calls
-- **Blueprint**: Kyro presentation schema structure
-- **Deck**: Collection of slides in Kyro format
+- **Blueprint**: Prezvik presentation schema structure
+- **Deck**: Collection of slides in Prezvik format
 - **Slide**: Individual presentation slide
 - **Layout_Tree**: Positioned layout structure with coordinates
 
@@ -77,7 +77,7 @@ This document defines the requirements for comprehensive test coverage across th
 2. WHEN the "generate_presentation" tool is called with an invalid deck, THE Test_System SHALL verify that an error is returned
 3. WHEN the "validate_deck" tool is called with a valid deck, THE Test_System SHALL verify that validation succeeds
 4. WHEN the "validate_deck" tool is called with an invalid deck, THE Test_System SHALL verify that validation fails with error details
-5. WHEN the "get_kyro_info" tool is called, THE Test_System SHALL verify that available themes and slide types are returned
+5. WHEN the "get_prezvik_info" tool is called, THE Test_System SHALL verify that available themes and slide types are returned
 6. WHEN the MCP server receives a ListTools request, THE Test_System SHALL verify that all tools are listed with correct schemas
 7. WHEN the MCP server receives a CallTool request for an unknown tool, THE Test_System SHALL verify that an error is returned
 8. WHEN the MCP server starts, THE Test_System SHALL verify that it connects to stdio transport successfully
@@ -117,8 +117,8 @@ This document defines the requirements for comprehensive test coverage across th
 
 #### Acceptance Criteria
 
-1. WHEN a valid KyroBlueprint is validated, THE Test_System SHALL verify that validation succeeds
-2. WHEN an invalid KyroBlueprint is validated, THE Test_System SHALL verify that validation fails with specific error messages
+1. WHEN a valid PrezVikBlueprint is validated, THE Test_System SHALL verify that validation succeeds
+2. WHEN an invalid PrezVikBlueprint is validated, THE Test_System SHALL verify that validation fails with specific error messages
 3. WHEN a blueprint with missing required fields is validated, THE Test_System SHALL verify that missing field errors are returned
 4. WHEN a blueprint with invalid field types is validated, THE Test_System SHALL verify that type errors are returned
 5. WHEN slide schemas are validated, THE Test_System SHALL verify that all slide types validate correctly
@@ -223,7 +223,7 @@ This document defines the requirements for comprehensive test coverage across th
 
 #### Acceptance Criteria
 
-1. WHEN KyroAI is initialized, THE Test_System SHALL verify that available providers are detected based on API keys
+1. WHEN PrezVikAI is initialized, THE Test_System SHALL verify that available providers are detected based on API keys
 2. WHEN getAvailableProviders is called, THE Test_System SHALL verify that only providers with valid API keys are returned
 3. WHEN summarize is called with mock mode, THE Test_System SHALL verify that mock responses are returned without API calls
 4. WHEN summarize is called with a specific provider, THE Test_System SHALL verify that the correct provider is used

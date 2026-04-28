@@ -15,9 +15,9 @@ import { PipelineController } from "./pipeline-controller";
 import type { ThemeLayerFacade, VisualLayerFacade, ExportLayerFacade, CacheManager, PerformanceMonitor, LayoutTree, ThemeSpec } from "./pipeline-controller";
 import { CacheManager as CacheManagerImpl } from "./cache-manager";
 import { PerformanceMonitor as PerformanceMonitorImpl } from "./performance-monitor";
-import type { ColorPalette } from "@kyro/theme-layer";
-import type { SlideVisualContext, VisualContext } from "@kyro/visual-layer";
-import type { RenderResult, ValidationResult } from "@kyro/export-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
+import type { SlideVisualContext, VisualContext } from "@prezvik/visual-layer";
+import type { RenderResult, ValidationResult } from "@prezvik/export-layer";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -34,7 +34,7 @@ describe("Pipeline End-to-End Integration Tests", () => {
 
   beforeEach(() => {
     // Create temp directory for test outputs
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyro-pipeline-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prezvik-pipeline-test-"));
     outputPath = path.join(tempDir, "test-output.pptx");
 
     // Mock Theme Layer with realistic palette generation

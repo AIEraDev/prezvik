@@ -4,10 +4,10 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BlueprintGenerator, BlueprintGenerationError } from "./generator.js";
-import type { KyroAI } from "../kyro-ai.js";
+import type { PrezVikAI } from "../prezvik-ai.js";
 
-// Mock KyroAI
-const createMockKyroAI = (): KyroAI => {
+// Mock PrezVikAI
+const createMockPrezVikAI = (): PrezVikAI => {
   return {
     generateSlideDeck: vi.fn(),
     enhanceContent: vi.fn(),
@@ -21,12 +21,12 @@ const createMockKyroAI = (): KyroAI => {
 };
 
 describe("BlueprintGenerator", () => {
-  let mockKyroAI: KyroAI;
+  let mockPrezVikAI: PrezVikAI;
   let generator: BlueprintGenerator;
 
   beforeEach(() => {
-    mockKyroAI = createMockKyroAI();
-    generator = new BlueprintGenerator(mockKyroAI);
+    mockPrezVikAI = createMockPrezVikAI();
+    generator = new BlueprintGenerator(mockPrezVikAI);
   });
 
   describe("inferMeta", () => {
@@ -216,13 +216,13 @@ describe("BlueprintGenerator", () => {
         ],
       };
 
-      vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
       const blueprint = await generator.generate("Create a presentation about AI in education");
 
       expect(blueprint.version).toBe("2.0");
       expect(blueprint.slides).toHaveLength(1);
-      expect(mockKyroAI.generateSlideDeck).toHaveBeenCalled();
+      expect(mockPrezVikAI.generateSlideDeck).toHaveBeenCalled();
     });
 
     it("should merge inferred meta with generated meta", async () => {
@@ -245,7 +245,7 @@ describe("BlueprintGenerator", () => {
         ],
       };
 
-      vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
       const blueprint = await generator.generate("Create a pitch deck for investors");
 
@@ -254,7 +254,7 @@ describe("BlueprintGenerator", () => {
       expect(blueprint.meta.goal).toBe("inform");
     });
 
-    it("should pass provider option to KyroAI", async () => {
+    it("should pass provider option to PrezVikAI", async () => {
       const mockResponse = {
         version: "2.0" as const,
         meta: { title: "Test", goal: "inform" as const, tone: "modern" as const, language: "en" },
@@ -269,14 +269,14 @@ describe("BlueprintGenerator", () => {
         ],
       };
 
-      vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
       await generator.generate("Test prompt", { provider: "openai" });
 
-      expect(mockKyroAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ provider: "openai" }));
+      expect(mockPrezVikAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ provider: "openai" }));
     });
 
-    it("should pass strategy option to KyroAI", async () => {
+    it("should pass strategy option to PrezVikAI", async () => {
       const mockResponse = {
         version: "2.0" as const,
         meta: { title: "Test", goal: "inform" as const, tone: "modern" as const, language: "en" },
@@ -291,22 +291,22 @@ describe("BlueprintGenerator", () => {
         ],
       };
 
-      vi.mocked(mockKyroAI.generateSlideDeck).mockResolvedValue(mockResponse);
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockResolvedValue(mockResponse);
 
       await generator.generate("Test prompt", { provider: "openai", strategy: "quality" });
 
-      expect(mockKyroAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ provider: "openai", strategy: "quality" }));
+      expect(mockPrezVikAI.generateSlideDeck).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ provider: "openai", strategy: "quality" }));
     });
 
     it("should throw BlueprintGenerationError on AI failure", async () => {
-      vi.mocked(mockKyroAI.generateSlideDeck).mockRejectedValue(new Error("API error"));
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockRejectedValue(new Error("API error"));
 
       await expect(generator.generate("Test prompt")).rejects.toThrow(BlueprintGenerationError);
     });
 
     it("should throw BlueprintGenerationError when AI returns invalid structure", async () => {
       // With generateObject, this shouldn't happen since Zod validates, but test the error path
-      vi.mocked(mockKyroAI.generateSlideDeck).mockRejectedValue(new Error("Validation failed"));
+      vi.mocked(mockPrezVikAI.generateSlideDeck).mockRejectedValue(new Error("Validation failed"));
 
       await expect(generator.generate("Test prompt")).rejects.toThrow(BlueprintGenerationError);
     });

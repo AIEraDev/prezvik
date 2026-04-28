@@ -1,12 +1,12 @@
 /**
  * Blueprint Generator
  *
- * Transforms user prompts into valid Blueprint JSON using KyroAI
+ * Transforms user prompts into valid Blueprint JSON using PrezVikAI
  */
 
-import type { KyroBlueprint, Slide } from "@kyro/schema";
-import type { KyroAI } from "../kyro-ai.js";
-import { createLogger } from "@kyro/logger";
+import type { PrezVikBlueprint, Slide } from "@prezvik/schema";
+import type { PrezVikAI } from "../prezvik-ai.js";
+import { createLogger } from "@prezvik/logger";
 
 const logger = createLogger({ context: "BlueprintGenerator" });
 
@@ -63,8 +63,8 @@ interface Keywords {
   slideCount: number;
   topic: string;
   presentationType: "pitch" | "report" | "training" | "generic";
-  goal: KyroBlueprint["meta"]["goal"];
-  tone: KyroBlueprint["meta"]["tone"];
+  goal: PrezVikBlueprint["meta"]["goal"];
+  tone: PrezVikBlueprint["meta"]["tone"];
   audience?: string;
 }
 
@@ -118,8 +118,8 @@ export class BlueprintGenerationError extends Error {
  *
  * @example
  * ```typescript
- * const kyroAI = new KyroAI();
- * const generator = new BlueprintGenerator(kyroAI);
+ * const prezVikAI = new PrezVikAI();
+ * const generator = new BlueprintGenerator(prezVikAI);
  *
  * // Generate with AI (requires API key)
  * const blueprint = await generator.generate("Create a pitch deck", {
@@ -129,7 +129,7 @@ export class BlueprintGenerationError extends Error {
  * ```
  */
 export class BlueprintGenerator {
-  constructor(private kyroAI: KyroAI) {}
+  constructor(private prezVikAI: PrezVikAI) {}
 
   /**
    * Generate Blueprint from user prompt
@@ -149,7 +149,7 @@ export class BlueprintGenerator {
    *
    * @example
    * ```typescript
-   * const generator = new BlueprintGenerator(kyroAI);
+   * const generator = new BlueprintGenerator(prezVikAI);
    *
    * // Generate with AI
    * const blueprint = await generator.generate(
@@ -158,7 +158,7 @@ export class BlueprintGenerator {
    * );
    * ```
    */
-  async generate(prompt: string, options: BlueprintGeneratorOptions = {}): Promise<KyroBlueprint> {
+  async generate(prompt: string, options: BlueprintGeneratorOptions = {}): Promise<PrezVikBlueprint> {
     try {
       // Only use mock mode if explicitly requested
       if (options.mockMode === true) {
@@ -175,10 +175,10 @@ export class BlueprintGenerator {
       // Build system prompt with Blueprint schema
       const systemPrompt = this.buildSystemPrompt();
 
-      // Generate Blueprint using KyroAI with structured outputs
-      // Returns validated KyroBlueprint directly - no parsing needed
+      // Generate Blueprint using PrezVikAI with structured outputs
+      // Returns validated PrezVikBlueprint directly - no parsing needed
       const startTime = Date.now();
-      const blueprint = await this.kyroAI.generateSlideDeck(`${systemPrompt}\n\nUser request: ${prompt}`, {
+      const blueprint = await this.prezVikAI.generateSlideDeck(`${systemPrompt}\n\nUser request: ${prompt}`, {
         provider: options.provider,
         strategy: options.strategy || "speed",
         temperature: options.temperature,
@@ -215,7 +215,7 @@ export class BlueprintGenerator {
   /**
    * Generate Blueprint from template (mock mode)
    */
-  generateFromTemplate(prompt: string): KyroBlueprint {
+  generateFromTemplate(prompt: string): PrezVikBlueprint {
     console.log(`  [Template] Extracting keywords from prompt...`);
     // Extract keywords from prompt
     const keywords = this.extractKeywords(prompt);
@@ -290,28 +290,28 @@ META FIELD VALUES:
 - tone: Must be one of ["formal", "modern", "bold", "minimal", "friendly"]
 - audience: Optional string describing target audience
 
-SLIDE TYPES (use these — pick the best fit for each slide's content):
+SLIDE TYPES (use all 10 — pick the best fit for each slide's content):
 - hero: Opening title slide (always use for slide 1)
 - section: Bold section divider between major topics
 - bullet-list: Content with a heading + bullet points (most common)
 - two-column: Two parallel columns of content or comparison
-- stat-trio: Exactly 3 key statistics or metrics
+- stat-trio: Exactly 3 key statistics or metrics with large numbers
 - quote: Single powerful quote with attribution
 - comparison: Explicit A vs B comparison with labels
-- timeline: Ordered steps, phases, or milestones
+- timeline: Ordered steps, phases, or milestones (3-7 items)
 - grid: 4–6 items displayed as cards (features, benefits, team)
-- closing: Final slide — CTA, thank you, or next steps
+- closing: Final slide — CTA, thank you, or next steps (always last)
 
 LAYOUT TYPES:
-- center_focus: Centered content
-- two_column: Two-column layout
-- three_column: Three-column layout
-- split_screen: 50/50 split
-- grid_2x2: 2x2 grid
-- hero_overlay: Hero image with text overlay
-- timeline: Timeline layout
-- stat_highlight: Large stat display
-- image_dominant: Image-focused layout
+- center_focus: Centered content (1-3 content blocks max)
+- two_column: Two-column layout (1-6 content blocks)
+- three_column: Three-column layout (2-9 content blocks)
+- split_screen: 50/50 split (2-4 content blocks)
+- grid_2x2: 2x2 grid (4 content blocks exactly)
+- hero_overlay: Hero image with text overlay (1-3 content blocks)
+- timeline: Timeline layout (3-7 content blocks)
+- stat_highlight: Large stat display (1-4 stat blocks)
+- image_dominant: Image-focused layout (1-3 content blocks)
 
 CONTENT BLOCK TYPES:
 - heading: { type: "heading", value: "text", level: "h1"|"h2"|"h3", emphasis: "low"|"medium"|"high" }
@@ -327,11 +327,11 @@ Your entire response must be parseable by JSON.parse(). Start now with {`;
   /**
    * Infer meta information from prompt
    */
-  inferMeta(prompt: string): Partial<KyroBlueprint["meta"]> {
+  inferMeta(prompt: string): Partial<PrezVikBlueprint["meta"]> {
     const lowerPrompt = prompt.toLowerCase();
 
     // Infer goal
-    let goal: KyroBlueprint["meta"]["goal"] = "inform";
+    let goal: PrezVikBlueprint["meta"]["goal"] = "inform";
     if (lowerPrompt.includes("pitch") || lowerPrompt.includes("sell") || lowerPrompt.includes("convince")) {
       goal = "pitch";
     } else if (lowerPrompt.includes("persuade") || lowerPrompt.includes("argue")) {
@@ -343,7 +343,7 @@ Your entire response must be parseable by JSON.parse(). Start now with {`;
     }
 
     // Infer tone
-    let tone: KyroBlueprint["meta"]["tone"] = "modern";
+    let tone: PrezVikBlueprint["meta"]["tone"] = "modern";
     if (lowerPrompt.includes("formal") || lowerPrompt.includes("professional") || lowerPrompt.includes("corporate")) {
       tone = "formal";
     } else if (lowerPrompt.includes("bold") || lowerPrompt.includes("striking") || lowerPrompt.includes("dramatic")) {
@@ -399,122 +399,22 @@ Your entire response must be parseable by JSON.parse(). Start now with {`;
   }
 
   /**
-   * Parse AI response and extract Blueprint JSON
-   * Handles markdown code blocks, truncated JSON, and embedded JSON in text
+   * @deprecated generateObject handles structured output — this is kept only for test compatibility
    */
-  parseResponse(text: string): KyroBlueprint {
-    let jsonText: string | null = null;
-
+  parseResponse(text: string): PrezVikBlueprint {
     try {
-      // Strategy 1: Extract JSON from markdown code blocks
-      const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-      if (codeBlockMatch) {
-        jsonText = codeBlockMatch[1].trim();
-      }
-
-      // Strategy 2: Look for JSON object boundaries in text
-      if (!jsonText) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}");
-        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-          jsonText = text.substring(jsonStart, jsonEnd + 1);
-        }
-      }
-
-      // Strategy 3: Use entire text if it starts with {
-      if (!jsonText && text.trim().startsWith("{")) {
-        jsonText = text.trim();
-      }
-
-      if (!jsonText) {
-        throw new Error("Could not extract JSON from AI response");
-      }
-
-      // Try to repair common JSON issues
-      jsonText = this.repairJSON(jsonText);
-
-      // Parse JSON
-      const parsed = JSON.parse(jsonText);
-
-      // Validate required fields
-      const validationErrors: string[] = [];
-
-      if (!parsed.version) {
-        validationErrors.push('Missing "version" field');
-      } else if (parsed.version !== "2.0") {
-        validationErrors.push(`Invalid version "${parsed.version}", expected "2.0"`);
-      }
-
-      if (!parsed.meta || typeof parsed.meta !== "object") {
-        validationErrors.push('Missing or invalid "meta" field');
-      }
-
-      if (!Array.isArray(parsed.slides)) {
-        validationErrors.push('Missing or invalid "slides" field (must be array)');
-      } else if (parsed.slides.length === 0) {
-        validationErrors.push("Slides array is empty");
-      }
-
-      // Check for slide ID uniqueness
-      if (Array.isArray(parsed.slides)) {
-        const ids = new Set<string>();
-        for (const slide of parsed.slides) {
-          if (!slide.id) {
-            validationErrors.push(`Slide missing "id" field`);
-            break;
-          }
-          if (ids.has(slide.id)) {
-            validationErrors.push(`Duplicate slide id: "${slide.id}"`);
-          }
-          ids.add(slide.id);
-        }
-      }
-
-      if (validationErrors.length > 0) {
-        throw new Error(`Blueprint validation failed: ${validationErrors.join("; ")}`);
-      }
-
-      return parsed as KyroBlueprint;
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start === -1 || end === -1) throw new Error("No JSON found");
+      const parsed = JSON.parse(text.slice(start, end + 1));
+      if (!parsed.version || parsed.version !== "2.0") throw new Error(`Invalid version "${parsed.version}", expected "2.0"`);
+      if (!parsed.meta) throw new Error('Missing "version" field');
+      if (!Array.isArray(parsed.slides) || parsed.slides.length === 0) throw new Error('Missing or invalid "slides" field');
+      return parsed as PrezVikBlueprint;
     } catch (error) {
-      // Include partial response in error for debugging
       const preview = text.length > 200 ? text.substring(0, 200) + "..." : text;
       throw new BlueprintGenerationError(`Failed to parse Blueprint JSON: ${error instanceof Error ? error.message : String(error)}\nResponse preview: ${preview}`, text, error instanceof Error ? error : undefined);
     }
-  }
-
-  /**
-   * Repair common JSON formatting issues from LLM output
-   * Detects and rejects severely truncated JSON early
-   */
-  private repairJSON(jsonText: string): string {
-    let repaired = jsonText.trim();
-
-    // Strip any accidental code fences that slipped through
-    repaired = repaired.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-
-    // Fix trailing commas
-    repaired = repaired.replace(/,(\s*[}\]])/g, "$1");
-
-    // Detect and reject severely truncated JSON early
-    // (brace-stuffing creates valid-but-broken blueprints)
-    const openBraces = (repaired.match(/{/g) || []).length;
-    const closeBraces = (repaired.match(/}/g) || []).length;
-    const deficit = openBraces - closeBraces;
-
-    if (deficit > 3) {
-      // More than 3 unclosed objects = response was cut off mid-slide
-      // Attempting to close this will produce broken content
-      throw new BlueprintGenerationError(`AI response was truncated (${deficit} unclosed objects). ` + `Try increasing maxTokens or reducing the number of slides.`, jsonText);
-    }
-
-    // Safe to close small deficits (trailing comma cleanup artifacts)
-    for (let i = 0; i < deficit; i++) repaired += "}";
-
-    const openBrackets = (repaired.match(/\[/g) || []).length;
-    const closeBrackets = (repaired.match(/]/g) || []).length;
-    for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += "]";
-
-    return repaired;
   }
 
   /**
@@ -536,7 +436,7 @@ Your entire response must be parseable by JSON.parse(). Start now with {`;
   /**
    * Fill template with extracted content
    */
-  private fillTemplate(template: BlueprintTemplate, keywords: Keywords): KyroBlueprint {
+  private fillTemplate(template: BlueprintTemplate, keywords: Keywords): PrezVikBlueprint {
     const slides = template.slides.slice(0, keywords.slideCount);
 
     // Use fallback text if topic is empty

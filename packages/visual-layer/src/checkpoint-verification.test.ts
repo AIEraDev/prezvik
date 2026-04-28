@@ -13,7 +13,7 @@ import { VisualLayerFacade } from "./facade.js";
 import { ThemeEngine } from "./theme-engine.js";
 import { VisualContextBuilder } from "./visual-context-builder.js";
 import { serializeVisualContext, parseVisualContext } from "./serialization.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { SlideTheme, ThemeTone, VisualContext } from "./models/visual-context.js";
 
 // Mock layout tree for testing

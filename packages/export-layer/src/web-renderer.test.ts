@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { WebRenderer } from "./web-renderer.js";
-import type { VisualContext, SlideVisualContext, LinearGradient, RadialGradient } from "@kyro/visual-layer";
+import type { VisualContext, SlideVisualContext, LinearGradient, RadialGradient } from "@prezvik/visual-layer";
 
 /**
  * Helper to create a mock Visual Context
@@ -65,7 +65,7 @@ function createMockVisualContext(): VisualContext {
         opacity: 1,
         bounds: { x: 100, y: 200, width: 760, height: 100 },
         content: {
-          text: "Welcome to Kyro",
+          text: "Welcome to Prezvik",
           font: "Arial",
           fontSize: 48,
           color: "#ffffff",
@@ -126,7 +126,7 @@ describe("WebRenderer", () => {
       const html = result.buffer!.toString("utf-8");
       expect(html).toContain("<!DOCTYPE html>");
       expect(html).toContain('<div class="reveal">');
-      expect(html).toContain("Welcome to Kyro");
+      expect(html).toContain("Welcome to Prezvik");
     });
 
     it("should render to file when outputPath is provided", async () => {
@@ -393,7 +393,7 @@ describe("WebRenderer", () => {
       const result = await renderer.render(visualContext);
       const html = result.buffer!.toString("utf-8");
 
-      expect(html).toContain("Welcome to Kyro");
+      expect(html).toContain("Welcome to Prezvik");
       expect(html).toContain("font-family: Arial");
       expect(html).toContain("font-size: 48px");
       expect(html).toContain("color: #ffffff");

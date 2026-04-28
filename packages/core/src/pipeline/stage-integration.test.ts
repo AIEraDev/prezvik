@@ -9,11 +9,11 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { BlueprintGenerator } from "@kyro/ai";
-import { validateBlueprint } from "@kyro/schema";
-import { LayoutEngine, PositioningEngine } from "@kyro/layout";
-import { renderPPTXToFile } from "@kyro/renderer-pptx";
-import type { KyroBlueprint } from "@kyro/schema";
+import { BlueprintGenerator } from "@prezvik/ai";
+import { validateBlueprint } from "@prezvik/schema";
+import { LayoutEngine, PositioningEngine } from "@prezvik/layout";
+import { renderPPTXToFile } from "@prezvik/renderer-pptx";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -105,7 +105,7 @@ describe("Pipeline Stage Integration Tests", () => {
       const slideTypes = ["hero", "section", "content", "quote", "data", "closing"];
 
       for (const slideType of slideTypes) {
-        const blueprint: KyroBlueprint = {
+        const blueprint: PrezVikBlueprint = {
           version: "2.0",
           meta: {
             title: `Test ${slideType}`,

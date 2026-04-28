@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { BackgroundGenerator } from "./background-generator.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { Dimensions, SlideType } from "./models/visual-context.js";
 import type { GradientFill, LinearGradient, SolidFill } from "./models/visual-element.js";
 

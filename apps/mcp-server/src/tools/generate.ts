@@ -4,17 +4,17 @@
  * MCP tool for generating presentations
  */
 
-import { generatePresentation } from "../adapters/kyro.js";
+import { generatePresentation } from "../adapters/prezvik.js";
 
 export const generateTool = {
   name: "generate_presentation",
-  description: "Generate a PowerPoint presentation from a Kyro deck schema. Returns the path to the generated PPTX file.",
+  description: "Generate a PowerPoint presentation from a Prezvik deck schema. Returns the path to the generated PPTX file.",
   inputSchema: {
     type: "object",
     properties: {
       deck: {
         type: "object",
-        description: "Kyro deck schema with slides array",
+        description: "Prezvik deck schema with slides array",
         properties: {
           version: { type: "string" },
           meta: {

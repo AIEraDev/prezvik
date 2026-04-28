@@ -36,12 +36,12 @@ interface CheckResult {
 
 async function verifyProduction(): Promise<VerificationResult> {
   console.log("=".repeat(60));
-  console.log("Kyro Production Verification - Layered Mode");
+  console.log("Prezvik Production Verification - Layered Mode");
   console.log("=".repeat(60));
   console.log();
 
   const checks: CheckResult[] = [];
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyro-verify-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prezvik-verify-"));
 
   try {
     // Check 1: Verify default mode is layered

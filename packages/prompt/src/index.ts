@@ -1,5 +1,5 @@
 /**
- * Kyro Prompt Package
+ * Prezvik Prompt Package
  *
  * Structured prompt compiler: Natural language → DeckSchema
  */

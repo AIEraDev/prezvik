@@ -15,7 +15,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     restart: unless-stopped
     networks:
-      - kyro-network
+      - prezvik-network
 
   # API server (Express)
   api:
@@ -31,7 +31,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     restart: unless-stopped
     networks:
-      - kyro-network
+      - prezvik-network
 
   # CLI tool (for command-line usage)
   cli:
@@ -44,7 +44,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     networks:
-      - kyro-network
+      - prezvik-network
     profiles:
       - cli # Only start when explicitly requested
 
@@ -59,10 +59,10 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     networks:
-      - kyro-network
+      - prezvik-network
     profiles:
       - mcp # Only start when explicitly requested
 
 networks:
-  kyro-network:
+  prezvik-network:
     driver: bridge

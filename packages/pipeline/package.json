@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/pipeline",
+  "name": "@prezvik/pipeline",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,9 +17,9 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/theme-layer": "workspace:*",
-    "@kyro/visual-layer": "workspace:*",
-    "@kyro/export-layer": "workspace:*"
+    "@prezvik/theme-layer": "workspace:*",
+    "@prezvik/visual-layer": "workspace:*",
+    "@prezvik/export-layer": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

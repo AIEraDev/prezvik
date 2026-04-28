@@ -1,4 +1,4 @@
-import type { VisualContext } from "@kyro/visual-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
 
 /**
  * Renderer-specific options

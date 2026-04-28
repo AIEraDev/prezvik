@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 
-const TEMP_DIR = path.join(os.tmpdir(), "kyro-preview");
+const TEMP_DIR = path.join(os.tmpdir(), "prezvik-preview");
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
   try {

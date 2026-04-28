@@ -1,4 +1,4 @@
-# Kyro CLI
+# Prezvik CLI
 
 AI-native presentation engine. Dead simple, fast, opinionated.
 
@@ -6,13 +6,13 @@ AI-native presentation engine. Dead simple, fast, opinionated.
 
 ```bash
 # Install
-npx kyro init
+npx prezvik init
 
 # Generate
-npx kyro generate deck.json
+npx prezvik generate deck.json
 
 # Watch mode (auto-regenerate on changes)
-npx kyro dev deck.json
+npx prezvik dev deck.json
 ```
 
 ## Commands
@@ -20,8 +20,8 @@ npx kyro dev deck.json
 ### `init` - Create starter deck
 
 ```bash
-kyro init
-kyro init -o my-deck.json
+prezvik init
+prezvik init -o my-deck.json
 ```
 
 Creates a starter deck with 3 example slides. Gets you from zero to value in 30 seconds.
@@ -29,9 +29,9 @@ Creates a starter deck with 3 example slides. Gets you from zero to value in 30 
 ### `generate` - Generate PowerPoint
 
 ```bash
-kyro generate deck.json
-kyro generate deck.json -o presentation.pptx
-kyro generate deck.json -t minimal
+prezvik generate deck.json
+prezvik generate deck.json -o presentation.pptx
+prezvik generate deck.json -t minimal
 ```
 
 **Options:**
@@ -42,7 +42,7 @@ kyro generate deck.json -t minimal
 ### `validate` - Validate deck schema
 
 ```bash
-kyro validate deck.json
+prezvik validate deck.json
 ```
 
 Checks your deck JSON for errors before generating.
@@ -50,8 +50,8 @@ Checks your deck JSON for errors before generating.
 ### `dev` - Watch mode
 
 ```bash
-kyro dev deck.json
-kyro dev deck.json -o presentation.pptx -t minimal
+prezvik dev deck.json
+prezvik dev deck.json -o presentation.pptx -t minimal
 ```
 
 **The addictive loop:**
@@ -98,7 +98,7 @@ kyro dev deck.json -o presentation.pptx -t minimal
 - `executive` - Professional, corporate, high contrast
 - `minimal` - Clean, modern, generous whitespace
 
-## Why Kyro?
+## Why Prezvik?
 
 - ✅ Type-safe schema validation
 - ✅ Adaptive layout engine

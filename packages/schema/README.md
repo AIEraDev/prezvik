@@ -1,6 +1,6 @@
-# @kyro/schema
+# @prezvik/schema
 
-Type-safe schema definitions and validation for Kyro.
+Type-safe schema definitions and validation for Prezvik.
 
 ## Architecture
 
@@ -19,7 +19,7 @@ This is **compiler-level architecture** for deck generation.
 ## Usage
 
 ```typescript
-import { parseDeck, SlideTypeValidators } from "@kyro/schema";
+import { parseDeck, SlideTypeValidators } from "@prezvik/schema";
 
 // Parse and validate a complete deck
 const deck = parseDeck({
@@ -31,7 +31,7 @@ const deck = parseDeck({
       type: "hero",
       content: {
         title: "Welcome",
-        subtitle: "To Kyro",
+        subtitle: "To Prezvik",
         kicker: "Presentation System",
       },
     },
@@ -63,7 +63,7 @@ const deck = parseDeck({
 Each slide type has its own validator:
 
 ```typescript
-import { SlideTypeValidators } from "@kyro/schema";
+import { SlideTypeValidators } from "@prezvik/schema";
 
 // Validate hero content
 const heroContent = SlideTypeValidators.hero.parse({

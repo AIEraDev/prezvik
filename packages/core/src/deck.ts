@@ -5,13 +5,13 @@
  * Schema → Validation → Layout → Theme → Polish → Rendering
  */
 
-import { resolveLayout, layoutRegistry, polishLayout } from "@kyro/layout";
-import { renderPPTXToFile } from "@kyro/renderer-pptx";
-import { ThemeAgent } from "@kyro/design";
-import { PipelineController, CacheManager, PerformanceMonitor, type PipelineMode, type LayoutTree } from "@kyro/pipeline";
-import { ThemeLayerFacadeImpl, ColorPaletteGenerator, GradientGenerator, BlendModeEngine } from "@kyro/theme-layer";
-import { VisualLayerFacade } from "@kyro/visual-layer";
-import { ExportLayerFacade } from "@kyro/export-layer";
+import { resolveLayout, layoutRegistry, polishLayout } from "@prezvik/layout";
+import { renderPPTXToFile } from "@prezvik/renderer-pptx";
+import { ThemeAgent } from "@prezvik/design";
+import { PipelineController, CacheManager, PerformanceMonitor, type PipelineMode, type LayoutTree } from "@prezvik/pipeline";
+import { ThemeLayerFacadeImpl, ColorPaletteGenerator, GradientGenerator, BlendModeEngine } from "@prezvik/theme-layer";
+import { VisualLayerFacade } from "@prezvik/visual-layer";
+import { ExportLayerFacade } from "@prezvik/export-layer";
 import { getPipelineMode } from "./config.js";
 
 /**
@@ -62,12 +62,12 @@ export interface GenerateDeckOptions {
  *
  * @deprecated Legacy mode is deprecated and will be removed in v2.0.
  * Please migrate to layered mode for improved performance and features.
- * See migration guide: https://github.com/kyro/kyro/docs/migration-guide.md
+ * See migration guide: https://github.com/prezvik/prezvik/docs/migration-guide.md
  */
 async function generateDeckLegacy(schema: any, outputPath: string): Promise<void> {
   console.warn("\n⚠️  WARNING: Legacy rendering mode is DEPRECATED and will be removed in v2.0");
-  console.warn("⚠️  Please migrate to layered mode by setting mode: 'layered' or KYRO_PIPELINE_MODE=layered");
-  console.warn("⚠️  Migration guide: https://github.com/kyro/kyro/docs/migration-guide.md\n");
+  console.warn("⚠️  Please migrate to layered mode by setting mode: 'layered' or PREZVIK_PIPELINE_MODE=layered");
+  console.warn("⚠️  Migration guide: https://github.com/prezvik/prezvik/docs/migration-guide.md\n");
 
   console.log("  [generateDeck] Using legacy rendering mode");
 
@@ -176,7 +176,7 @@ async function generateDeckLayered(schema: any, outputPath: string): Promise<voi
   });
   console.log(`  [generateDeck] All ${layoutTrees.length} layouts generated successfully`);
 
-  // Convert ThemeSpec from @kyro/design to pipeline format
+  // Convert ThemeSpec from @prezvik/design to pipeline format
   // Add default tone if not present
   const pipelineThemeSpec = {
     ...themeSpec,

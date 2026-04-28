@@ -23,7 +23,7 @@ export default function PreviewModal({ isOpen, onClose, fileId, slideCount, titl
   const handleDownload = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/ai/download/${fileId}`);
+      const response = await fetch(`/api/download/${fileId}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

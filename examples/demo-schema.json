@@ -90,7 +90,7 @@
         },
         {
           "type": "text",
-          "value": "Enable with KYRO_PIPELINE_MODE=layered",
+          "value": "Enable with PREZVIK_PIPELINE_MODE=layered",
           "emphasis": "medium"
         }
       ]

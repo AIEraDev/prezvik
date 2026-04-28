@@ -1,4 +1,4 @@
-# Kyro AI
+# Prezvik AI
 
 Intelligent features that create the real moat:
 
@@ -20,7 +20,7 @@ Turn descriptions into complete design systems.
 ### Usage
 
 ```typescript
-import { generateTheme } from "@kyro/ai";
+import { generateTheme } from "@prezvik/ai";
 
 const theme = await generateTheme("Modern dark theme for AI startup with neon accents");
 
@@ -34,7 +34,7 @@ const theme = await generateTheme("Modern dark theme for AI startup with neon ac
 ### CLI
 
 ```bash
-kyro theme "dark fintech futuristic" -o custom-theme.json
+prezvik theme "dark fintech futuristic" -o custom-theme.json
 ```
 
 ### Why This Matters
@@ -50,7 +50,7 @@ Transform weak content into impactful presentation text.
 ### Rewrite
 
 ```typescript
-import { rewriteText } from "@kyro/ai";
+import { rewriteText } from "@prezvik/ai";
 
 const improved = await rewriteText("Our product helps users do things faster");
 // → "Accelerate workflows by 3x with AI-powered automation"
@@ -59,7 +59,7 @@ const improved = await rewriteText("Our product helps users do things faster");
 ### Enhance Slides
 
 ```typescript
-import { enhanceSlide, enhanceDeck } from "@kyro/ai";
+import { enhanceSlide, enhanceDeck } from "@prezvik/ai";
 
 // Enhance single slide
 const enhanced = await enhanceSlide(slide.content);
@@ -71,7 +71,7 @@ const betterDeck = await enhanceDeck(deck);
 ### Summarize
 
 ```typescript
-import { summarize } from "@kyro/ai";
+import { summarize } from "@prezvik/ai";
 
 const short = await summarize(longText, 100); // Max 100 chars
 ```
@@ -79,7 +79,7 @@ const short = await summarize(longText, 100); // Max 100 chars
 ### Score Quality
 
 ```typescript
-import { scoreContent } from "@kyro/ai";
+import { scoreContent } from "@prezvik/ai";
 
 const result = await scoreContent("Our product is good");
 // { score: 4, feedback: "Too vague, lacks specifics" }
@@ -140,7 +140,7 @@ pnpm dev  # Watch mode
 Combine everything:
 
 ```bash
-kyro magic "pitch deck for AI startup"
+prezvik magic "pitch deck for AI startup"
 ```
 
 Does:

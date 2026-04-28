@@ -4,11 +4,11 @@
  * Get information about available themes and slide types
  */
 
-import { getAvailableThemes, getAvailableSlideTypes } from "../adapters/kyro.js";
+import { getAvailableThemes, getAvailableSlideTypes } from "../adapters/prezvik.js";
 
 export const infoTool = {
-  name: "get_kyro_info",
-  description: "Get information about available themes and slide types in Kyro",
+  name: "get_prezvik_info",
+  description: "Get information about available themes and slide types in Prezvik",
   inputSchema: {
     type: "object",
     properties: {},
@@ -22,7 +22,7 @@ export const infoTool = {
       content: [
         {
           type: "text",
-          text: `Kyro Info
+          text: `Prezvik Info
 
 Available Themes:
 ${themes.map((t) => `  - ${t}`).join("\n")}

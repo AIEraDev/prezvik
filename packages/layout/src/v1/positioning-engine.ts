@@ -114,6 +114,9 @@ export interface PositioningOptions {
  * ```
  */
 export class PositioningEngine {
+  private readonly SLIDE_WIDTH_IN = 10;
+  private readonly SLIDE_HEIGHT_IN = 5.625;
+  private readonly PT_PER_INCH = 72;
   private options: Required<PositioningOptions>;
 
   constructor(options: PositioningOptions = {}) {
@@ -243,7 +246,13 @@ export class PositioningEngine {
     const gap = layout.gap || 0;
 
     if (layout.direction === "vertical") {
-      let currentY = bounds.y;
+      let startY = bounds.y;
+      if (layout.direction === "vertical" && (layout as any).align === "center") {
+        const totalH = node.children.reduce((s, c, i) => s + this.estimateHeight(c, bounds.width) + (i < node.children.length - 1 ? gap : 0), 0);
+        const slack = bounds.height - totalH;
+        if (slack > 0) startY = bounds.y + slack / 2;
+      }
+      let currentY = startY;
       const childWidth = bounds.width;
       const maxY = bounds.y + bounds.height;
       let hasOverflowed = false;
@@ -467,40 +476,15 @@ export class PositioningEngine {
     const effectiveWidth = Math.max(width, 5); // Minimum 5% width
 
     if (node.type === "text") {
-      const textNode = node as TextNode;
-      const content = textNode.content;
-      const fontSize = textNode.text.fontSize || 16;
-      // Use more conservative line height (1.6 for better readability, matches CSS defaults)
-      const lineHeight = fontSize * 1.6;
-      const minHeight = lineHeight; // At least one line
-
-      if (!content || content.length === 0) {
-        return minHeight;
-      }
-
-      // More conservative character width estimation for variable-width fonts
-      // 0.55 accounts for wider characters and spacing better than 0.5
-      const avgCharWidth = fontSize * 0.55;
-      const charsPerLine = Math.max(1, Math.floor(effectiveWidth / avgCharWidth));
-
-      // Word-based line estimation with conservative word length
-      // Average word length in English is ~5 chars, but include punctuation and spacing = 6.5
-      const avgWordLength = 6.5;
-      const wordsPerLine = Math.max(1, Math.floor(charsPerLine / avgWordLength));
+      const content = (node as TextNode).content;
+      const fontSize = (node as TextNode).text.fontSize || 16;
+      const lineHeightPct = ((fontSize * 1.4) / this.PT_PER_INCH / this.SLIDE_HEIGHT_IN) * 100;
+      if (!content || content.length === 0) return lineHeightPct;
+      const avgCharWidthPct = ((fontSize * 0.5) / this.PT_PER_INCH / this.SLIDE_WIDTH_IN) * 100;
+      const charsPerLine = Math.max(1, Math.floor(effectiveWidth / avgCharWidthPct));
       const words = content.split(/\s+/).filter((w) => w.length > 0);
-      const totalWords = words.length;
-      const estimatedLines = Math.max(1, Math.ceil(totalWords / wordsPerLine));
-
-      // Add extra lines for long words and line breaks in content
-      const longWords = words.filter((w) => w.length > charsPerLine).length;
-      const explicitLineBreaks = (content.match(/\n/g) || []).length;
-      const totalLines = estimatedLines + longWords + explicitLineBreaks;
-
-      // Add 10% safety margin to prevent underestimation
-      const estimatedHeight = totalLines * lineHeight;
-      const safetyMargin = estimatedHeight * 0.1;
-
-      return Math.max(minHeight, estimatedHeight + safetyMargin);
+      const lines = Math.max(1, Math.ceil(words.length / Math.max(1, Math.floor(charsPerLine / 6))));
+      return Math.max(lineHeightPct, (lines + (content.match(/\n/g) || []).length) * lineHeightPct * 1.15);
     }
 
     if (node.type === "image") {
@@ -605,7 +589,10 @@ let globalEngine: PositioningEngine | null = null;
  */
 export function getPositioningEngine(): PositioningEngine {
   if (!globalEngine) {
-    globalEngine = new PositioningEngine();
+    globalEngine = new PositioningEngine({
+      overflowStrategy: "overflow",
+      warnOnOverflow: true,
+    });
   }
   return globalEngine;
 }

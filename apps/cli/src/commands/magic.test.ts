@@ -44,7 +44,7 @@ describe("Magic Command Integration Tests", () => {
         });
 
         // Verify output contains expected log messages
-        expect(output).toContain("Kyro Magic");
+        expect(output).toContain("Prezvik Magic");
         expect(output).toContain("Starting pipeline");
         expect(output).toContain("Magic complete");
 
@@ -165,7 +165,7 @@ describe("Magic Command Integration Tests", () => {
     });
 
     it("should use default output path when not specified", () => {
-      const defaultOutput = path.join(process.cwd(), "apps/cli", "kyro-magic.pptx");
+      const defaultOutput = path.join(process.cwd(), "apps/cli", "prezvik-magic.pptx");
       const prompt = "Test presentation";
       const command = `node dist/index.js magic "${prompt}" --mock`;
 

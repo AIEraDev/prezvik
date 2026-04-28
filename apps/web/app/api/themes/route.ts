@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const { themes } = await import("@kyro/design");
+    const { themes } = await import("@prezvik/design");
     const themeNames = Object.keys(themes);
 
     return NextResponse.json({

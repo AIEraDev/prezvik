@@ -1,5 +1,5 @@
 /**
- * Kyro Template Schema v1
+ * Prezvik Template Schema v1
  *
  * Theme-bound templates with layout rules and compatibility constraints
  *
@@ -169,9 +169,9 @@ export const ThemeCompatibilitySchema = z.object({
 export type ThemeCompatibility = z.infer<typeof ThemeCompatibilitySchema>;
 
 /**
- * Complete KyroTemplate Schema
+ * Complete PrezVikTemplate Schema
  */
-export const KyroTemplateSchema = z.object({
+export const PrezVikTemplateSchema = z.object({
   // Identity
   id: z.string().regex(/^[a-z0-9-]+$/, "Template ID must be lowercase kebab-case"),
   name: z.string(),
@@ -208,18 +208,18 @@ export const KyroTemplateSchema = z.object({
     .optional(),
 });
 
-export type KyroTemplate = z.infer<typeof KyroTemplateSchema>;
+export type PrezVikTemplate = z.infer<typeof PrezVikTemplateSchema>;
 
 /**
  * Template Registry Type
  */
-export type TemplateRegistry = Record<string, KyroTemplate>;
+export type TemplateRegistry = Record<string, PrezVikTemplate>;
 
 /**
  * Template Validation
  */
-export function validateTemplate(template: unknown): { success: true; data: KyroTemplate } | { success: false; errors: string[] } {
-  const result = KyroTemplateSchema.safeParse(template);
+export function validateTemplate(template: unknown): { success: true; data: PrezVikTemplate } | { success: false; errors: string[] } {
+  const result = PrezVikTemplateSchema.safeParse(template);
   if (result.success) {
     return { success: true, data: result.data };
   }
@@ -232,7 +232,7 @@ export function validateTemplate(template: unknown): { success: true; data: Kyro
 /**
  * Check if a template is compatible with a theme
  */
-export function isTemplateCompatibleWithTheme(template: KyroTemplate, themeId: string, themeMood?: string): boolean {
+export function isTemplateCompatibleWithTheme(template: PrezVikTemplate, themeId: string, themeMood?: string): boolean {
   // Direct theme ID match
   if (template.themeCompatibility.compatibleThemes.includes(themeId)) {
     return true;
@@ -249,7 +249,7 @@ export function isTemplateCompatibleWithTheme(template: KyroTemplate, themeId: s
 /**
  * Find best templates for a theme
  */
-export function findTemplatesForTheme(templates: TemplateRegistry, themeId: string, themeMood?: string, slideType?: SlideType): KyroTemplate[] {
+export function findTemplatesForTheme(templates: TemplateRegistry, themeId: string, themeMood?: string, slideType?: SlideType): PrezVikTemplate[] {
   return Object.values(templates).filter((template) => {
     // Check theme compatibility
     if (!isTemplateCompatibleWithTheme(template, themeId, themeMood)) {

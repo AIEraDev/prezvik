@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/renderer-pptx",
+  "name": "@prezvik/renderer-pptx",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,9 +17,9 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/design": "workspace:*",
-    "@kyro/layout": "workspace:*",
-    "@kyro/schema": "workspace:*",
+    "@prezvik/design": "workspace:*",
+    "@prezvik/layout": "workspace:*",
+    "@prezvik/schema": "workspace:*",
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {

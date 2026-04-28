@@ -1,7 +1,7 @@
 /**
- * Kyro API Server
+ * Prezvik API Server
  *
- * Express.js API for Kyro presentation generation system
+ * Express.js API for Prezvik presentation generation system
  */
 
 import express from "express";
@@ -34,7 +34,7 @@ app.get("/api/health", (_req: express.Request, res: express.Response) => {
 // Root
 app.get("/", (_req: express.Request, res: express.Response) => {
   res.json({
-    name: "Kyro API",
+    name: "Prezvik API",
     version: "0.1.0",
     endpoints: {
       health: "/api/health",
@@ -58,6 +58,6 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`[Kyro API] Server running on http://localhost:${PORT}`);
-  console.log(`[Kyro API] Health check: http://localhost:${PORT}/api/health`);
+  console.log(`[Prezvik API] Server running on http://localhost:${PORT}`);
+  console.log(`[Prezvik API] Health check: http://localhost:${PORT}/api/health`);
 });

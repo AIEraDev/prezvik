@@ -1,7 +1,7 @@
 /**
- * @kyro/visual-layer
+ * @prezvik/visual-layer
  *
- * Visual Generation Layer for Kyro presentation generation.
+ * Visual Generation Layer for Prezvik presentation generation.
  * Provides procedural generation of backgrounds, shapes, and visual elements
  * using canvas operations.
  */

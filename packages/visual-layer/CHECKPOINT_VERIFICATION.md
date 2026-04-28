@@ -133,7 +133,7 @@ All components execute efficiently:
 ## Dependencies
 
 - `konva@^9.3.0` - Canvas operations and shape generation
-- `@kyro/theme-layer` - Color palette integration
+- `@prezvik/theme-layer` - Color palette integration
 - `fast-check@^4.7.0` - Property-based testing (dev dependency)
 
 ## Next Steps

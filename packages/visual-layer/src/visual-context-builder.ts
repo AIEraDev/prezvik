@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { VisualContext, SlideVisualContext, ThemeTone, ThemeTypography, Dimensions } from "./models/visual-context.js";
 import type { VisualElement, ContentElement, TextContent, ImageContent } from "./models/visual-element.js";
 import type { LayoutNode } from "./theme-engine.js";

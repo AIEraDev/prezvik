@@ -4,32 +4,32 @@
 
 This implementation plan follows the 6-phase migration strategy outlined in the design document. The architecture introduces three distinct layers (Theme, Visual, Export) with a pipeline orchestrator, moving from the current monolithic rendering approach to a modular, extensible system that enables procedural generation of backgrounds, gradients, and shapes.
 
-The implementation uses TypeScript and integrates with the existing Kyro codebase, maintaining backward compatibility through a dual-mode pipeline (legacy/layered) during the migration period.
+The implementation uses TypeScript and integrates with the existing Prezvik codebase, maintaining backward compatibility through a dual-mode pipeline (legacy/layered) during the migration period.
 
 ## Tasks
 
 ### Phase 1: Foundation (Weeks 1-2)
 
 - [x] 1. Create package structure and install dependencies
-  - [x] 1.1 Create `@kyro/theme-layer` package with TypeScript configuration
+  - [x] 1.1 Create `@prezvik/theme-layer` package with TypeScript configuration
     - Create `packages/theme-layer/` directory structure
     - Add `package.json` with dependencies: `culori@^3.3.0`
     - Configure `tsconfig.json` for TypeScript compilation
     - Set up exports in `src/index.ts`
     - _Requirements: 10.1, 6.1_
-  - [x] 1.2 Create `@kyro/visual-layer` package with TypeScript configuration
+  - [x] 1.2 Create `@prezvik/visual-layer` package with TypeScript configuration
     - Create `packages/visual-layer/` directory structure
     - Add `package.json` with dependencies: `konva@^9.3.0`
     - Configure `tsconfig.json` for TypeScript compilation
     - Set up exports in `src/index.ts`
     - _Requirements: 10.1, 7.1_
-  - [x] 1.3 Create `@kyro/export-layer` package with TypeScript configuration
+  - [x] 1.3 Create `@prezvik/export-layer` package with TypeScript configuration
     - Create `packages/export-layer/` directory structure
-    - Add `package.json` (uses existing `pptxgenjs` from `@kyro/renderer-pptx`)
+    - Add `package.json` (uses existing `pptxgenjs` from `@prezvik/renderer-pptx`)
     - Configure `tsconfig.json` for TypeScript compilation
     - Set up exports in `src/index.ts`
     - _Requirements: 10.1, 3.10_
-  - [x] 1.4 Create `@kyro/pipeline` package with TypeScript configuration
+  - [x] 1.4 Create `@prezvik/pipeline` package with TypeScript configuration
     - Create `packages/pipeline/` directory structure
     - Add `package.json` with dependencies on theme-layer, visual-layer, export-layer
     - Configure `tsconfig.json` for TypeScript compilation
@@ -37,20 +37,20 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
     - _Requirements: 10.1, 4.1_
 
 - [x] 2. Define core data models and interfaces
-  - [x] 2.1 Define `ColorPalette` interface in `@kyro/theme-layer`
+  - [x] 2.1 Define `ColorPalette` interface in `@prezvik/theme-layer`
     - Create `src/models/color-palette.ts`
     - Define `ColorPalette` interface with version, semantic colors, scales, metadata
     - Define `ColorSpace` type (rgb, hsl, oklch, lab)
     - Export from package index
     - _Requirements: 1.8, 6.2_
-  - [x] 2.2 Define `VisualContext` interface in `@kyro/visual-layer`
+  - [x] 2.2 Define `VisualContext` interface in `@prezvik/visual-layer`
     - Create `src/models/visual-context.ts`
     - Define `VisualContext` interface with slides, colorPalette, theme, metadata
     - Define `SlideVisualContext` interface
     - Define `Dimensions`, `Point`, `Rect` utility types
     - Export from package index
     - _Requirements: 2.8, 9.1_
-  - [x] 2.3 Define `VisualElement` types in `@kyro/visual-layer`
+  - [x] 2.3 Define `VisualElement` types in `@prezvik/visual-layer`
     - Create `src/models/visual-element.ts`
     - Define base `VisualElement` interface
     - Define `BackgroundElement`, `ShapeElement`, `ContentElement` interfaces
@@ -58,7 +58,7 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
     - Define `Stroke`, `TextContent`, `ImageContent` interfaces
     - Export from package index
     - _Requirements: 2.8, 2.2_
-  - [x] 2.4 Define `Renderer` interface in `@kyro/export-layer`
+  - [x] 2.4 Define `Renderer` interface in `@prezvik/export-layer`
     - Create `src/renderer-interface.ts`
     - Define `Renderer` interface with render(), validate(), getSupportedFeatures() methods
     - Define `RenderOptions`, `RenderResult`, `ValidationResult`, `FeatureSupport` interfaces
@@ -66,7 +66,7 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
     - _Requirements: 3.10, 8.1_
 
 - [x] 3. Implement dual-mode pipeline controller
-  - [x] 3.1 Create `PipelineController` class in `@kyro/pipeline`
+  - [x] 3.1 Create `PipelineController` class in `@prezvik/pipeline`
     - Create `src/pipeline-controller.ts`
     - Implement constructor accepting layer facades, cache manager, performance monitor
     - Implement `execute()` method with mode parameter (legacy/layered)
@@ -78,8 +78,8 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
     - Implement legacy mode that bypasses new layers
     - Ensure backward compatibility with existing `generateDeck()` function
     - _Requirements: 10.3, 10.6_
-  - [x] 3.3 Update `@kyro/core` to support dual-mode pipeline
-    - Modify `packages/kyro-core/src/generator/index.ts` (or equivalent)
+  - [x] 3.3 Update `@prezvik/core` to support dual-mode pipeline
+    - Modify `packages/prezvik-core/src/generator/index.ts` (or equivalent)
     - Add `mode` parameter to `generateDeck()` function
     - Default to 'legacy' mode initially
     - Add logging to indicate which mode is active
@@ -145,7 +145,7 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
     - Test invalid blend mode handling
 
 - [x] 8. Implement caching for Theme Layer
-  - [x] 8.1 Create `CacheManager` class in `@kyro/pipeline`
+  - [x] 8.1 Create `CacheManager` class in `@prezvik/pipeline`
     - Create `packages/pipeline/src/cache-manager.ts`
     - Implement `get<T>(namespace, key): T | undefined` method
     - Implement `set<T>(namespace, key, value): void` method
@@ -387,7 +387,7 @@ The implementation uses TypeScript and integrates with the existing Kyro codebas
 
 - [x] 24. Update generateDeck() function for layered mode
   - [x] 24.1 Implement layered mode execution path
-    - Update `packages/kyro-core/src/generator/index.ts` (or equivalent)
+    - Update `packages/prezvik-core/src/generator/index.ts` (or equivalent)
     - Create `generateDeckLayered()` function
     - Instantiate PipelineController with all layer facades
     - Execute pipeline with layoutTrees, themeSpec, and output format

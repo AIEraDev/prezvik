@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { VisualElement } from "./visual-element.js";
 
 /**

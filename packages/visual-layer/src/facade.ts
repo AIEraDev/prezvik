@@ -1,4 +1,4 @@
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import { ThemeEngine } from "./theme-engine.js";
 import { VisualContextBuilder, type LayoutTree } from "./visual-context-builder.js";
 import type { SlideVisualContext, ThemeTone } from "./models/visual-context.js";

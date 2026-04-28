@@ -4,7 +4,7 @@
  * Convert TextNode → Google Slides text box
  */
 
-import type { TextNode } from "@kyro/layout";
+import type { TextNode } from "@prezvik/layout";
 import { createSlidesClient } from "../adapter/client.js";
 import { generateId } from "../utils/ids.js";
 import { pctToPt } from "../utils/units.js";

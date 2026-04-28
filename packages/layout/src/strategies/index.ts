@@ -1,5 +1,5 @@
 import type { LayoutTree, ContainerNode, TextNode } from "../types.js";
-import type { Slide } from "@kyro/schema";
+import type { Slide } from "@prezvik/schema";
 import { extractFromBlocks } from "./content-extractor.js";
 
 export { extractFromBlocks } from "./content-extractor.js";
@@ -104,8 +104,10 @@ export function layoutHero(slide: Slide): LayoutTree {
     );
   }
 
+  // Push content to the right to leave space for geometric-split decoration
+  // Left padding of 42% ensures text doesn't overlap with shapes
   return {
-    root: vFlow("root", children, 3, { top: 10, right: 10, bottom: 10, left: 10 }, "center"),
+    root: vFlow("root", children, 3, { top: 10, right: 10, bottom: 10, left: 42 }, "center"),
   };
 }
 

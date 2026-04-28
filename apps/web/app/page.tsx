@@ -1,125 +1,127 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Sparkles, Download, Zap, ArrowRight } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+
+const PLACEHOLDER =
+  'Create a 6-slide presentation about the rise of AI in healthcare for hospital executives. Include an overview of current AI applications, key statistics on cost savings and diagnostic accuracy, a comparison of leading AI tools, implementation challenges, and a roadmap for adoption over the next 3 years. Tone: professional, data-driven.';
 
 export default function HomePage() {
+  const [prompt, setPrompt] = useState("");
+  const [theme, setTheme] = useState("executive");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  async function handleGenerate() {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, theme }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Unknown error");
+
+      const bytes = Uint8Array.from(atob(data.file), (c) => c.charCodeAt(0));
+      const blob = new Blob([bytes], {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.fileName || "presentation.pptx";
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus({ ok: true, msg: "✓ Ready — download started" });
+    } catch (e) {
+      setStatus({ ok: false, msg: String(e) });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <section className="relative overflow-hidden pt-20 pb-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-sm mb-6">
-              <Zap className="h-4 w-4 text-yellow-400" />
-              <span>Now with AI-powered generation</span>
-            </div>
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-linear-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">Kyro</h1>
-            <p className="text-xl md:text-2xl text-gray-400 mb-8">The AI-native presentation platform. Create stunning decks in seconds, not hours.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/ai">
-                <Button size="lg" className="bg-white text-black hover:bg-gray-200 cursor-pointer">
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  Generate with AI
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-              <Link href="/editor">
-                <Button size="lg" className="border-white/20 hover:bg-white/10 cursor-pointer">
-                  <FileText className="h-4 w-4 mr-1" />
-                  Schema Editor
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div
+      style={{ background: "#0D1B2A", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}
+    >
+      <div style={{ width: "100%", maxWidth: 640 }}>
+        <h1 style={{ color: "#fff", fontSize: "2.5rem", fontWeight: 700, marginBottom: "0.25rem" }}>Prezvik</h1>
+        <p style={{ color: "#94a3b8", marginBottom: "2rem", fontSize: "1.1rem" }}>Transform words into slides</p>
 
-      <section className="py-16 border-t border-white/10">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-semibold text-center mb-12 text-gray-300">Three ways to create</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group flex flex-col justify-between">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Sparkles className="h-6 w-6 text-purple-400" />
-                </div>
-                <CardTitle className="text-white">AI Generator</CardTitle>
-                <CardDescription className="text-gray-400">Describe what you want and let AI create the perfect presentation</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/ai">
-                  <Button variant="ghost" className="w-full text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 cursor-pointer">
-                    Start Creating
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+        <label style={{ color: "#cbd5e1", fontSize: "0.875rem", display: "block", marginBottom: "0.5rem" }}>Prompt</label>
+        <textarea
+          rows={5}
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder={PLACEHOLDER}
+          style={{
+            width: "100%",
+            background: "#1e2d3d",
+            border: "1px solid #334155",
+            borderRadius: 8,
+            color: "#f1f5f9",
+            padding: "0.75rem",
+            fontSize: "0.95rem",
+            resize: "vertical",
+            marginBottom: "1rem",
+            boxSizing: "border-box",
+          }}
+        />
 
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group flex flex-col justify-between">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <FileText className="h-6 w-6 text-blue-400" />
-                </div>
-                <CardTitle className="text-white">Schema Editor</CardTitle>
-                <CardDescription className="text-gray-400">Precise control with JSON blueprints</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/editor">
-                  <Button variant="ghost" className="w-full text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 cursor-pointer">
-                    Open Editor
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+        <label style={{ color: "#cbd5e1", fontSize: "0.875rem", display: "block", marginBottom: "0.5rem" }}>Theme</label>
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          style={{
+            width: "100%",
+            background: "#1e2d3d",
+            border: "1px solid #334155",
+            borderRadius: 8,
+            color: "#f1f5f9",
+            padding: "0.65rem 0.75rem",
+            fontSize: "0.95rem",
+            marginBottom: "1.5rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <option value="executive">Executive</option>
+          <option value="minimal">Minimal</option>
+          <option value="bold">Bold</option>
+        </select>
 
-            <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group flex flex-col justify-between">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-orange-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Download className="h-6 w-6 text-orange-400" />
-                </div>
-                <CardTitle className="text-white">Preview & Export</CardTitle>
-                <CardDescription className="text-gray-400">Review your slides and download as PowerPoint</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/preview">
-                  <Button variant="ghost" className="w-full text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 cursor-pointer">
-                    View Preview
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+        <button
+          onClick={handleGenerate}
+          disabled={loading || !prompt.trim()}
+          style={{
+            width: "100%",
+            padding: "0.85rem",
+            borderRadius: 8,
+            border: "none",
+            background: loading ? "#334155" : "#6C5CE7",
+            color: "#fff",
+            fontSize: "1rem",
+            fontWeight: 600,
+            cursor: loading || !prompt.trim() ? "not-allowed" : "pointer",
+            opacity: !prompt.trim() ? 0.5 : 1,
+          }}
+        >
+          {loading ? "Generating…" : "Generate Presentation"}
+        </button>
 
-      <section className="py-12 border-t border-white/10">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-12 text-center">
-            <div>
-              <div className="text-3xl font-bold text-white">10x</div>
-              <div className="text-sm text-gray-500">Faster than traditional tools</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">3</div>
-              <div className="text-sm text-gray-500">Access methods: CLI, API, MCP</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">∞</div>
-              <div className="text-sm text-gray-500">AI-generated variations</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className="py-8 border-t border-white/10">
-        <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-          <p>Kyro — AI-Powered Presentation Engine</p>
-        </div>
-      </footer>
+        {status && (
+          <p
+            style={{
+              marginTop: "1rem",
+              color: status.ok ? "#4ade80" : "#f87171",
+              fontSize: "0.9rem",
+            }}
+          >
+            {status.msg}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

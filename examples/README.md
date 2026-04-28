@@ -21,7 +21,7 @@ npm run compare-modes -- --schema examples/demo-schema.json --output comparison-
 
 # Or use directly with generateDeck
 node -e "
-const { generateDeck } = require('@kyro/core');
+const { generateDeck } = require('@prezvik/core');
 const schema = require('./examples/demo-schema.json');
 generateDeck(schema, 'output.pptx', { mode: 'layered' });
 "
@@ -29,7 +29,7 @@ generateDeck(schema, 'output.pptx', { mode: 'layered' });
 
 ## Creating Your Own Schemas
 
-Schemas follow the Kyro Blueprint v2.0 format. See `packages/schema` for the full specification.
+Schemas follow the Prezvik Blueprint v2.0 format. See `packages/schema` for the full specification.
 
 ### Basic Structure
 

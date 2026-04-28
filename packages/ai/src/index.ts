@@ -1,5 +1,5 @@
 /**
- * Kyro AI Package
+ * Prezvik AI Package
  *
  * Model-agnostic AI infrastructure using Vercel AI SDK:
  * 1. Provider layer (OpenAI, Anthropic, Groq, etc.)
@@ -7,8 +7,8 @@
  * 3. Blueprint generation
  */
 
-// High-level Kyro AI interface
-export * from "./kyro-ai.js";
+// High-level Prezvik AI interface
+export * from "./prezvik-ai.js";
 
 // Model Router (task-aware model selection)
 export { MODEL_ROUTER, getModelConfig } from "./model-router.js";

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Kyro has transitioned from a monolithic rendering approach (legacy mode) to a modern three-layer architecture (layered mode). As of the latest version, **layered mode is now the default**, and **legacy mode is deprecated** and will be removed in v2.0.
+Prezvik has transitioned from a monolithic rendering approach (legacy mode) to a modern three-layer architecture (layered mode). As of the latest version, **layered mode is now the default**, and **legacy mode is deprecated** and will be removed in v2.0.
 
 ## What Changed?
 
@@ -53,7 +53,7 @@ await generateDeck(schema, outputPath, { mode: "layered" });
 Set the environment variable:
 
 ```bash
-export KYRO_PIPELINE_MODE=layered
+export PREZVIK_PIPELINE_MODE=layered
 ```
 
 ## Staying on Legacy Mode (Temporary)
@@ -69,7 +69,7 @@ await generateDeck(schema, outputPath, { mode: "legacy" });
 ### Via Environment Variable
 
 ```bash
-export KYRO_PIPELINE_MODE=legacy
+export PREZVIK_PIPELINE_MODE=legacy
 ```
 
 **Note**: You will see deprecation warnings when using legacy mode.

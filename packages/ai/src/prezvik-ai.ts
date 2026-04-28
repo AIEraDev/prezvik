@@ -1,5 +1,5 @@
 /**
- * Kyro AI - Vercel AI SDK Implementation
+ * Prezvik AI - Vercel AI SDK Implementation
  *
  * High-level AI interface using generateObject with Zod schemas
  * Eliminates manual JSON parsing and repair logic
@@ -8,8 +8,8 @@
 import { generateObject } from "ai";
 import { openai, anthropic, groq, google } from "./providers/index.js";
 import { getModelConfig, type Strategy } from "./model-router.js";
-import { KyroBlueprintSchema, type KyroBlueprint } from "@kyro/schema";
-import { KyroThemeSchema, type KyroTheme } from "@kyro/schema";
+import { PrezVikBlueprintSchema, type PrezVikBlueprint } from "@prezvik/schema";
+import { PrezVikThemeSchema, type PrezVikTheme } from "@prezvik/schema";
 import { z } from "zod";
 
 /**
@@ -26,24 +26,24 @@ function getProviderInstance(providerName: string): any {
   return providers[providerName] || openai;
 }
 
-export class KyroAI {
+export class PrezVikAI {
   /**
    * Generate slide deck blueprint using structured outputs
-   * Returns validated KyroBlueprint directly - no manual parsing needed
+   * Returns validated PrezVikBlueprint directly - no manual parsing needed
    */
-  async generateSlideDeck(prompt: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number; timeout?: number } = {}): Promise<KyroBlueprint> {
+  async generateSlideDeck(prompt: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number; timeout?: number } = {}): Promise<PrezVikBlueprint> {
     const strategy = options.strategy || "speed";
     const modelConfig = getModelConfig("blueprint", strategy, options.provider);
     const timeout = options.timeout || 30000;
 
-    console.log(`      [KyroAI.generateSlideDeck] Task: blueprint, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
+    console.log(`      [PrezVikAI.generateSlideDeck] Task: blueprint, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
     const providerInstance = getProviderInstance(modelConfig.provider);
 
     const startTime = Date.now();
     const { object } = await generateObject({
       model: providerInstance(modelConfig.model),
-      schema: KyroBlueprintSchema,
+      schema: PrezVikBlueprintSchema,
       system: `You are a presentation expert. Generate structured slide content following the Blueprint schema.
 
 Rules:
@@ -61,9 +61,9 @@ Rules:
     });
 
     const duration = Date.now() - startTime;
-    console.log(`      [KyroAI.generateSlideDeck] SUCCESS in ${duration}ms, slides: ${object.slides?.length || 0}`);
+    console.log(`      [PrezVikAI.generateSlideDeck] SUCCESS in ${duration}ms, slides: ${object.slides?.length || 0}`);
 
-    return object as KyroBlueprint;
+    return object as PrezVikBlueprint;
   }
 
   /**
@@ -74,7 +74,7 @@ Rules:
     const modelConfig = getModelConfig("enhance", strategy, options.provider);
     const providerInstance = getProviderInstance(modelConfig.provider);
 
-    console.log(`      [KyroAI.enhanceContent] provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
+    console.log(`      [PrezVikAI.enhanceContent] provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
     const EnhancementSchema = z.object({
       enhanced: z.string().describe("The improved slide content"),
@@ -95,19 +95,19 @@ Rules:
 
   /**
    * Generate theme from description using structured outputs
-   * Returns validated KyroTheme directly - no manual parsing needed
+   * Returns validated PrezVikTheme directly - no manual parsing needed
    */
-  async generateTheme(description: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<KyroTheme> {
+  async generateTheme(description: string, options: { provider?: string; strategy?: Strategy; temperature?: number; maxTokens?: number } = {}): Promise<PrezVikTheme> {
     const strategy = options.strategy || "speed";
     const modelConfig = getModelConfig("theme", strategy, options.provider);
     const providerInstance = getProviderInstance(modelConfig.provider);
 
-    console.log(`      [KyroAI.generateTheme] Task: theme, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
+    console.log(`      [PrezVikAI.generateTheme] Task: theme, strategy: ${strategy}, provider: ${modelConfig.provider}, model: ${modelConfig.model}`);
 
     const startTime = Date.now();
     const { object } = await generateObject({
       model: providerInstance(modelConfig.model),
-      schema: KyroThemeSchema,
+      schema: PrezVikThemeSchema,
       system: `You are a design system expert. Generate a complete theme following the Theme schema.
 
 Guidelines:
@@ -123,9 +123,9 @@ Guidelines:
     });
 
     const duration = Date.now() - startTime;
-    console.log(`      [KyroAI.generateTheme] SUCCESS in ${duration}ms`);
+    console.log(`      [PrezVikAI.generateTheme] SUCCESS in ${duration}ms`);
 
-    return object as KyroTheme;
+    return object as PrezVikTheme;
   }
 
   /**
@@ -178,6 +178,17 @@ Guidelines:
   }
 
   /**
+   * Get an AI SDK model instance for direct use with generateObject/generateText
+   */
+  getModel(provider?: string, strategy?: string): any {
+    if (strategy === "theme") return groq("llama-3.1-8b-instant");
+    if (strategy === "balanced") return google("gemini-2.5-flash");
+    if (provider === "groq" || !provider || strategy === "speed") return groq("llama-3.3-70b-versatile");
+    const providerInstance = getProviderInstance(provider);
+    return providerInstance("llama-3.3-70b-versatile");
+  }
+
+  /**
    * Get available providers
    */
   getAvailableProviders(): string[] {
@@ -186,7 +197,7 @@ Guidelines:
     if (process.env.ANTHROPIC_API_KEY) providers.push("anthropic");
     if (process.env.GROQ_API_KEY) providers.push("groq");
     if (process.env.GEMINI_API_KEY) providers.push("gemini");
-    console.log(`      [KyroAI.getAvailableProviders] Found: ${providers.join(", ") || "none"}`);
+    console.log(`      [PrezVikAI.getAvailableProviders] Found: ${providers.join(", ") || "none"}`);
     return providers;
   }
 
@@ -209,17 +220,17 @@ Guidelines:
 /**
  * Global instance
  */
-let globalKyroAI: KyroAI | null = null;
+let globalPrezVikAI: PrezVikAI | null = null;
 
 /**
- * Get global Kyro AI instance
+ * Get global Prezvik AI instance
  */
-export function getKyroAI(): KyroAI {
-  if (!globalKyroAI) {
-    console.log("      [KyroAI] Creating new global instance");
-    globalKyroAI = new KyroAI();
+export function getPrezVikAI(): PrezVikAI {
+  if (!globalPrezVikAI) {
+    console.log("      [PrezVikAI] Creating new global instance");
+    globalPrezVikAI = new PrezVikAI();
   } else {
-    console.log("      [KyroAI] Reusing existing global instance");
+    console.log("      [PrezVikAI] Reusing existing global instance");
   }
-  return globalKyroAI;
+  return globalPrezVikAI;
 }

@@ -5,8 +5,8 @@
  * Provides immediate professional-quality styling without AI calls.
  */
 
-import type { KyroBlueprint } from "@kyro/schema";
-import type { ThemeSpec, SlideTheme, Decoration } from "./theme-spec.js";
+import type { PrezVikBlueprint } from "@prezvik/schema";
+import type { ThemeSpec, SlideTheme } from "./theme-spec.js";
 
 /**
  * Static theme palette definitions
@@ -72,26 +72,31 @@ export const STATIC_THEME_SPECS: Record<string, Omit<ThemeSpec, "slideRhythm">> 
  * Hero, closing, and data slides get dark backgrounds.
  * Content slides get light backgrounds.
  */
-export function buildStaticThemeSpec(blueprint: KyroBlueprint, themeName: string): ThemeSpec {
+export function buildStaticThemeSpec(blueprint: PrezVikBlueprint, themeName: string): ThemeSpec {
   const base = STATIC_THEME_SPECS[themeName] ?? STATIC_THEME_SPECS.executive;
 
   const rhythm: SlideTheme[] = blueprint.slides.map((slide, i) => {
     const isDark = slide.type === "hero" || slide.type === "closing" || slide.type === "data" || i % 3 === 0;
 
-    const decorations: Decoration[] = isDark
-      ? [
-          { kind: "left-bar", color: base.palette.secondary, width: 0.22 },
-          { kind: "oval", x: 7.8, y: -0.6, w: 3.2, h: 3.2, color: base.palette.secondary, opacity: 0.18 },
-          { kind: "oval", x: 8.5, y: 0.5, w: 2.2, h: 2.2, color: base.palette.accent, opacity: 0.22 },
-        ]
-      : [{ kind: "left-bar", color: base.palette.secondary, width: 0.07 }];
+    // Hero slides get dark-geometric background
+    if (slide.type === "hero") {
+      return {
+        slideId: slide.id,
+        backgroundMode: "dark",
+        backgroundStyle: "dark-geometric",
+        accentColor: base.palette.secondary,
+        headerStyle: "none",
+        decorations: [], // Shapes are in the background image
+      };
+    }
 
     return {
       slideId: slide.id,
       backgroundMode: isDark ? "dark" : "light",
+      backgroundStyle: isDark ? "dark-gradient" : "light-minimal",
       accentColor: isDark ? base.palette.secondary : base.palette.primary,
-      headerStyle: slide.type === "hero" ? "none" : "band",
-      decorations: slide.type === "closing" ? [{ kind: "bottom-bar", color: base.palette.secondary, height: 0.425 }] : decorations,
+      headerStyle: "none",
+      decorations: [], // Shapes are in the background image
     };
   });
 

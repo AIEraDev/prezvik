@@ -4,7 +4,7 @@
  * Traverse LayoutNode tree and render to Google Slides
  */
 
-import type { LayoutNode, TextNode, ContainerNode } from "@kyro/layout";
+import type { LayoutNode, TextNode, ContainerNode } from "@prezvik/layout";
 import { renderText } from "../mappers/text.js";
 
 /**

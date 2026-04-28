@@ -6,8 +6,8 @@
  */
 
 import { Command } from "commander";
-import { generateDeck } from "@kyro/core";
-import { generateDeckFromPrompt } from "@kyro/prompt";
+import { generateDeck } from "@prezvik/core";
+import { generateDeckFromPrompt } from "@prezvik/prompt";
 import { loadJSON } from "../utils/load-file.js";
 import { log, logError } from "../utils/logger.js";
 

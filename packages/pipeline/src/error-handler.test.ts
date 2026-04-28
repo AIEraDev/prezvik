@@ -4,9 +4,9 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { ErrorHandler, ColorParseError, ShapeGenerationError, GradientGenerationError, RenderError, ValidationError, type ThemeErrorContext, type VisualErrorContext, type ExportErrorContext } from "./error-handler";
-import type { ColorPalette } from "@kyro/theme-layer";
-import type { VisualContext } from "@kyro/visual-layer";
-import type { RenderResult } from "@kyro/export-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
+import type { VisualContext } from "@prezvik/visual-layer";
+import type { RenderResult } from "@prezvik/export-layer";
 
 describe("ErrorHandler", () => {
   describe("Custom Error Types", () => {

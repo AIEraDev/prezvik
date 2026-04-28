@@ -7,7 +7,7 @@
 
 import { Command } from "commander";
 import chokidar from "chokidar";
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 import { loadJSON } from "../utils/load-file.js";
 import { log, logError } from "../utils/logger.js";
 

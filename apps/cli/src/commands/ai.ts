@@ -1,11 +1,11 @@
 /**
  * AI Command
  *
- * Test AI providers using KyroAI (Vercel AI SDK)
+ * Test AI providers using PrezVikAI (Vercel AI SDK)
  */
 
 import { Command } from "commander";
-import { KyroAI } from "@kyro/ai";
+import { PrezVikAI } from "@prezvik/ai";
 import { log, logError } from "../utils/logger.js";
 
 export const aiCommand = new Command("ai").description("AI provider management and testing");
@@ -15,8 +15,8 @@ aiCommand
   .command("list")
   .description("List available AI providers")
   .action(() => {
-    const kyroAI = new KyroAI();
-    const available = kyroAI.getAvailableProviders();
+    const prezVikAI = new PrezVikAI();
+    const available = prezVikAI.getAvailableProviders();
 
     if (available.length === 0) {
       log.error("No AI providers available");
@@ -44,9 +44,9 @@ aiCommand
   .option("-p, --provider <name>", "Provider to test (openai, anthropic, groq)")
   .action(async (prompt, options) => {
     try {
-      const kyroAI = new KyroAI();
+      const prezVikAI = new PrezVikAI();
 
-      if (!kyroAI.isAvailable()) {
+      if (!prezVikAI.isAvailable()) {
         log.error("No AI providers available. Set API keys.");
         return;
       }
@@ -57,7 +57,7 @@ aiCommand
       const startTime = Date.now();
 
       // Use summarize as a simple test
-      const result = await kyroAI.summarize(prompt, 100, {
+      const result = await prezVikAI.summarize(prompt, 100, {
         provider: options.provider,
         temperature: 0.7,
         maxTokens: 100,
@@ -83,8 +83,8 @@ aiCommand
   .argument("<prompt>", "Test prompt")
   .action(async (prompt) => {
     try {
-      const kyroAI = new KyroAI();
-      const available = kyroAI.getAvailableProviders();
+      const prezVikAI = new PrezVikAI();
+      const available = prezVikAI.getAvailableProviders();
 
       if (available.length === 0) {
         log.error("No AI providers available");
@@ -99,7 +99,7 @@ aiCommand
         log.info(`Testing ${providerName}...`);
 
         const startTime = Date.now();
-        const result = await kyroAI.summarize(prompt, 100, {
+        const result = await prezVikAI.summarize(prompt, 100, {
           provider: providerName,
           temperature: 0.7,
           maxTokens: 100,

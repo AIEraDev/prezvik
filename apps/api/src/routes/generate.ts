@@ -2,11 +2,11 @@
  * Generate PPTX Endpoint
  *
  * POST /api/generate
- * Generates a PPTX file from a KyroBlueprint and returns it as a download
+ * Generates a PPTX file from a PrezVikBlueprint and returns it as a download
  */
 
 import { Router, Request, Response } from "express";
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 
 const router: Router = Router();
 
@@ -19,7 +19,7 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     // Generate PPTX to a temporary file
-    const outputPath = `/tmp/kyro-${Date.now()}.pptx`;
+    const outputPath = `/tmp/prezvik-${Date.now()}.pptx`;
     await generateDeck(blueprint, outputPath);
 
     // Send the file as a download

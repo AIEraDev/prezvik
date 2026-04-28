@@ -23,7 +23,7 @@
 
 import { describe, it, expect } from "vitest";
 import { generateDeck } from "./deck.js";
-import type { KyroBlueprint } from "@kyro/schema";
+import type { PrezVikBlueprint } from "@prezvik/schema";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -50,7 +50,7 @@ describe("Bug Condition Exploration - Background Theme Rendering", () => {
   describe("Property 1: Background Colors Should Be Applied", () => {
     it("should generate ThemeSpec and apply background colors to single hero slide", async () => {
       // Arrange: Create a simple blueprint with one hero slide
-      const blueprint: KyroBlueprint = {
+      const blueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Single Hero Slide Test",
@@ -108,7 +108,7 @@ describe("Bug Condition Exploration - Background Theme Rendering", () => {
 
     it("should generate ThemeSpec and apply alternating backgrounds to multi-slide executive presentation", async () => {
       // Arrange: Create a 5-slide executive presentation
-      const blueprint: KyroBlueprint = {
+      const blueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Executive Presentation",
@@ -238,7 +238,7 @@ describe("Bug Condition Exploration - Background Theme Rendering", () => {
 
     it("should generate ThemeSpec and apply backgrounds to mixed slide types", async () => {
       // Arrange: Create a presentation with various slide types
-      const blueprint: KyroBlueprint = {
+      const blueprint: PrezVikBlueprint = {
         version: "2.0",
         meta: {
           title: "Mixed Slide Types",

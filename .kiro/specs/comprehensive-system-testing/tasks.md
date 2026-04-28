@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation plan establishes a comprehensive testing infrastructure for the Kyro presentation generation system. The system is a TypeScript monorepo with 4 applications and 14 packages. Currently, only 2 test files exist (~50 test cases, <5% coverage). This plan will achieve 80%+ coverage across all packages through unit tests, integration tests, E2E tests, and performance tests.
+This implementation plan establishes a comprehensive testing infrastructure for the Prezvik presentation generation system. The system is a TypeScript monorepo with 4 applications and 14 packages. Currently, only 2 test files exist (~50 test cases, <5% coverage). This plan will achieve 80%+ coverage across all packages through unit tests, integration tests, E2E tests, and performance tests.
 
 ## Tasks
 
@@ -237,7 +237,7 @@ This implementation plan establishes a comprehensive testing infrastructure for 
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Implement AI package tests
-  - [ ] 15.1 Create unit tests for KyroAI class
+  - [ ] 15.1 Create unit tests for PrezVikAI class
     - Test initialization and provider detection
     - Test getAvailableProviders with API keys
     - Test mock mode operation without API keys
@@ -343,10 +343,10 @@ This implementation plan establishes a comprehensive testing infrastructure for 
     - Test generate_presentation tool with invalid deck
     - Test validate_deck tool with valid deck
     - Test validate_deck tool with invalid deck
-    - Test get_kyro_info tool
+    - Test get_prezvik_info tool
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
   - [ ] 19.2 Create unit tests for MCP adapters
-    - Test Kyro adapter integration
+    - Test Prezvik adapter integration
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
   - [ ] 19.3 Create integration tests for MCP server
     - Test ListTools request handling
@@ -511,25 +511,25 @@ This implementation plan establishes a comprehensive testing infrastructure for 
 
 - [ ] 29. Verify coverage thresholds
   - [ ] 29.1 Verify core package coverage (90%+)
-    - Check @kyro/core coverage
+    - Check @prezvik/core coverage
     - _Requirements: 24.1_
   - [ ] 29.2 Verify schema package coverage (90%+)
-    - Check @kyro/schema coverage
+    - Check @prezvik/schema coverage
     - _Requirements: 24.1_
   - [ ] 29.3 Verify renderer package coverage (85%+)
-    - Check @kyro/renderer-pptx coverage
-    - Check @kyro/renderer-gslides coverage
+    - Check @prezvik/renderer-pptx coverage
+    - Check @prezvik/renderer-gslides coverage
     - _Requirements: 24.1_
   - [ ] 29.4 Verify layer package coverage (85%+)
-    - Check @kyro/theme-layer coverage
-    - Check @kyro/visual-layer coverage
-    - Check @kyro/export-layer coverage
+    - Check @prezvik/theme-layer coverage
+    - Check @prezvik/visual-layer coverage
+    - Check @prezvik/export-layer coverage
     - _Requirements: 24.1_
   - [ ] 29.5 Verify utility package coverage (80%+)
-    - Check @kyro/design coverage
-    - Check @kyro/logger coverage
-    - Check @kyro/utils coverage
-    - Check @kyro/prompt coverage
+    - Check @prezvik/design coverage
+    - Check @prezvik/logger coverage
+    - Check @prezvik/utils coverage
+    - Check @prezvik/prompt coverage
     - _Requirements: 24.1_
   - [ ] 29.6 Verify application coverage (75%+)
     - Check apps/cli coverage

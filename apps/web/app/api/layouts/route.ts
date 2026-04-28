@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate with Zod
-    const { KyroBlueprintSchema } = await import("@kyro/schema");
-    const validationResult = KyroBlueprintSchema.safeParse(blueprint);
+    const { PrezVikBlueprintSchema } = await import("@prezvik/schema");
+    const validationResult = PrezVikBlueprintSchema.safeParse(blueprint);
 
     if (!validationResult.success) {
       return NextResponse.json(
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const validatedBlueprint = validationResult.data;
-    const { generateLayouts } = await import("@kyro/core");
+    const { generateLayouts } = await import("@prezvik/core");
     const layouts = generateLayouts(validatedBlueprint);
 
     return NextResponse.json({ layouts, count: layouts.length });

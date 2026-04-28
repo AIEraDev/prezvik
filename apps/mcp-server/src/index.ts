@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Kyro MCP Server
+ * Prezvik MCP Server
  *
- * Thin adapter that exposes Kyro as MCP tools
+ * Thin adapter that exposes Prezvik as MCP tools
  * NO business logic here - just calls the core engine
  */
 
@@ -15,7 +15,7 @@ import { tools } from "./tools/index.js";
 // Create MCP server
 const server = new Server(
   {
-    name: "kyro",
+    name: "prezvik",
     version: "0.1.0",
   },
   {
@@ -53,7 +53,7 @@ async function main() {
   await server.connect(transport);
 
   // Log to stderr (stdout is for MCP protocol)
-  console.error("Kyro MCP Server running");
+  console.error("Prezvik MCP Server running");
 }
 
 main().catch((error) => {

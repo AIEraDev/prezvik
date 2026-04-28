@@ -14,7 +14,7 @@ import { BackgroundGenerator } from "./background-generator.js";
 import { ShapeGenerator } from "./shape-generator.js";
 import { FillEngine } from "./fill-engine.js";
 import { VisualContextBuilder } from "./visual-context-builder.js";
-import type { ColorPalette } from "@kyro/theme-layer";
+import type { ColorPalette } from "@prezvik/theme-layer";
 import type { LayoutNode, LayoutTree } from "./models/layout-tree.js";
 
 describe("Visual Layer Performance Tests", () => {

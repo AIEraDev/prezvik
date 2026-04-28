@@ -1,11 +1,11 @@
 /**
- * Kyro Blueprint Schema v2
+ * Prezvik Blueprint Schema v2
  *
  * Design-aware, renderer-agnostic intermediate representation
  * This is NOT "JSON for slides" - it's a design compiler IR
  *
  * CORE PRINCIPLE:
- * Kyro does NOT store "slides". Kyro stores visual communication intent
+ * Prezvik does NOT store "slides". Prezvik stores visual communication intent
  * structured into layouts.
  */
 
@@ -16,7 +16,7 @@ import { z } from "zod";
  *
  * The complete intermediate representation of a presentation
  */
-export const KyroBlueprintSchema = z.object({
+export const PrezVikBlueprintSchema = z.object({
   version: z.literal("2.0"),
 
   meta: z.object({
@@ -41,7 +41,7 @@ export const KyroBlueprintSchema = z.object({
   slides: z.array(z.lazy(() => SlideSchema)).max(50, "Maximum 50 slides allowed per presentation"),
 });
 
-export type KyroBlueprint = z.infer<typeof KyroBlueprintSchema>;
+export type PrezVikBlueprint = z.infer<typeof PrezVikBlueprintSchema>;
 
 /**
  * Slide - A composition unit, not a text container
@@ -62,7 +62,7 @@ export const SlideSchema = z
       .regex(/^[a-zA-Z0-9_-]+$/, "Slide ID must be alphanumeric with hyphens/underscores only"),
 
     // Slide type (semantic category)
-    type: z.enum(["hero", "section", "content", "comparison", "grid", "quote", "data", "callout", "closing"]),
+    type: z.enum(["hero", "section", "content", "bullet-list", "two-column", "comparison", "stat-trio", "quote", "data", "callout", "timeline", "grid", "closing"]),
 
     // Intent: WHY this slide exists (critical for AI reasoning)
     intent: z.string(),
@@ -111,11 +111,15 @@ export const SlideSchema = z
         hero: ["center_focus", "hero_overlay", "image_dominant"],
         section: ["center_focus", "two_column"],
         content: ["two_column", "three_column", "split_screen"],
+        "bullet-list": ["two_column", "three_column", "split_screen", "center_focus"],
+        "two-column": ["two_column", "three_column", "split_screen"],
         comparison: ["two_column", "three_column", "split_screen"],
-        grid: ["grid_2x2"],
+        grid: ["grid_2x2", "three_column"],
+        "stat-trio": ["stat_highlight", "three_column"],
         quote: ["center_focus"],
         data: ["stat_highlight", "timeline"],
         callout: ["center_focus", "hero_overlay"],
+        timeline: ["timeline", "two_column"],
         closing: ["center_focus"],
       };
 
@@ -216,7 +220,7 @@ export type ContentBlock = z.infer<typeof ContentBlockSchema>;
 /**
  * Media Block - Explicit media placement
  *
- * Kyro explicitly models media placement (not random decoration)
+ * Prezvik explicitly models media placement (not random decoration)
  */
 export const MediaBlockSchema = z.object({
   type: z.enum(["image", "icon", "illustration", "chart"]),
@@ -267,4 +271,4 @@ export type SlideStyle = z.infer<typeof SlideStyleSchema>;
 /**
  * Type exports (alias for convenience)
  */
-export type Blueprint = KyroBlueprint;
+export type Blueprint = PrezVikBlueprint;

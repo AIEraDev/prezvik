@@ -1,9 +1,9 @@
 /**
- * @kyro/export-layer
+ * @prezvik/export-layer
  *
- * Export/Rendering Layer for Kyro presentation generation.
+ * Export/Rendering Layer for Prezvik presentation generation.
  * Provides pluggable renderers for converting Visual Context to output formats
- * (PPTX, HTML, etc.). Uses existing pptxgenjs from @kyro/renderer-pptx.
+ * (PPTX, HTML, etc.). Uses existing pptxgenjs from @prezvik/renderer-pptx.
  */
 
 // Interfaces

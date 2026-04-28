@@ -6,7 +6,7 @@
  */
 
 import { Router, Response } from "express";
-import { themes } from "@kyro/design";
+import { themes } from "@prezvik/design";
 
 const router: Router = Router();
 

@@ -1,12 +1,12 @@
 /**
- * Kyro PPTX Renderer
+ * Prezvik PPTX Renderer
  *
  * Clean renderer pipeline: LayoutTree → .pptx
  *
  * Design principles:
  * - Renderer is a dumb executor
  * - All intelligence lives in layout engine
- * - No coupling to Kyro schema
+ * - No coupling to Prezvik schema
  * - Reusable and testable
  */
 

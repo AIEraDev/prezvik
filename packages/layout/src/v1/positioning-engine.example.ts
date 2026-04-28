@@ -27,7 +27,7 @@ const simpleTree: LayoutTree = {
       {
         id: "title",
         type: "text",
-        content: "Welcome to Kyro",
+        content: "Welcome to Prezvik",
         text: {
           fontSize: 48,
           fontWeight: "bold",

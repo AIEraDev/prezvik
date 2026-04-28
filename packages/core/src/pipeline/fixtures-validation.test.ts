@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { validateBlueprint } from "@kyro/schema";
+import { validateBlueprint } from "@prezvik/schema";
 import { SAMPLE_PROMPTS, MINIMAL_BLUEPRINT, COMPLEX_BLUEPRINT, INVALID_BLUEPRINTS, EXPECTED_MINIMAL_LAYOUT, EXPECTED_LAYOUT_CHARACTERISTICS, EXPECTED_PPTX_CHARACTERISTICS, TEST_SCENARIOS, PERFORMANCE_BENCHMARKS, ERROR_TEST_CASES, createTestBlueprint, validateLayoutTreeStructure, validatePositionedLayoutTree, validateThemedLayoutTree } from "./test-fixtures.js";
 
 describe("Test Fixtures Validation", () => {

@@ -46,7 +46,7 @@ END FUNCTION
 - **Example 2**: User generates a 3-slide pitch deck with hero, content, and closing slides
   - Expected: Hero slide has dark navy background, content slide has light background, closing slide has dark background
   - Actual: All three slides are blank/white with no background colors
-- **Example 3**: CLI user runs `kyro generate input.json output.pptx`
+- **Example 3**: CLI user runs `prezvik generate input.json output.pptx`
   - Expected: Generated PPTX has professional theme with appropriate background colors per slide
   - Actual: Generated PPTX has no background colors, appears unfinished
 - **Edge Case**: Blueprint with single slide
@@ -117,7 +117,7 @@ Assuming our root cause analysis is correct:
 1. **Import ThemeAgent**: Add import statement at the top of the file
 
    ```typescript
-   import { ThemeAgent } from "@kyro/design";
+   import { ThemeAgent } from "@prezvik/design";
    ```
 
 2. **Instantiate ThemeAgent**: Create ThemeAgent instance before layout generation
@@ -281,6 +281,6 @@ END FOR
 
 - Test full pipeline: schema → validation → layout → theme → polish → rendering → file output
 - Test web UI flow: user submits blueprint, receives PPTX with backgrounds applied
-- Test CLI flow: user runs `kyro generate`, receives PPTX with backgrounds applied
+- Test CLI flow: user runs `prezvik generate`, receives PPTX with backgrounds applied
 - Test that generated PPTX files open correctly in PowerPoint/Google Slides with backgrounds visible
 - Test visual regression: compare screenshots of slides before and after fix (backgrounds should be added, everything else identical)

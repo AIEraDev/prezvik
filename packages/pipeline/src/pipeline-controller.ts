@@ -5,10 +5,10 @@
  * with error handling, performance monitoring, and caching.
  */
 
-import type { ColorPalette } from "@kyro/theme-layer";
-import type { VisualContext, SlideVisualContext } from "@kyro/visual-layer";
-import type { Renderer, RenderOptions, RenderResult } from "@kyro/export-layer";
-import { ErrorHandler, type ThemeErrorContext, type VisualErrorContext, type ExportErrorContext } from "./error-handler";
+import type { ColorPalette } from "@prezvik/theme-layer";
+import type { VisualContext, SlideVisualContext } from "@prezvik/visual-layer";
+import type { Renderer, RenderOptions, RenderResult } from "@prezvik/export-layer";
+import { ErrorHandler, type ThemeErrorContext, type VisualErrorContext, type ExportErrorContext } from "./error-handler.js";
 
 /**
  * Output format options

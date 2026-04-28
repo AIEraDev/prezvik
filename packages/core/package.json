@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/core",
+  "name": "@prezvik/core",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,16 +17,16 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/ai": "workspace:*",
-    "@kyro/design": "workspace:*",
-    "@kyro/export-layer": "workspace:*",
-    "@kyro/layout": "workspace:*",
-    "@kyro/logger": "workspace:*",
-    "@kyro/pipeline": "workspace:*",
-    "@kyro/renderer-pptx": "workspace:*",
-    "@kyro/schema": "workspace:*",
-    "@kyro/theme-layer": "workspace:*",
-    "@kyro/visual-layer": "workspace:*"
+    "@prezvik/ai": "workspace:*",
+    "@prezvik/design": "workspace:*",
+    "@prezvik/export-layer": "workspace:*",
+    "@prezvik/layout": "workspace:*",
+    "@prezvik/logger": "workspace:*",
+    "@prezvik/pipeline": "workspace:*",
+    "@prezvik/renderer-pptx": "workspace:*",
+    "@prezvik/schema": "workspace:*",
+    "@prezvik/theme-layer": "workspace:*",
+    "@prezvik/visual-layer": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

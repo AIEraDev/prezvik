@@ -1,6 +1,6 @@
 # Google Slides Renderer
 
-Clean adapter for rendering Kyro layouts to Google Slides.
+Clean adapter for rendering Prezvik layouts to Google Slides.
 
 ## Setup
 
@@ -34,7 +34,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 ## Usage
 
 ```typescript
-import { renderGoogleSlides } from "@kyro/renderer-gslides";
+import { renderGoogleSlides } from "@prezvik/renderer-gslides";
 
 const result = await renderGoogleSlides(layouts, "My Presentation");
 
@@ -46,10 +46,10 @@ console.log("Presentation URL:", result.url);
 
 ```bash
 # Generate Google Slides
-kyro generate deck.json --format gslides
+prezvik generate deck.json --format gslides
 
 # With prompt
-kyro generate --prompt "Pitch deck for AI startup" --format gslides
+prezvik generate --prompt "Pitch deck for AI startup" --format gslides
 ```
 
 ## Architecture

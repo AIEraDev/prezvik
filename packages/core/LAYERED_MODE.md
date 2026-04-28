@@ -2,7 +2,7 @@
 
 ## Overview
 
-Kyro supports two rendering modes:
+Prezvik supports two rendering modes:
 
 1. **Layered Mode** (default): The new three-layer architecture (Theme → Visual → Export)
 2. **Legacy Mode** (DEPRECATED): The original monolithic rendering approach
@@ -20,7 +20,7 @@ The layered mode introduces a modular pipeline with clear separation of concerns
 Layered mode is now the default. No configuration is needed:
 
 ```typescript
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 
 // Uses layered mode by default
 await generateDeck(schema, "output.pptx");
@@ -42,7 +42,7 @@ await generateDeck(schema, "output.pptx", { mode: "layered" });
 
 ```bash
 # Enable legacy mode (not recommended)
-export KYRO_PIPELINE_MODE=legacy
+export PREZVIK_PIPELINE_MODE=legacy
 
 # Run your application
 npm run dev
@@ -51,7 +51,7 @@ npm run dev
 ### Method 2: Function Parameter
 
 ```typescript
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 
 // Use legacy mode (deprecated)
 await generateDeck(schema, "output.pptx", { mode: "legacy" });
@@ -64,7 +64,7 @@ await generateDeck(schema, "output.pptx", { mode: "legacy" });
 The pipeline mode is determined in this order (highest to lowest priority):
 
 1. Function parameter (`options.mode`)
-2. Environment variable (`KYRO_PIPELINE_MODE`)
+2. Environment variable (`PREZVIK_PIPELINE_MODE`)
 3. Configuration API (`updateConfig`)
 4. Default value (`layered`)
 
@@ -74,21 +74,21 @@ The pipeline mode is determined in this order (highest to lowest priority):
 
 ```bash
 # Enable/disable performance monitoring (default: true)
-export KYRO_ENABLE_PERFORMANCE_MONITORING=true
+export PREZVIK_ENABLE_PERFORMANCE_MONITORING=true
 ```
 
 ### Caching
 
 ```bash
 # Enable/disable caching (default: true)
-export KYRO_ENABLE_CACHING=true
+export PREZVIK_ENABLE_CACHING=true
 ```
 
 ### Log Level
 
 ```bash
 # Set log level: debug, info, warn, error (default: info)
-export KYRO_LOG_LEVEL=debug
+export PREZVIK_LOG_LEVEL=debug
 ```
 
 ## Monitoring and Debugging
@@ -129,7 +129,7 @@ if (!result.success) {
 Enable debug logging to see detailed execution information:
 
 ```bash
-export KYRO_LOG_LEVEL=debug
+export PREZVIK_LOG_LEVEL=debug
 ```
 
 ## Testing Both Modes
@@ -137,7 +137,7 @@ export KYRO_LOG_LEVEL=debug
 To compare output between legacy and layered modes:
 
 ```typescript
-import { generateDeck } from "@kyro/core";
+import { generateDeck } from "@prezvik/core";
 
 // Generate with legacy mode
 await generateDeck(schema, "output-legacy.pptx", { mode: "legacy" });
@@ -209,7 +209,7 @@ See the complete [Migration Guide](../docs/migration-guide.md) for detailed inst
 **Solution**: Ensure caching is enabled:
 
 ```bash
-export KYRO_ENABLE_CACHING=true
+export PREZVIK_ENABLE_CACHING=true
 ```
 
 ### Issue: Visual differences between modes
@@ -230,7 +230,7 @@ if (!result.success) {
 Enable debug logging for more details:
 
 ```bash
-export KYRO_LOG_LEVEL=debug
+export PREZVIK_LOG_LEVEL=debug
 ```
 
 ## Support

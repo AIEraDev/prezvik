@@ -1,15 +1,15 @@
 /**
  * Layout Engine
  *
- * Transforms Kyro Blueprint into positioned layout tree
+ * Transforms Prezvik Blueprint into positioned layout tree
  * This is where "beautiful slides" actually comes from
  *
  * CORE PRINCIPLE:
  * Layout is always explicit (no guessing in renderer)
  */
 
-import type { KyroBlueprint, Slide, ContentBlock, MediaBlock } from "@kyro/schema";
-import { getLayoutRule } from "@kyro/schema";
+import type { PrezVikBlueprint, Slide, ContentBlock, MediaBlock } from "@prezvik/schema";
+import { getLayoutRule } from "@prezvik/schema";
 import type { LayoutTree, LayoutNode, ContainerNode, ImageNode } from "../types.js";
 
 /**
@@ -55,7 +55,7 @@ export class LayoutEngine {
    * Caches layouts by slide hash for improved performance on repeated calls
    * Processes slides in parallel for better performance with large decks
    */
-  async generateLayout(blueprint: KyroBlueprint): Promise<LayoutTree[]> {
+  async generateLayout(blueprint: PrezVikBlueprint): Promise<LayoutTree[]> {
     // Process all slides in parallel for better performance
     const layoutPromises = blueprint.slides.map(async (slide) => {
       const cacheKey = hashSlide(slide);

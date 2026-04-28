@@ -133,6 +133,7 @@ export interface GridLayout {
  * Layout tree (root node with metadata)
  */
 export interface LayoutTree {
+  slideId?: string;
   root: LayoutNode;
   background?: string;
 }

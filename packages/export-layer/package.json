@@ -1,5 +1,5 @@
 {
-  "name": "@kyro/export-layer",
+  "name": "@prezvik/export-layer",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,8 +17,8 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@kyro/visual-layer": "workspace:*",
-    "@kyro/renderer-pptx": "workspace:*",
+    "@prezvik/visual-layer": "workspace:*",
+    "@prezvik/renderer-pptx": "workspace:*",
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {

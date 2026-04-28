@@ -140,6 +140,10 @@ yarn.lock
 .firebase/
 .serverless/
 
+# Generated presentations
+generated-presentations/
+**/generated-presentations/
+
 # Compiled binaries
 *.exe
 *.dll

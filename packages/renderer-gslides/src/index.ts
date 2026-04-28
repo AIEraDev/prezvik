@@ -5,7 +5,7 @@
  * Uses batchUpdate API for efficiency
  */
 
-import type { LayoutTree } from "@kyro/layout";
+import type { LayoutTree } from "@prezvik/layout";
 import { hasCredentials } from "./adapter/client.js";
 import { createPresentation, getPresentationUrl, deleteFirstSlide } from "./adapter/presentation.js";
 import { createSlide } from "./adapter/slide.js";

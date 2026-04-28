@@ -1,4 +1,4 @@
-import type { Slide } from "@kyro/schema";
+import type { Slide } from "@prezvik/schema";
 
 export interface ExtractedContent {
   title: string;
