@@ -1,8 +1,24 @@
 {
-  "name": "deck-system",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Modular presentation deck generation system",
+  "name": "prezvik",
+  "version": "1.0.0",
+  "private": false,
+  "description": "AI-native presentation engine - Transform ideas into professional presentations instantly",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AIEraDev/prezvik.git"
+  },
+  "keywords": [
+    "presentation",
+    "ai",
+    "powerpoint",
+    "pptx",
+    "slides",
+    "deck",
+    "generator",
+    "automation"
+  ],
+  "author": "AIEraDev",
+  "license": "MIT",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",

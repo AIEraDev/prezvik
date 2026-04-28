@@ -1,5 +1,7 @@
 # Prezvik
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg)](https://www.typescriptlang.org/) [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 **AI-native presentation engine**
 
 > "I typed a sentence → I got a presentation"
@@ -386,13 +388,38 @@ Prezvik now uses a modern three-layer architecture by default:
 - [Migration Guide](./docs/migration-guide.md) - Migrating from legacy to layered mode
 - [CLI README](./apps/cli/README.md) - Full CLI documentation
 - [MCP Server](./apps/mcp-server/README.md) - AI agent integration
+- [Contributing Guide](./CONTRIBUTING.md) - How to contribute to Prezvik
+
+## Contributing
+
+We welcome contributions! Prezvik is open source and community-driven.
+
+**Ways to contribute:**
+
+- 🐛 Report bugs and issues
+- 💡 Suggest new features
+- 🎨 Create new themes and backgrounds
+- 📝 Improve documentation
+- 🔧 Submit pull requests
+
+See our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+## Community
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/AIEraDev/prezvik/issues)
+- **Discussions**: [Ask questions and share ideas](https://github.com/AIEraDev/prezvik/discussions)
+- **Pull Requests**: [Contribute code](https://github.com/AIEraDev/prezvik/pulls)
 
 ## License
 
-MIT
+MIT License - see [LICENSE](./LICENSE) for details.
+
+Copyright (c) 2024 Prezvik
 
 ---
 
 **Built with**: TypeScript, pptxgenjs, OpenAI, Zod, Commander
 
 **The vision**: idea → presentation, zero friction
+
+**Open source**: Built by the community, for the community
